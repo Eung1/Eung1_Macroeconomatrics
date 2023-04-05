@@ -176,6 +176,8 @@ print(plot1)
 
 Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.
 
+As we see above, stock and flow variables mostly have upward trend and it disappears when I take log and difference. Some variables such as GDP and deposit exhibit spark around 2020.
+
 
 # The model and hypothesis
 
