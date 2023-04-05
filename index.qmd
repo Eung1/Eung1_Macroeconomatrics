@@ -24,16 +24,213 @@ How does the monetary policy and deposit growth affect the banks' credit growth 
 
 ## Motivation
 
-Banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010). One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy and deposit change on banks' credit.
+Banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).
+
+One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks' credit.
 
 
-#  Data
+#  Data and their properties
 
-Following Berkelmans(2005), variables are largely divided into two groups: the external and domestic sector. For the external sector, real commodity prices (or oil prices), and real US GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks credit, deposit, US exchange rate, and cash rate.
+Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real China's GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks' credit, deposit, US exchange rate, and cash rate.
+
+At the moment, I am loading the related packages for the data work as follows:
+
+```{r}
+#| echo: true
+#| message: false
+library(readrba)
+library(tseries)
+library(ggplot2)
+library(cowplot)
+library(dplyr)
+library(zoo)
+library(xts)
+```
+
+
+The external sector is included considering Australia's status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia's major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia's terms of trade. The inclusion of China's GDP is also important as China has been Australia's biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+ICP      <- read_rba(series_id = "GRCPAIAD")
+ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
+ICP$ln_ICP <- log(ICP$value)
+plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =value)) +
+  geom_line(color = "black") +
+  labs(title = "Index of Commodity Prices Australia(2021/22=100)", x = "Year", y = "Index") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+ICP      <- read_rba(series_id = "GRCPAIAD")
+ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
+ICP$ln_ICP <- log(ICP$value)
+ICP$ln_ICP_diff <- ICP$ln_ICP - lag(ICP$ln_ICP)
+plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =ln_ICP_diff)) +
+  geom_line(color = "black") +
+  labs(title = "Log ICP difference", x = "Year", y = "Log ICP difference") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks' credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model. 
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+GDP      <- read_rba(series_id = "GGDPCVGDP")
+GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
+GDP$ln_GDP <- log(GDP$value)
+plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =value)) +
+  geom_line(color = "black") +
+  labs(title = "Real GDP(SA)", x = "Year", y = "$ million") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+GDP      <- read_rba(series_id = "GGDPCVGDP")
+GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
+GDP$ln_GDP <- log(GDP$value)
+GDP$ln_GDP_diff <- GDP$ln_GDP - lag(GDP$ln_GDP)
+plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =ln_GDP_diff)) +
+  geom_line(color = "black") +
+  labs(title = "Log GDP difference", x = "Year", y = "Log GDP difference") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+Credit      <- read_rba(series_id = "DLCALAB")
+Credit$Date <- as.Date(Credit$date, format = "%Y-%m-%d")
+Credit$ln_Credit <- log(Credit$value)
+Credit$ln_Credit_diff <- Credit$ln_Credit - lag(Credit$ln_Credit)
+plot1 <- ggplot2::ggplot(data = Credit, aes(x = Date, y =ln_Credit_diff)) +
+  geom_line(color = "black") +
+  labs(title = "Log Credit difference", x = "Year", y = "Log Credit difference") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+Deposit      <- read_rba(series_id = "DMATD")
+Deposit$Date <- as.Date(Deposit$date, format = "%Y-%m-%d")
+Deposit$ln_Deposit <- log(Deposit$value)
+Deposit$ln_Deposit_diff <- Deposit$ln_Deposit - lag(Deposit$ln_Deposit)
+plot1 <- ggplot2::ggplot(data = Deposit, aes(x = Date, y =ln_Deposit_diff)) +
+  geom_line(color = "black") +
+  labs(title = "Log Deposit difference", x = "Year", y = "Log Deposit difference") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+print(plot1)
+```
+
+
+Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.
+
+
+# The model and hypothesis
+
+## The model
+
+The structural VAR model with $p$ lags is given by
+
+$$
+\begin{align}
+  B_0y_t &= b_0 + B_1 y_{t-1} + \dots + B_p y_{t-p} + u_t \\
+  u_{t}| Y_{t-1} &\sim {iid} ( 0_N, I_N)
+\end{align}
+$$
+Where $B_0$ is a matrix of contemporaneous relationships, $y_t$ is a vector of endogenous variables, $y_{t-1}$, $\dots$, $y_{t-p}$ are vectors of lags, and $u_t$ is a vector of independent structural shocks.
+
+$y_t$ contains eight variables: commodity prices ($com_t$), China's real GDP ($cgdp_t$), domestic real GDP ($gdp_t$), inflation rate($\pi_t$), banks' credit($c_t$), banks' deposit($d_t$), USD exchange rate ($ex_t$), and cash rate ($i_t$). 
+
+Premultiplying $B_0^{-1}$ to the structural VAR model gives us the reduced form representation as follows:
+
+$$
+\begin{align}
+  y_t &= \mu_0 + A_1 y_{t-1} + \dots + A_p y_{t-p} + \epsilon_t \\
+  \epsilon_{t}| Y_{t-1} &\sim {iid} ( 0_N, \Sigma)
+\end{align}
+$$
+where $A_i=B_0^{-1}B_i$, $\epsilon_t=B_0^{-1}u_t$, and $\Sigma=$$B_0^{-1}B_0^{-1 \prime}$
+
+Using the reduced form equations, we can estimate $\Sigma$. However $\Sigma$ has $8(8+1)/2=36$ unique elements, which is the number of equations, yet we have $8^2=64$ unknowns in $B_0$. Hence I need to impose exclusion restrictions on $B_0$ to identify the system. 
+
+Assumptions for $B_0$ matrix is as follows:
 
 
 
+- Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.
+- GDP is affected from the external sector but not affected by other domestic variables contemporaneously 
+- Inflation is affected from the external sector and GDP but not affected by other domestic variables contemporaneously.
+- Cash rate is affected from the external sector, GDP and inflation but not affected by other domestic variables contemporaneously.
+- Deposit is affected from the external sector, GDP, inflation, and cash rate but not affected by other domestic variables contemporaneously. 
+- credit is affected from the external sector, GDP, inflation, Cash rate, and deposit but not affected by other domestic variables contemporaneously.
+- The exchange rate is affected from all variables contemporaneously.
+
+Note that this assumption and thus order of the variables in $y_t$ is subject to change over the course of the research upon any better identification assumption.
+
+# Hypothesis
+I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks' credit is heavily influenced by changes in deposits in response to monetary policy.
 
 
-## References {.unnumbered}
+
+# References {.unnumbered}
+
+- Itamar Drechsler, Alexi Savov, and Philipp Schnabl, 2017. ”The Deposits Channel of Monetary
+Policy,” The Quarterly Journal of Economics, Oxford University Press, vol. 132(4), pages 1819-1876.
+
+- Kilian, L., & Lütkepohl, H. 2017. "Structural Vector Autoregressive Analysis (Themes in Modern Econometrics)," Cambridge: Cambridge University Press.
+
+- Leon Berkelmans, 2005. "Credit and Monetary Policy: An Australian SVAR," RBA Research Discussion Papers rdp2005-06, Reserve Bank of Australia.
+
 

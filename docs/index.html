@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -60,6 +94,8 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -96,10 +132,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#research-question" id="toc-research-question" class="nav-link" data-scroll-target="#research-question">Research question</a></li>
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
   </ul></li>
-  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
+  <li><a href="#data-and-their-properties" id="toc-data-and-their-properties" class="nav-link" data-scroll-target="#data-and-their-properties">Data and their properties</a></li>
+  <li><a href="#the-model-and-hypothesis" id="toc-the-model-and-hypothesis" class="nav-link" data-scroll-target="#the-model-and-hypothesis">The model and hypothesis</a>
   <ul class="collapse">
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a></li>
   </ul></li>
+  <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -145,17 +184,103 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>Banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010). One suggestion to fill this gap is proposed by Dreschler et al.&nbsp;(2017). In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy and deposit change on banks’ credit.</p>
+<p>Banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
+<p>One suggestion to fill this gap is proposed by Dreschler et al.&nbsp;(2017). In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks’ credit.</p>
 </section>
 </section>
-<section id="data" class="level1">
-<h1>Data</h1>
-<p>Following Berkelmans(2005), variables are largely divided into two groups: the external and domestic sector. For the external sector, real commodity prices (or oil prices), and real US GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks credit, deposit, US exchange rate, and cash rate.</p>
-<section id="references" class="level2 unnumbered">
-<h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+<section id="data-and-their-properties" class="level1">
+<h1>Data and their properties</h1>
+<p>Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real China’s GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks’ credit, deposit, US exchange rate, and cash rate.</p>
+<p>At the moment, I am loading the related packages for the data work as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readrba)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of China’s GDP is also important as China has been Australia’s biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.</p>
+</section>
+<section id="the-model-and-hypothesis" class="level1">
+<h1>The model and hypothesis</h1>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The model</h2>
+<p>The structural VAR model with <span class="math inline">\(p\)</span> lags is given by</p>
+<p><span class="math display">\[
+\begin{align}
+  B_0y_t &amp;= b_0 + B_1 y_{t-1} + \dots + B_p y_{t-p} + u_t \\
+  u_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, I_N)
+\end{align}
+\]</span> Where <span class="math inline">\(B_0\)</span> is a matrix of contemporaneous relationships, <span class="math inline">\(y_t\)</span> is a vector of endogenous variables, <span class="math inline">\(y_{t-1}\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(y_{t-p}\)</span> are vectors of lags, and <span class="math inline">\(u_t\)</span> is a vector of independent structural shocks.</p>
+<p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), China’s real GDP (<span class="math inline">\(cgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), USD exchange rate (<span class="math inline">\(ex_t\)</span>), and cash rate (<span class="math inline">\(i_t\)</span>).</p>
+<p>Premultiplying <span class="math inline">\(B_0^{-1}\)</span> to the structural VAR model gives us the reduced form representation as follows:</p>
+<p><span class="math display">\[
+\begin{align}
+  y_t &amp;= \mu_0 + A_1 y_{t-1} + \dots + A_p y_{t-p} + \epsilon_t \\
+  \epsilon_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, \Sigma)
+\end{align}
+\]</span> where <span class="math inline">\(A_i=B_0^{-1}B_i\)</span>, <span class="math inline">\(\epsilon_t=B_0^{-1}u_t\)</span>, and <span class="math inline">\(\Sigma=\)</span><span class="math inline">\(B_0^{-1}B_0^{-1 \prime}\)</span></p>
+<p>Using the reduced form equations, we can estimate <span class="math inline">\(\Sigma\)</span>. However <span class="math inline">\(\Sigma\)</span> has <span class="math inline">\(8(8+1)/2=36\)</span> unique elements, which is the number of equations, yet we have <span class="math inline">\(8^2=64\)</span> unknowns in <span class="math inline">\(B_0\)</span>. Hence I need to impose exclusion restrictions on <span class="math inline">\(B_0\)</span> to identify the system.</p>
+<p>Assumptions for <span class="math inline">\(B_0\)</span> matrix is as follows:</p>
+<ul>
+<li>Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.</li>
+<li>GDP is affected from the external sector but not affected by other domestic variables contemporaneously</li>
+<li>Inflation is affected from the external sector and GDP but not affected by other domestic variables contemporaneously.</li>
+<li>Cash rate is affected from the external sector, GDP and inflation but not affected by other domestic variables contemporaneously.</li>
+<li>Deposit is affected from the external sector, GDP, inflation, and cash rate but not affected by other domestic variables contemporaneously.</li>
+<li>credit is affected from the external sector, GDP, inflation, Cash rate, and deposit but not affected by other domestic variables contemporaneously.</li>
+<li>The exchange rate is affected from all variables contemporaneously.</li>
+</ul>
+<p>Note that this assumption and thus order of the variables in <span class="math inline">\(y_t\)</span> is subject to change over the course of the research upon any better identification assumption.</p>
+</section>
+</section>
+<section id="hypothesis" class="level1">
+<h1>Hypothesis</h1>
+<p>I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks’ credit is heavily influenced by changes in deposits in response to monetary policy.</p>
+</section>
+<section id="references" class="level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<ul>
+<li><p>Itamar Drechsler, Alexi Savov, and Philipp Schnabl, 2017. ”The Deposits Channel of Monetary Policy,” The Quarterly Journal of Economics, Oxford University Press, vol.&nbsp;132(4), pages 1819-1876.</p></li>
+<li><p>Kilian, L., &amp; Lütkepohl, H. 2017. “Structural Vector Autoregressive Analysis (Themes in Modern Econometrics),” Cambridge: Cambridge University Press.</p></li>
+<li><p>Leon Berkelmans, 2005. “Credit and Monetary Policy: An Australian SVAR,” RBA Research Discussion Papers rdp2005-06, Reserve Bank of Australia.</p></li>
+</ul>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
