@@ -52,13 +52,20 @@ The external sector is included considering Australia's status as a small open e
 
 
 ```{r}
-#| echo: false
+#| echo: true
 #| message: false
 #| warning: false
 
-ICP      <- read_rba(series_id = "GRCPAIAD")
+# Codes below are the same across variables
+
+# download data from RBA, set date format
+ICP      <- readrba::read_rba(series_id = "GRCPAIAD")
 ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
+
+# log transformation
 ICP$ln_ICP <- log(ICP$value)
+
+# plot
 plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =value)) +
   geom_line(color = "black") +
   labs(title = "Index of Commodity Prices Australia(2021/22=100)", x = "Year", y = "Index") +
@@ -75,10 +82,15 @@ print(plot1)
 #| message: false
 #| warning: false
 
+# download data from RBA, set date format
 ICP      <- read_rba(series_id = "GRCPAIAD")
 ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
+
+# log transformation, difference
 ICP$ln_ICP <- log(ICP$value)
 ICP$ln_ICP_diff <- ICP$ln_ICP - lag(ICP$ln_ICP)
+
+# plot
 plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =ln_ICP_diff)) +
   geom_line(color = "black") +
   labs(title = "Log ICP difference", x = "Year", y = "Log ICP difference") +
@@ -97,9 +109,14 @@ For the domestic sector, real GDP is included to capture the level of domestic e
 #| message: false
 #| warning: false
 
+# download data from RBA, set date format
 GDP      <- read_rba(series_id = "GGDPCVGDP")
 GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
+
+# log transformation, difference
 GDP$ln_GDP <- log(GDP$value)
+
+# plot
 plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =value)) +
   geom_line(color = "black") +
   labs(title = "Real GDP(SA)", x = "Year", y = "$ million") +
@@ -117,10 +134,15 @@ print(plot1)
 #| message: false
 #| warning: false
 
-GDP      <- read_rba(series_id = "GGDPCVGDP")
+# download data from RBA, set date format
+GDP      <- readrba::read_rba(series_id = "GGDPCVGDP")
 GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
+
+# log transformation, difference
 GDP$ln_GDP <- log(GDP$value)
 GDP$ln_GDP_diff <- GDP$ln_GDP - lag(GDP$ln_GDP)
+
+# plot
 plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =ln_GDP_diff)) +
   geom_line(color = "black") +
   labs(title = "Log GDP difference", x = "Year", y = "Log GDP difference") +
@@ -137,10 +159,15 @@ print(plot1)
 #| message: false
 #| warning: false
 
+# download data from RBA, set date format
 Credit      <- read_rba(series_id = "DLCALAB")
 Credit$Date <- as.Date(Credit$date, format = "%Y-%m-%d")
+
+# log transformation, difference
 Credit$ln_Credit <- log(Credit$value)
 Credit$ln_Credit_diff <- Credit$ln_Credit - lag(Credit$ln_Credit)
+
+# plot
 plot1 <- ggplot2::ggplot(data = Credit, aes(x = Date, y =ln_Credit_diff)) +
   geom_line(color = "black") +
   labs(title = "Log Credit difference", x = "Year", y = "Log Credit difference") +
@@ -158,10 +185,15 @@ print(plot1)
 #| message: false
 #| warning: false
 
-Deposit      <- read_rba(series_id = "DMATD")
+# download data from RBA, set date format
+Deposit      <- readrba::read_rba(series_id = "DMATD")
 Deposit$Date <- as.Date(Deposit$date, format = "%Y-%m-%d")
+
+# log transformation, difference
 Deposit$ln_Deposit <- log(Deposit$value)
 Deposit$ln_Deposit_diff <- Deposit$ln_Deposit - lag(Deposit$ln_Deposit)
+
+# plot
 plot1 <- ggplot2::ggplot(data = Deposit, aes(x = Date, y =ln_Deposit_diff)) +
   geom_line(color = "black") +
   labs(title = "Log Deposit difference", x = "Year", y = "Log Deposit difference") +
