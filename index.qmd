@@ -13,7 +13,7 @@ bibliography: references.bib
 > **Keywords.** SVAR, monetary policy, credit, deposit
 
 #  The objective, question, and motivation
-
+Hi
 ## Objective
 
 The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model.
