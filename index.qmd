@@ -18,6 +18,7 @@ bibliography: references.bib
 
 The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answerede can thus be described as; How does the monetary policy and deposit growth affect the banks' credit growth in Australia?
 
+
 ## Motivation
 
 The reason why the objective question is of interest is that banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).
@@ -50,6 +51,9 @@ The external sector is included considering Australia's status as a small open e
 #| message: false
 #| warning: false
 #| results: hide
+
+# test
+
 # I would suggest that you merged all the data into one table, such that you can call them easier. Doing this would also enable you to do loops over the variables. I have attached my own merge, which you can use if interested. You could then do ADF, ACF and plot using a loop over the variables in the table! I have included my own code of ADF if interested (I know that the code could be more efficiently written). 
 
 #Merging the series into vector Y
