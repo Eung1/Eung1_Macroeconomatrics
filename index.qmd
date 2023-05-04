@@ -16,17 +16,13 @@ bibliography: references.bib
 
 ## Objective
 
-The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model.
-
-## Research question
-
-How does the monetary policy and deposit growth affect the banks' credit growth in Australia?
+The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answerede can thus be described as; How does the monetary policy and deposit growth affect the banks' credit growth in Australia?
 
 ## Motivation
 
-Banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).
+The reason why the objective question is of interest is that banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).
 
-One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks' credit.
+One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks' credit. 
 
 
 #  Data and their properties
@@ -48,8 +44,41 @@ library(xts)
 ```
 
 
-The external sector is included considering Australia's status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia's major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia's terms of trade. The inclusion of China's GDP is also important as China has been Australia's biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.
+The external sector is included considering Australia's status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia's major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia's terms of trade. The inclusion of China's GDP is also important as China has been Australia's biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+# I would suggest that you merged all the data into one table, such that you can call them easier. Doing this would also enable you to do loops over the variables. I have attached my own merge, which you can use if interested. You could then do ADF, ACF and plot using a loop over the variables in the table! I have included my own code of ADF if interested (I know that the code could be more efficiently written). 
 
+#Merging the series into vector Y
+#Y = na.omit(merge(tindp, tcpi, texpec, tlend, thp, tfci))
+#colnames(Y)<- c("indu", "cpi", "exp", "lend","hp","fci")
+
+# Code for ADF
+#max_lag = 12
+#adf_ <- list()
+#for (i in 1:6) {
+#  adf_result = adf.test(Y[,i], k = max_lag)
+#  adf_[[i]] <- adf_result
+#}
+#head(adf_)
+
+# View the ADF test results
+#summary(adf_result)
+
+#adf_table <- data.frame(Test_Statistic = numeric(length(adf_)), 
+#                        p_value = numeric(length(adf_)), 
+#                        Lags_Used = numeric(length(adf_)))
+
+# Fill in the data frame with the test results
+#for (i in 1:length(adf_)) {
+#  adf_table[i, "Test_Statistic"] = round(adf_[[i]]$statistic,3)
+#  adf_table[i, "p_value"] = round(adf_[[i]]$p.value,3)
+#  adf_table[i, "Lags_Used"] = round(adf_[[i]]$parameter,3)
+#}
+```
 
 ```{r}
 #| echo: true
@@ -205,6 +234,17 @@ plot1 <- ggplot2::ggplot(data = Deposit, aes(x = Date, y =ln_Deposit_diff)) +
 print(plot1)
 ```
 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# I would suggest that you put the graphs in one large figure, as it improves the readability and creates an overview
+
+#grid.arrange(your variables here, nrow = 3, ncol = 2)
+
+```
 
 Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.
 
