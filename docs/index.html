@@ -129,7 +129,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#the-objective-question-and-motivation" id="toc-the-objective-question-and-motivation" class="nav-link active" data-scroll-target="#the-objective-question-and-motivation">The objective, question, and motivation</a>
   <ul class="collapse">
   <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
-  <li><a href="#research-question" id="toc-research-question" class="nav-link" data-scroll-target="#research-question">Research question</a></li>
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
   </ul></li>
   <li><a href="#data-and-their-properties" id="toc-data-and-their-properties" class="nav-link" data-scroll-target="#data-and-their-properties">Data and their properties</a></li>
@@ -176,15 +175,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>The objective, question, and motivation</h1>
 <section id="objective" class="level2">
 <h2 class="anchored" data-anchor-id="objective">Objective</h2>
-<p>The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model.</p>
-</section>
-<section id="research-question" class="level2">
-<h2 class="anchored" data-anchor-id="research-question">Research question</h2>
-<p>How does the monetary policy and deposit growth affect the banks’ credit growth in Australia?</p>
+<p>The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answerede can thus be described as; How does the monetary policy and deposit growth affect the banks’ credit growth in Australia?</p>
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>Banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
+<p>The reason why the objective question is of interest is that banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
 <p>One suggestion to fill this gap is proposed by Dreschler et al.&nbsp;(2017). In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks’ credit.</p>
 </section>
 </section>
@@ -201,7 +196,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of China’s GDP is also important as China has been Australia’s biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.</p>
+<p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of China’s GDP is also important as China has been Australia’s biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Codes below are the same across variables</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -223,20 +218,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
@@ -250,6 +240,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.</p>
