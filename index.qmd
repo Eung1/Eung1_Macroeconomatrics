@@ -255,6 +255,18 @@ Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of
 As we see above, stock and flow variables mostly have upward trend and it disappears when I take log and difference. Some variables such as GDP and deposit exhibit spark around 2020.
 
 
+## Integration order verification
+
+```{r integratio order}
+
+adf = tseries::adf.test(GDP$ln_GDP, k = 4)
+diff_adf = tseries::adf.test(GDP$ln_GDP_diff, k = 3)
+FinTS::Acf(GDP$ln_GDP)
+# please use the outputs to create a table reporting test statistic, p-value, the variable (and transformation), lag order. Write a conclusion regarding the integration order.
+```
+
+
+
 # The model and hypothesis
 
 ## The model
