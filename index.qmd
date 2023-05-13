@@ -330,6 +330,7 @@ pa_dm_cashrate = pacf(merged_data[,8],  main = "PACF, Cash Rate")
 
 
 
+
 # The model and hypothesis
 
 ## The model
