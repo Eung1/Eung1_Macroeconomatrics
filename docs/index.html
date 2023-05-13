@@ -132,6 +132,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
   </ul></li>
   <li><a href="#data-and-their-properties" id="toc-data-and-their-properties" class="nav-link" data-scroll-target="#data-and-their-properties">Data and their properties</a></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1"></a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a></li>
   <li><a href="#the-model-and-hypothesis" id="toc-the-model-and-hypothesis" class="nav-link" data-scroll-target="#the-model-and-hypothesis">The model and hypothesis</a>
   <ul class="collapse">
   <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a></li>
@@ -175,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>The objective, question, and motivation</h1>
 <section id="objective" class="level2">
 <h2 class="anchored" data-anchor-id="objective">Objective</h2>
-<p>The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answerede can thus be described as; How does the monetary policy and deposit growth affect the banks’ credit growth in Australia?</p>
+<p>The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answered can thus be described as; How does the monetary policy and deposit growth affect the banks’ credit growth in Australia?</p>
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
@@ -185,70 +188,112 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-and-their-properties" class="level1">
 <h1>Data and their properties</h1>
-<p>Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real China’s GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks’ credit, deposit, US exchange rate, and cash rate.</p>
-<p>At the moment, I am loading the related packages for the data work as follows:</p>
+<p>Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks’ credit, deposit, US exchange rate, and cash rate.</p>
+<p>At the moment, I load the related packages for the data work as follows:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readrba)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readabs)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fredr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xts)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of China’s GDP is also important as China has been Australia’s biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.</p>
+<p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of the U.S. GDP is also important as it has been Australia’s one of the major trading partners and the largest economy that influence the world economy heavily.</p>
+<p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
+<p>Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for exchange rate and cash rate, allowing the coefficients to be interpreted as elasticities. The exchange rate is presented AUD/USD, while the cash rate is presented in percentage.</p>
+<p>Below is how I obtain data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Codes below are the same across variables</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># download data from RBA, set date format</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ICP      <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GRCPAIAD"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ICP<span class="sc">$</span>Date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(ICP<span class="sc">$</span>date, <span class="at">format =</span> <span class="st">"%Y-%m-%d"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># log transformation</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>ICP<span class="sc">$</span>ln_ICP <span class="ot">&lt;-</span> <span class="fu">log</span>(ICP<span class="sc">$</span>value)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="at">data =</span> ICP, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span>value)) <span class="sc">+</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Index of Commodity Prices Australia(2021/22=100)"</span>, <span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Index"</span>) <span class="sc">+</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(plot1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load data from RBA and Fed</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>temp_ex_comp          <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GRCPAIAD"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">fredr_set_key</span>(<span class="st">"7afc2e18e3cf3585055851ad2f310f53"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>temp_ex_usrealgdp     <span class="ot">&lt;-</span> <span class="fu">fredr</span>(<span class="at">series_id =</span> <span class="st">"GDPC1"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>temp_dm_realgdp       <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GGDPCVGDP"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>temp_dm_price         <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GCPIAG"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>temp_dm_credit        <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DLCACN"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>   temp_M3            <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DMAM3N"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>   temp_currency      <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DMACN"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>   value              <span class="ot">&lt;-</span> temp_M3<span class="sc">$</span>value <span class="sc">-</span> temp_currency<span class="sc">$</span>value</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>temp_dm_deposit       <span class="ot">&lt;-</span> <span class="fu">cbind</span>(temp_M3[,<span class="dv">1</span>], value, temp_M3[,<span class="dv">4</span>])</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>temp_dm_us_ex_rate    <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"FXRUSD"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>temp_dm_cashrate      <span class="ot">&lt;-</span> <span class="fu">read_cashrate</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"target"</span>))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># change data to quarterly</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>ex_comp          <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_ex_comp<span class="sc">$</span>value, temp_ex_comp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>ex_usrealgdp     <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_ex_usrealgdp<span class="sc">$</span>value, temp_ex_usrealgdp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>dm_realgdp       <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_realgdp<span class="sc">$</span>value, temp_dm_realgdp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>dm_price         <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_price<span class="sc">$</span>value, temp_dm_price<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>dm_credit        <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_credit<span class="sc">$</span>value, temp_dm_credit<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>dm_deposit       <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_deposit<span class="sc">$</span>value, temp_dm_deposit<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>dm_us_ex_rate    <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_us_ex_rate<span class="sc">$</span>value, temp_dm_us_ex_rate<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>dm_cashrate      <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_cashrate<span class="sc">$</span>value, temp_dm_cashrate<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>) </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># unify date so that I can merge with other data</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(ex_usrealgdp) <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"1947-03-01"</span>), <span class="at">by =</span> <span class="st">"3 months"</span>, <span class="at">length.out =</span> <span class="fu">nrow</span>(ex_usrealgdp))</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_realgdp)   <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"1959-09-01"</span>), <span class="at">by =</span> <span class="st">"3 months"</span>, <span class="at">length.out =</span> <span class="fu">nrow</span>(dm_realgdp))</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_price)     <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(dm_price))</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_realgdp)   <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(dm_realgdp))</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(ex_usrealgdp) <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(ex_usrealgdp))</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># merge data</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>merged_data  <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">merge</span>(ex_comp, ex_usrealgdp, dm_realgdp, dm_price, dm_credit, dm_deposit, dm_us_ex_rate, dm_cashrate))</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>                           </span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># transform original data into log</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>log_merged_data <span class="ot">&lt;-</span> <span class="fu">log</span>(merged_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
+<p>Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.</p>
+<section id="figure-1.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-1.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2">Figure 1. Time series of log differenced variables from 1990 Q1 to 2019 Q2</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
+</section>
+</section>
+<section id="section" class="level1">
+<h1></h1>
+<p>Once we take difference between quarters, we observe that the trend disappears from data. At the same time, we see that variances are still quite differenent across time in most of the variables.</p>
+<section id="figure-2.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-2.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2">Figure 2. Time series of log differenced variables from 1990 Q1 to 2019 Q2</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
+</section>
+<section id="section-1" class="level1">
+<h1></h1>
+<p>Autocorrelation Function (ACF) plots show the correlation between a time series and its lagged values. Stock variables such as credit and deposit exhibit the most strong correlation in time series while exchange rate and cash rate show relatively weak correlation between periods.</p>
+<section id="figure-3.-autocorrelation-function-acf-plots-all-log-term-except-exchange-rate-and-cash-rate" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-3.-autocorrelation-function-acf-plots-all-log-term-except-exchange-rate-and-cash-rate">Figure 3. Autocorrelation function (ACF) plots (all log term except exchange rate and cash rate)</h6>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+<p><img src="index_files/figure-html/ACF plots-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
+</section>
+<section id="section-2" class="level1">
+<h1></h1>
+<p>The Partial Autocorrelation Function (PACF) is the correlation between a time series and a lagged version of itself, controlling for the values of the intermediate lags. The PACF plot shows the partial correlation coefficients between the time series and its lags. These coefficients represent the correlation between the time series and the lagged values of itself, with the effect of the intermediate lags removed. We see that for most of the variables, first lag is an important predictor of the current value of the time series.</p>
+<section id="figure-4.-partial-autocorrelation-function-pacf-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-4.-partial-autocorrelation-function-pacf-plots">Figure 4. Partial Autocorrelation function (PACF) plots</h6>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<p><img src="index_files/figure-html/PACF plots-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<p>Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.</p>
-<p>As we see above, stock and flow variables mostly have upward trend and it disappears when I take log and difference. Some variables such as GDP and deposit exhibit spark around 2020.</p>
+</section>
 </section>
 <section id="the-model-and-hypothesis" class="level1">
 <h1>The model and hypothesis</h1>
@@ -261,7 +306,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   u_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, I_N)
 \end{align}
 \]</span> Where <span class="math inline">\(B_0\)</span> is a matrix of contemporaneous relationships, <span class="math inline">\(y_t\)</span> is a vector of endogenous variables, <span class="math inline">\(y_{t-1}\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(y_{t-p}\)</span> are vectors of lags, and <span class="math inline">\(u_t\)</span> is a vector of independent structural shocks.</p>
-<p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), China’s real GDP (<span class="math inline">\(cgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), USD exchange rate (<span class="math inline">\(ex_t\)</span>), and cash rate (<span class="math inline">\(i_t\)</span>).</p>
+<p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), the U.S. real GDP (<span class="math inline">\(usgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), USD exchange rate (<span class="math inline">\(ex_t\)</span>), and cash rate (<span class="math inline">\(i_t\)</span>).</p>
 <p>Premultiplying <span class="math inline">\(B_0^{-1}\)</span> to the structural VAR model gives us the reduced form representation as follows:</p>
 <p><span class="math display">\[
 \begin{align}

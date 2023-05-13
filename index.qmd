@@ -16,7 +16,7 @@ bibliography: references.bib
 
 ## Objective
 
-The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answerede can thus be described as; How does the monetary policy and deposit growth affect the banks' credit growth in Australia?
+The research objective is to investigate the relationship among monetary policy, banks deposit and credit growth, while considering other important macroeconomic variables in Australia, using a structural vector autoregression model. The overall question to be answered can thus be described as; How does the monetary policy and deposit growth affect the banks' credit growth in Australia?
 
 
 ## Motivation
@@ -28,24 +28,38 @@ One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the p
 
 #  Data and their properties
 
-Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real China's GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks' credit, deposit, US exchange rate, and cash rate.
+Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks' credit, deposit, US exchange rate, and cash rate.
 
-At the moment, I am loading the related packages for the data work as follows:
+At the moment, I load the related packages for the data work as follows:
 
 ```{r}
 #| echo: true
 #| message: false
 library(readrba)
+library(readabs)
+library(fredr)
 library(tseries)
 library(ggplot2)
 library(cowplot)
 library(dplyr)
 library(zoo)
 library(xts)
+library(lubridate)
+library(tidyr)
+library(tibble)
+library(lattice)
+library(gridExtra)
+
+
 ```
 
 
-The external sector is included considering Australia's status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia's major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia's terms of trade. The inclusion of China's GDP is also important as China has been Australia's biggest trading partner in recent years, with 26% of total Australian exports and 29% of imports in 2022.
+The external sector is included considering Australia's status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia's major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia's terms of trade. The inclusion of the U.S. GDP is also important as it has been Australia's one of the major trading partners and the largest economy that influence the world economy heavily.
+
+For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks' credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model. 
+
+Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for exchange rate and cash rate, allowing the coefficients to be interpreted as elasticities. The exchange rate is presented AUD/USD, while the cash rate is presented in percentage.
+
 ```{r}
 #| echo: false
 #| message: false
@@ -84,175 +98,236 @@ The external sector is included considering Australia's status as a small open e
 #}
 ```
 
-```{r}
+
+
+Below is how I obtain data.
+```{r, warning=FALSE, message=FALSE}
 #| echo: true
 #| message: false
 #| warning: false
+#| results: hide
 
-# Codes below are the same across variables
+# load data from RBA and Fed
+temp_ex_comp          <- readrba::read_rba(series_id = "GRCPAIAD")
+                         fredr_set_key("7afc2e18e3cf3585055851ad2f310f53")
+temp_ex_usrealgdp     <- fredr(series_id = "GDPC1")
 
-# download data from RBA, set date format
-ICP      <- readrba::read_rba(series_id = "GRCPAIAD")
-ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
+temp_dm_realgdp       <- readrba::read_rba(series_id = "GGDPCVGDP")
+temp_dm_price         <- readrba::read_rba(series_id = "GCPIAG")
+temp_dm_credit        <- readrba::read_rba(series_id = "DLCACN")
+   temp_M3            <- readrba::read_rba(series_id = "DMAM3N")
+   temp_currency      <- readrba::read_rba(series_id = "DMACN")
+   value              <- temp_M3$value - temp_currency$value
+temp_dm_deposit       <- cbind(temp_M3[,1], value, temp_M3[,4])
+temp_dm_us_ex_rate    <- readrba::read_rba(series_id = "FXRUSD")
+temp_dm_cashrate      <- read_cashrate(type = c("target"))
 
-# log transformation
-ICP$ln_ICP <- log(ICP$value)
+# change data to quarterly
+ex_comp          <- to.quarterly(xts(temp_ex_comp$value, temp_ex_comp$date), OHLC = FALSE)
+ex_usrealgdp     <- to.quarterly(xts(temp_ex_usrealgdp$value, temp_ex_usrealgdp$date), OHLC = FALSE)
+dm_realgdp       <- to.quarterly(xts(temp_dm_realgdp$value, temp_dm_realgdp$date), OHLC = FALSE)
+dm_price         <- to.quarterly(xts(temp_dm_price$value, temp_dm_price$date), OHLC = FALSE)
+dm_credit        <- to.quarterly(xts(temp_dm_credit$value, temp_dm_credit$date), OHLC = FALSE)
+dm_deposit       <- to.quarterly(xts(temp_dm_deposit$value, temp_dm_deposit$date), OHLC = FALSE)
+dm_us_ex_rate    <- to.quarterly(xts(temp_dm_us_ex_rate$value, temp_dm_us_ex_rate$date), OHLC = FALSE)
+dm_cashrate      <- to.quarterly(xts(temp_dm_cashrate$value, temp_dm_cashrate$date), OHLC = FALSE) 
 
-# plot
-plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =value)) +
-  geom_line(color = "black") +
-  labs(title = "Index of Commodity Prices Australia(2021/22=100)", x = "Year", y = "Index") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
-```
+# unify date so that I can merge with other data
+index(ex_usrealgdp) <- seq(as.Date("1947-03-01"), by = "3 months", length.out = nrow(ex_usrealgdp))
+index(dm_realgdp)   <- seq(as.Date("1959-09-01"), by = "3 months", length.out = nrow(dm_realgdp))
+index(dm_price)     <- as.yearqtr(index(dm_price))
+index(dm_realgdp)   <- as.yearqtr(index(dm_realgdp))
+index(ex_usrealgdp) <- as.yearqtr(index(ex_usrealgdp))
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
+# merge data
+merged_data  <- na.omit(merge(ex_comp, ex_usrealgdp, dm_realgdp, dm_price, dm_credit, dm_deposit, dm_us_ex_rate, dm_cashrate))
+                           
+# transform original data into log
+log_merged_data <- log(merged_data)
 
-# download data from RBA, set date format
-ICP      <- read_rba(series_id = "GRCPAIAD")
-ICP$Date <- as.Date(ICP$date, format = "%Y-%m-%d")
-
-# log transformation, difference
-ICP$ln_ICP <- log(ICP$value)
-ICP$ln_ICP_diff <- ICP$ln_ICP - lag(ICP$ln_ICP)
-
-# plot
-plot1 <- ggplot2::ggplot(data = ICP, aes(x = Date, y =ln_ICP_diff)) +
-  geom_line(color = "black") +
-  labs(title = "Log ICP difference", x = "Year", y = "Log ICP difference") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
-```
-
-For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks' credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model. 
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-
-# download data from RBA, set date format
-GDP      <- read_rba(series_id = "GGDPCVGDP")
-GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
-
-# log transformation, difference
-GDP$ln_GDP <- log(GDP$value)
-
-# plot
-plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =value)) +
-  geom_line(color = "black") +
-  labs(title = "Real GDP(SA)", x = "Year", y = "$ million") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
 ```
 
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-
-# download data from RBA, set date format
-GDP      <- readrba::read_rba(series_id = "GGDPCVGDP")
-GDP$Date <- as.Date(GDP$date, format = "%Y-%m-%d")
-
-# log transformation, difference
-GDP$ln_GDP <- log(GDP$value)
-GDP$ln_GDP_diff <- GDP$ln_GDP - lag(GDP$ln_GDP)
-
-# plot
-plot1 <- ggplot2::ggplot(data = GDP, aes(x = Date, y =ln_GDP_diff)) +
-  geom_line(color = "black") +
-  labs(title = "Log GDP difference", x = "Year", y = "Log GDP difference") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
-```
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-
-# download data from RBA, set date format
-Credit      <- read_rba(series_id = "DLCALAB")
-Credit$Date <- as.Date(Credit$date, format = "%Y-%m-%d")
-
-# log transformation, difference
-Credit$ln_Credit <- log(Credit$value)
-Credit$ln_Credit_diff <- Credit$ln_Credit - lag(Credit$ln_Credit)
-
-# plot
-plot1 <- ggplot2::ggplot(data = Credit, aes(x = Date, y =ln_Credit_diff)) +
-  geom_line(color = "black") +
-  labs(title = "Log Credit difference", x = "Year", y = "Log Credit difference") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
-```
 
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
 
-# download data from RBA, set date format
-Deposit      <- readrba::read_rba(series_id = "DMATD")
-Deposit$Date <- as.Date(Deposit$date, format = "%Y-%m-%d")
 
-# log transformation, difference
-Deposit$ln_Deposit <- log(Deposit$value)
-Deposit$ln_Deposit_diff <- Deposit$ln_Deposit - lag(Deposit$ln_Deposit)
+Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.
 
-# plot
-plot1 <- ggplot2::ggplot(data = Deposit, aes(x = Date, y =ln_Deposit_diff)) +
-  geom_line(color = "black") +
-  labs(title = "Log Deposit difference", x = "Year", y = "Log Deposit difference") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 16, hjust = 0.5, face = "bold"),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 12),
-        legend.position = "none")
-print(plot1)
-```
+###### Figure 1. Time series of log differenced variables from 1990 Q1 to 2019 Q2 {style="text-align: center;"}
 
-```{r}
+
+```{r, warning=FALSE, message=FALSE}
+
 #| echo: false
 #| message: false
 #| warning: false
 #| results: hide
 
-# I would suggest that you put the graphs in one large figure, as it improves the readability and creates an overview
 
-#grid.arrange(your variables here, nrow = 3, ncol = 2)
+pl_ex_comp = ggplot(data = log_merged_data[,1], aes(x = index(log_merged_data[,1]), y = log_merged_data[,1])) +
+  geom_line(color = "black") +
+  labs(title = "Commodity Price", x = "Year", y = "Ln Commodity Price") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_ex_usrealgdp = ggplot(data = log_merged_data[,2], aes(x = index(log_merged_data[,2]), y = log_merged_data[,2])) +
+  geom_line(color = "black") +
+  labs(title = "US Real GDP", x = "Year", y = "Ln US Real GDP") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_realgdp = ggplot(data = log_merged_data[,3], aes(x = index(log_merged_data[,3]), y = log_merged_data[,3])) +
+  geom_line(color = "black") +
+  labs(title = "Australia Real GDP", x = "Year", y = "Ln Au Real GDP") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_price = ggplot(data = log_merged_data[,4], aes(x = index(log_merged_data[,4]), y = log_merged_data[,4])) +
+  geom_line(color = "black") +
+  labs(title = "Consumer Price Index", x = "Year", y = "Ln Index") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_credit = ggplot(data = log_merged_data[,5], aes(x = index(log_merged_data[,5]), y = log_merged_data[,5])) +
+  geom_line(color = "black") +
+  labs(title = "Bank Total Credit", x = "Year", y = "Ln Credit") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_deposit = ggplot(data = log_merged_data[,6], aes(x = index(log_merged_data[,6]), y = log_merged_data[,6])) +
+  geom_line(color = "black") +
+  labs(title = "Bank Deposit", x = "Year", y = "Ln Deposit") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_us_ex_rate = ggplot(data = merged_data[,7], aes(x = index(merged_data[,7]), y = merged_data[,7])) +
+  geom_line(color = "black") +
+  labs(title = "US Exchange Rate", x = "Year", y = "AUD/USD") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+pl_dm_cashrate = ggplot(data = merged_data[,8], aes(x = index(merged_data[,8]), y = merged_data[,8])) +
+  geom_line(color = "black") +
+  labs(title = "Cash Rate", x = "Year", y = "Cash Rate (%)") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+
+grid.arrange(pl_ex_comp, pl_ex_usrealgdp, pl_dm_realgdp, pl_dm_price, pl_dm_credit, pl_dm_deposit, pl_dm_us_ex_rate, pl_dm_cashrate, nrow = 3, ncol = 3)
 
 ```
 
-Quarterly data between Q1 1990 and Q4 2022 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for inflation rate and cash rate, allowing the coefficients to be interpreted as elasticities. The inflation rate is presented in quarter-on-quarter percentage change, while the cash rate is presented in percentage points.
+# 
 
-As we see above, stock and flow variables mostly have upward trend and it disappears when I take log and difference. Some variables such as GDP and deposit exhibit spark around 2020.
+Once we take difference between quarters, we observe that the trend disappears from data. At the same time, we see that variances are still quite differenent across time in most of the variables.
+
+
+
+###### Figure 2. Time series of log differenced variables from 1990 Q1 to 2019 Q2 {style="text-align: center;"}
+
+
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# difference quarter on quarter
+dff_merged_data <- na.omit(merged_data - lag(merged_data))
+dff_log_merged_data <- na.omit(log_merged_data - lag(log_merged_data))
+
+
+dff_pl_ex_comp = ggplot(data = dff_log_merged_data[,1], aes(x = index(dff_log_merged_data[,1]), y = dff_log_merged_data[,1])) +
+  geom_line(color = "black") +
+  labs(title = "Commodity Price", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_ex_usrealgdp = ggplot(data = dff_log_merged_data[,2], aes(x = index(dff_log_merged_data[,2]), y = dff_log_merged_data[,2])) +
+  geom_line(color = "black") +
+  labs(title = "US Real GDP", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_realgdp = ggplot(data = dff_log_merged_data[,3], aes(x = index(dff_log_merged_data[,3]), y = dff_log_merged_data[,3])) +
+  geom_line(color = "black") +
+  labs(title = "Australia Real GDP", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_price = ggplot(data = dff_log_merged_data[,4], aes(x = index(dff_log_merged_data[,4]), y = dff_log_merged_data[,4])) +
+  geom_line(color = "black") +
+  labs(title = "Consumer Price Index", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_credit = ggplot(data = dff_log_merged_data[,5], aes(x = index(dff_log_merged_data[,5]), y = dff_log_merged_data[,5])) +
+  geom_line(color = "black") +
+  labs(title = "Bank Total Credit", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_deposit = ggplot(data = dff_log_merged_data[,6], aes(x = index(dff_log_merged_data[,6]), y = dff_log_merged_data[,6])) +
+  geom_line(color = "black") +
+  labs(title = "Bank Deposit", x = "Year", y = "Ln Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_us_ex_rate = ggplot(data = dff_merged_data[,7], aes(x = index(dff_merged_data[,7]), y = dff_merged_data[,7])) +
+  geom_line(color = "black") +
+  labs(title = "US Exchange Rate", x = "Year", y = "Difference") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+dff_pl_dm_cashrate = ggplot(data = dff_merged_data[,8], aes(x = index(dff_merged_data[,8]), y = dff_merged_data[,8])) +
+  geom_line(color = "black") +
+  labs(title = "Cash Rate", x = "Year", y = "Difference (%p)") +
+  scale_x_continuous(limits = c(1990, 2019))+
+  theme_minimal()
+
+grid.arrange(dff_pl_ex_comp, dff_pl_ex_usrealgdp, dff_pl_dm_realgdp, dff_pl_dm_price, dff_pl_dm_credit, dff_pl_dm_deposit, dff_pl_dm_us_ex_rate, dff_pl_dm_cashrate, nrow = 3, ncol = 3)
+
+```
+#
+
+Autocorrelation Function (ACF) plots show the correlation between a time series and its lagged values. Stock variables such as credit and deposit exhibit the most strong correlation in time series while exchange rate and cash rate show relatively weak correlation between periods.
+
+###### Figure 3. Autocorrelation function (ACF) plots (all log term except exchange rate and cash rate) {style="text-align: center;"}
+
+
+```{r ACF plots, echo = FALSE}
+
+
+par(mfrow=c(2,4))
+a_ex_comp = acf(log_merged_data[,1], main = "ACF, Commodity Pice", ylab = "Autocorrelation", type = "correlation")
+a_ex_usrealgdp = acf(log_merged_data[,2], main = "ACF, US Real GDP", ylab = "Autocorrelation", type = "correlation")
+a_dm_realgdp = acf(log_merged_data[,3], main = "ACF, AU Real GDP", ylab = "Autocorrelation", type = "correlation")
+a_dm_price = acf(log_merged_data[,4],  main = "ACF, CPI", ylab = "Autocorrelation", type = "correlation")
+a_dm_credit = acf(log_merged_data[,5], main = "ACF, Total Credit", ylab = "Autocorrelation", type = "correlation")
+a_dm_deposit = acf(log_merged_data[,6], main = "ACF, Total Deposit", ylab = "Autocorrelation", type = "correlation")
+a_dm_us_ex_rate = acf(merged_data[,7],  main = "ACF, Exchange Rate", ylab = "Autocorrelation", type = "correlation")
+a_dm_cashrate = acf(merged_data[,8],  main = "ACF, Cash Rate", ylab = "Autocorrelation", type = "correlation")
+```
+#
+The Partial Autocorrelation Function (PACF) is the correlation between a time series and a lagged version of itself, controlling for the values of the intermediate lags. The PACF plot shows the partial correlation coefficients between the time series and its lags. These coefficients represent the correlation between the time series and the lagged values of itself, with the effect of the intermediate lags removed. We see that for most of the variables, first lag is an important predictor of the current value of the time series. 
+
+###### Figure 4. Partial Autocorrelation function (PACF) plots {style="text-align: center;"}
+
+```{r PACF plots, echo = FALSE}
+
+
+par(mfrow=c(2,4))
+pa_ex_comp = pacf(log_merged_data[,1], main = "PACF, Commodity Pice")
+pa_ex_usrealgdp = pacf(log_merged_data[,2], main = "PACF, US Real GDP")
+pa_dm_realgdp = pacf(log_merged_data[,3], main = "PACF, AU Real GDP")
+pa_dm_price = pacf(log_merged_data[,4],  main = "PACF, CPI")
+pa_dm_credit = pacf(log_merged_data[,5], main = "PACF, Total Credit")
+pa_dm_deposit = pacf(log_merged_data[,6], main = "PACF, Total Deposit")
+pa_dm_us_ex_rate = pacf(merged_data[,7],  main = "PACF, Exchange Rate")
+pa_dm_cashrate = pacf(merged_data[,8],  main = "PACF, Cash Rate")
+```
+
 
 
 # The model and hypothesis
@@ -269,7 +344,7 @@ $$
 $$
 Where $B_0$ is a matrix of contemporaneous relationships, $y_t$ is a vector of endogenous variables, $y_{t-1}$, $\dots$, $y_{t-p}$ are vectors of lags, and $u_t$ is a vector of independent structural shocks.
 
-$y_t$ contains eight variables: commodity prices ($com_t$), China's real GDP ($cgdp_t$), domestic real GDP ($gdp_t$), inflation rate($\pi_t$), banks' credit($c_t$), banks' deposit($d_t$), USD exchange rate ($ex_t$), and cash rate ($i_t$). 
+$y_t$ contains eight variables: commodity prices ($com_t$), the U.S. real GDP ($usgdp_t$), domestic real GDP ($gdp_t$), inflation rate($\pi_t$), banks' credit($c_t$), banks' deposit($d_t$), USD exchange rate ($ex_t$), and cash rate ($i_t$). 
 
 Premultiplying $B_0^{-1}$ to the structural VAR model gives us the reduced form representation as follows:
 
