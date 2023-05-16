@@ -183,6 +183,7 @@ Below is how data look like. As we see below, stock and flow variables mostly ha
 #| warning: false
 #| results: hide
 
+# This code is from Thomas Kronholm Moeller
 
 pl_ex_comp = ggplot(data = log_merged_data[,1], aes(x = index(log_merged_data[,1]), y = log_merged_data[,1])) +
   geom_line(color = "black") +
@@ -252,6 +253,8 @@ Once we take difference between quarters, we observe that the trend disappears f
 #| warning: false
 #| results: hide
 
+# This code is from Thomas Kronholm Moeller
+
 # difference quarter on quarter
 dff_merged_data <- na.omit(merged_data - lag(merged_data))
 dff_log_merged_data <- na.omit(log_merged_data - lag(log_merged_data))
@@ -317,6 +320,7 @@ Autocorrelation Function (ACF) plots show the correlation between a time series 
 
 ```{r ACF plots, echo = FALSE}
 
+# This code is from Ray Gomez
 
 par(mfrow=c(2,4))
 a_ex_comp = acf(log_merged_data[,1], main = "ACF, Commodity Pice", ylab = "Autocorrelation", type = "correlation")
@@ -335,6 +339,7 @@ The Partial Autocorrelation Function (PACF) is the correlation between a time se
 
 ```{r PACF plots, echo = FALSE}
 
+# This code is from Ray Gomez
 
 par(mfrow=c(2,4))
 pa_ex_comp = pacf(log_merged_data[,1], main = "PACF, Commodity Pice")
@@ -361,7 +366,7 @@ I conduct Augmented Dickey-Fuller test for log transformed variables and origina
 #| warning: false
 #| results: hide
 
-
+# This code is from Thomas Kronholm Moeller
 #ADF test
 
 adf_ <- list()
@@ -412,6 +417,9 @@ Then I conduct Augmented Dickey-Fuller test for differenced log transformed vari
 #| message: false
 #| warning: false
 #| results: hide
+
+
+# This code is from Thomas Kronholm Moeller
 
 # compute dfferenced variables
 dff_y           = cbind(dff_log_merged_data[,1],
