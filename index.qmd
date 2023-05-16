@@ -60,6 +60,8 @@ For the domestic sector, real GDP is included to capture the level of domestic e
 
 Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the "readrba" and "readabs" packages in R. The data were mostly transformed into logarithmic form, except for exchange rate and cash rate, allowing the coefficients to be interpreted as elasticities. The exchange rate is presented AUD/USD, while the cash rate is presented in percentage.
 
+Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate as its primary policy tool in the early 1990s, replacing the "interest rate on 90-day bills" as the target for monetary policy. Additionally, I cannot use data after Q2 2019 due to a break in the credit data at that time.
+
 ```{r}
 #| echo: false
 #| message: false
@@ -107,7 +109,7 @@ Below is how I obtain data.
 #| warning: false
 #| results: hide
 
-# load data from RBA and Fed
+# load data from RBA and FRB
 temp_ex_comp          <- readrba::read_rba(series_id = "GRCPAIAD")
                          fredr_set_key("7afc2e18e3cf3585055851ad2f310f53")
 temp_ex_usrealgdp     <- fredr(series_id = "GDPC1")
@@ -139,11 +141,25 @@ index(dm_price)     <- as.yearqtr(index(dm_price))
 index(dm_realgdp)   <- as.yearqtr(index(dm_realgdp))
 index(ex_usrealgdp) <- as.yearqtr(index(ex_usrealgdp))
 
-# merge data
+# merge original data
 merged_data  <- na.omit(merge(ex_comp, ex_usrealgdp, dm_realgdp, dm_price, dm_credit, dm_deposit, dm_us_ex_rate, dm_cashrate))
                            
 # transform original data into log
 log_merged_data <- log(merged_data)
+
+# merge original and log transformed data for estimation
+# dm_us_ex_rate, dm_cashrate are original, others are log transformed.
+y           = cbind(log_merged_data[,1],
+                    log_merged_data[,2],
+                    log_merged_data[,3],
+                    log_merged_data[,4],
+                    log_merged_data[,8],
+                    log_merged_data[,6],
+                    merged_data[,5],
+                    merged_data[,7]
+                  
+                    
+)
 
 ```
 
@@ -154,7 +170,7 @@ log_merged_data <- log(merged_data)
 
 Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.
 
-###### Figure 1. Time series of log differenced variables from 1990 Q1 to 2019 Q2 {style="text-align: center;"}
+###### Figure 1. Time series of log variables from 1990 Q1 to 2019 Q2 except USD exchange rate and cash rate is not {style="text-align: center;"}
 
 
 ```{r, warning=FALSE, message=FALSE}
@@ -335,33 +351,35 @@ pa_dm_cashrate = pacf(merged_data[,8],  main = "PACF, Cash Rate")
 
 ## The model
 
-The structural VAR model with $p$ lags is given by
+The structural VAR model with $4$ lags is given by
 
 $$
 \begin{align}
-  B_0y_t &= b_0 + B_1 y_{t-1} + \dots + B_p y_{t-p} + u_t \\
+  B_0y_t &= b_0 + B_1 y_{t-1} + \dots + B_4 y_{t-4} + u_t \\
   u_{t}| Y_{t-1} &\sim {iid} ( 0_N, I_N)
 \end{align}
 $$
-Where $B_0$ is a matrix of contemporaneous relationships, $y_t$ is a vector of endogenous variables, $y_{t-1}$, $\dots$, $y_{t-p}$ are vectors of lags, and $u_t$ is a vector of independent structural shocks.
+Where $B_0$ is a matrix of contemporaneous relationships, $y_t$ is a vector of endogenous variables, $y_{t-1}$, $\dots$, $y_{t-1}$ are vectors of lags, and $u_t$ is a vector of independent structural shocks.
 
-$y_t$ contains eight variables: commodity prices ($com_t$), the U.S. real GDP ($usgdp_t$), domestic real GDP ($gdp_t$), inflation rate($\pi_t$), banks' credit($c_t$), banks' deposit($d_t$), USD exchange rate ($ex_t$), and cash rate ($i_t$). 
+$y_t$ contains eight variables: commodity prices ($com_t$), the U.S. real GDP ($usgdp_t$), domestic real GDP ($gdp_t$), inflation rate($\pi_t$),  cash rate ($i_t$), banks' deposit($d_t$), banks' credit($c_t$), and USD exchange rate ($ex_t$).
 
 Premultiplying $B_0^{-1}$ to the structural VAR model gives us the reduced form representation as follows:
 
 $$
 \begin{align}
-  y_t &= \mu_0 + A_1 y_{t-1} + \dots + A_p y_{t-p} + \epsilon_t \\
+  y_t &= \mu_0 + A_1 y_{t-1} + \dots + A_4 y_{t-4} + \epsilon_t \\
   \epsilon_{t}| Y_{t-1} &\sim {iid} ( 0_N, \Sigma)
 \end{align}
 $$
 where $A_i=B_0^{-1}B_i$, $\epsilon_t=B_0^{-1}u_t$, and $\Sigma=$$B_0^{-1}B_0^{-1 \prime}$
 
-Using the reduced form equations, we can estimate $\Sigma$. However $\Sigma$ has $8(8+1)/2=36$ unique elements, which is the number of equations, yet we have $8^2=64$ unknowns in $B_0$. Hence I need to impose exclusion restrictions on $B_0$ to identify the system. 
+Using the reduced form equations, we can estimate $\Sigma$. However $\Sigma$ has $8(8+1)/2=36$ unique elements, which is the number of equations, yet we have $8^2=64$ unknowns in $B_0$. Hence I impose exclusion restrictions on $B_0$ to identify the system.
+
+
+## Identification
+
 
 Assumptions for $B_0$ matrix is as follows:
-
-
 
 - Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.
 - GDP is affected from the external sector but not affected by other domestic variables contemporaneously 
@@ -370,6 +388,33 @@ Assumptions for $B_0$ matrix is as follows:
 - Deposit is affected from the external sector, GDP, inflation, and cash rate but not affected by other domestic variables contemporaneously. I assume that profit maximization motive makes banks to adjust the deposit rate at the same period that RBA adjusts the cash rate. And deposit volume changes accordingly.
 - Credit is affected from the external sector, GDP, inflation, cash rate, and deposit but not affected by other domestic variables contemporaneously. Since the deposit is the most stable and major funding source for banks, I assume that banks reduces credit outstanding in response to deposit change.
 - The exchange rate is affected from all variables contemporaneously.
+
+Following equation summarizes the contemporaneous relationships among the variables:
+
+$$
+B_0y_t =
+\begin{bmatrix}
+a_{11} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+a_{21} & a_{22} & 0 & 0 & 0 & 0 & 0 & 0 \\
+a_{31} & a_{32} & a_{33} & 0 & 0 & 0 & 0 & 0 \\
+a_{41} & a_{42} & a_{43} & a_{44} & 0 & 0 & 0 & 0 \\
+a_{51} & a_{52} & a_{53} & a_{54} & a_{55} & 0 & 0 & 0 \\
+a_{61} & a_{62} & a_{63} & a_{64} & a_{65} & a_{66} & 0 & 0 \\
+a_{71} & a_{72} & a_{73} & a_{74} & a_{75} & a_{76} & a_{77} & 0 \\
+a_{81} & a_{82} & a_{83} & a_{84} & a_{85} & a_{86} & a_{87} & a_{88} \\
+\end{bmatrix}
+\begin{bmatrix}
+com_t \\
+usgdp_t \\
+gdp_t \\
+\pi_t \\
+i_t \\
+deposit_t \\
+credit_t \\
+ex_t \\
+\end{bmatrix}
+$$
+
 
 Note that this assumption and thus order of the variables in $y_t$ is subject to change over the course of the research upon any better identification assumption.
 
