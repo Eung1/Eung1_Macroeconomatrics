@@ -161,9 +161,12 @@ div.csl-indent {
   <li><a href="#the-model-and-hypothesis" id="toc-the-model-and-hypothesis" class="nav-link" data-scroll-target="#the-model-and-hypothesis">The model and hypothesis</a>
   <ul class="collapse">
   <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a></li>
-  <li><a href="#identification" id="toc-identification" class="nav-link" data-scroll-target="#identification">Identification</a></li>
   </ul></li>
   <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a></li>
+  <li><a href="#identiying-assumptions" id="toc-identiying-assumptions" class="nav-link" data-scroll-target="#identiying-assumptions">Identiying assumptions</a>
+  <ul class="collapse">
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -281,32 +284,30 @@ div.csl-indent {
 <span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">2</span>],</span>
 <span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">3</span>],</span>
 <span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">4</span>],</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">8</span>],</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">8</span>],</span>
 <span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">6</span>],</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>                    merged_data[,<span class="dv">5</span>],</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>                    merged_data[,<span class="dv">7</span>]</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>                  </span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>                    </span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">5</span>],</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">7</span>]</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>                    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.</p>
 <section id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not">Figure 1. Time series of log variables from 1990 Q1 to 2019 Q2 except USD exchange rate and cash rate is not</h6>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
 </section>
 <section id="section" class="level1">
 <h1></h1>
-<p>Once we take difference between quarters, we observe that the trend disappears from data. At the same time, we see that variances are still quite differenent across time in most of the variables.</p>
+<p>Once we take the first difference between quarters, we observe that the trend disappears from most of the data. However, we still observe that first differenced banks credit and deposit seems to exhibit some trend. At the same time, we see that variances are still quite different across time in most of the variables.</p>
 <section id="figure-2.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-2.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2">Figure 2. Time series of log differenced variables from 1990 Q1 to 2019 Q2</h6>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
@@ -336,7 +337,7 @@ div.csl-indent {
 </section>
 <section id="integration-order-verification" class="level2">
 <h2 class="anchored" data-anchor-id="integration-order-verification">Integration order verification</h2>
-<p>I conduct Augmented Dickey-Fuller test for log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the time series. The results of the test are displayed in the table below. Across all variables except exchange rate, I cannot not reject the null hypothesis of unit root.</p>
+<p>I conduct Augmented Dickey-Fuller test for log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the time series. The results of the test are displayed in the table below. Across all variables except exchange rate, I cannot not reject the null hypothesis of unit root. It indicates that the time series is non-stationary and requires differencing to achieve stationarity.</p>
 <section id="table-1.-augmented-dickey-fuller-test-for-log-transformed-variables-except-ex_rate-and-cash-rate" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="table-1.-augmented-dickey-fuller-test-for-log-transformed-variables-except-ex_rate-and-cash-rate">Table 1. Augmented Dickey-Fuller test for log transformed variables except ex_rate and cash rate</h6>
 <div class="cell">
@@ -346,9 +347,9 @@ Commodity price           -2.040   0.560    4
 US real GDP               -1.904   0.616    4
 AU Real GDP               -0.510   0.980    4
 CPI                       -2.276   0.462    4
-Cash rate                 -2.021   0.568    4
+Cash rate                 -4.990   0.010    4
 Banks' deposit            -1.811   0.655    4
-Banks' credit             -2.847   0.225    4
+Banks' credit             -1.599   0.743    4
 USD exchange rate         -1.717   0.694    4</code></pre>
 </div>
 </div>
@@ -357,7 +358,7 @@ USD exchange rate         -1.717   0.694    4</code></pre>
 </section>
 <section id="section-3" class="level1">
 <h1></h1>
-<p>Then I conduct Augmented Dickey-Fuller test for differenced log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the differenced time series. The results of the test are displayed in the table below. As we can expect, most of variables except banks’ deposit and credit, P-values of the tests are below 5% or 1%, implying the rejection of null hypothesis of unit root.</p>
+<p>Then I conduct Augmented Dickey-Fuller test for first differenced log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the differenced time series. The results of the test are displayed in the table below. As we can expect, most of variables except banks’ deposit and credit, P-values of the tests are below 5% or 1%, implying the rejection of null hypothesis of unit root.</p>
 <section id="table-2.-augmented-dickey-fuller-test-for-quarter-on-quarter-differenced-variables" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="table-2.-augmented-dickey-fuller-test-for-quarter-on-quarter-differenced-variables">Table 2. Augmented Dickey-Fuller test for quarter on quarter differenced variables</h6>
 <div class="cell">
@@ -367,12 +368,13 @@ Commodity price           -5.813   0.010    4
 US real GDP               -4.382   0.010    4
 AU Real GDP               -5.488   0.010    4
 CPI                       -3.882   0.017    4
-Cash rate                 -4.588   0.010    4
+Cash rate                 -4.482   0.010    4
 Banks' deposit            -3.082   0.128    4
-Banks' credit             -2.526   0.358    4
+Banks' credit             -2.538   0.353    4
 USD exchange rate         -4.585   0.010    4</code></pre>
 </div>
 </div>
+<p>This raises the issue of the appropriate estimation methodology. Some papers (i.g. Berkelmans, 2005) estimate SVAR in levels even when the variables are I(1) while others (Siami-Namini, 2016) use first differences in their model.</p>
 </section>
 </section>
 <section id="the-model-and-hypothesis" class="level1">
@@ -396,8 +398,13 @@ USD exchange rate         -4.585   0.010    4</code></pre>
 \]</span> where <span class="math inline">\(A_i=B_0^{-1}B_i\)</span>, <span class="math inline">\(\epsilon_t=B_0^{-1}u_t\)</span>, and <span class="math inline">\(\Sigma=\)</span><span class="math inline">\(B_0^{-1}B_0^{-1 \prime}\)</span></p>
 <p>Using the reduced form equations, we can estimate <span class="math inline">\(\Sigma\)</span>. However <span class="math inline">\(\Sigma\)</span> has <span class="math inline">\(8(8+1)/2=36\)</span> unique elements, which is the number of equations, yet we have <span class="math inline">\(8^2=64\)</span> unknowns in <span class="math inline">\(B_0\)</span>. Hence I impose exclusion restrictions on <span class="math inline">\(B_0\)</span> to identify the system.</p>
 </section>
-<section id="identification" class="level2">
-<h2 class="anchored" data-anchor-id="identification">Identification</h2>
+</section>
+<section id="hypothesis" class="level1">
+<h1>Hypothesis</h1>
+<p>I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks’ credit is heavily influenced by changes in deposits in response to monetary policy.</p>
+</section>
+<section id="identiying-assumptions" class="level1">
+<h1>Identiying assumptions</h1>
 <p>Assumptions for <span class="math inline">\(B_0\)</span> matrix is as follows:</p>
 <ul>
 <li>Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.</li>
@@ -432,12 +439,26 @@ credit_t \\
 ex_t \\
 \end{bmatrix}
 \]</span></p>
-<p>Note that this assumption and thus order of the variables in <span class="math inline">\(y_t\)</span> is subject to change over the course of the research upon any better identification assumption.</p>
+<p>Note that this assumption and thus order of the variables in <span class="math inline">\(y_t\)</span> is subject to change over the course of the research upon any better identifying assumptions. One problem that arises from using quarterly data instead of monthly is difficulty of setting identifying assumptions. When it is monthly data, we can utilize the assumption of informational delay. When deciding on monetary policy in the Australian economy, RBA takes into consideration a range of variables including, but are not limited to, CPI and GDP. However, due to informational delay, CPI, GDP, and other relevant variables may not be immediately available to the monetary authorities. This allows us to claim no contemporaneous relation between policy rate and some variables. This is difficult to argue in quarterly data since a quarter may be enough time to have contemporaneous relation between policy rate and some other variables.</p>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="figure-5.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-5.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 5. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/irf-au-mps plots-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="figure-6.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-6.-fevd-of-banks-credit-plots">Figure 6. FEVD of banks’ credit plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/fevd-credit plots-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 </section>
-<section id="hypothesis" class="level1">
-<h1>Hypothesis</h1>
-<p>I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks’ credit is heavily influenced by changes in deposits in response to monetary policy.</p>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
@@ -445,6 +466,7 @@ ex_t \\
 <li><p>Itamar Drechsler, Alexi Savov, and Philipp Schnabl, 2017. ”The Deposits Channel of Monetary Policy,” The Quarterly Journal of Economics, Oxford University Press, vol.&nbsp;132(4), pages 1819-1876.</p></li>
 <li><p>Kilian, L., &amp; Lütkepohl, H. 2017. “Structural Vector Autoregressive Analysis (Themes in Modern Econometrics),” Cambridge: Cambridge University Press.</p></li>
 <li><p>Leon Berkelmans, 2005. “Credit and Monetary Policy: An Australian SVAR,” RBA Research Discussion Papers rdp2005-06, Reserve Bank of Australia.</p></li>
+<li><p>Siami-Namini, S., &amp; Hudson, D. (2016, November). US monetary policy and commodities price fluctuations. In Presentation at the 86th Annual Meeting of the Southern Economic Association. Washington DC.</p></li>
 </ul>
 
 
