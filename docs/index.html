@@ -55,7 +55,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -134,10 +153,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#data-and-their-properties" id="toc-data-and-their-properties" class="nav-link" data-scroll-target="#data-and-their-properties">Data and their properties</a></li>
   <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
   <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1"></a></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a>
+  <ul class="collapse">
+  <li><a href="#integration-order-verification" id="toc-integration-order-verification" class="nav-link" data-scroll-target="#integration-order-verification">Integration order verification</a></li>
+  </ul></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3"></a></li>
   <li><a href="#the-model-and-hypothesis" id="toc-the-model-and-hypothesis" class="nav-link" data-scroll-target="#the-model-and-hypothesis">The model and hypothesis</a>
   <ul class="collapse">
   <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a></li>
+  <li><a href="#identification" id="toc-identification" class="nav-link" data-scroll-target="#identification">Identification</a></li>
   </ul></li>
   <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -182,7 +206,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>The reason why the objective question is of interest is that banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., Bernanke and Blinder 1992; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
+<p>The reason why the objective question is of interest is that banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., <span class="citation" data-cites="bernanke1992federal">Bernanke and Blinder (<a href="#ref-bernanke1992federal" role="doc-biblioref">1992</a>)</span>; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
 <p>One suggestion to fill this gap is proposed by Dreschler et al.&nbsp;(2017). In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks’ credit.</p>
 </section>
 </section>
@@ -204,14 +228,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(FinTS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The external sector is included considering Australia’s status as a small open economy that heavily relies on foreign economic conditions. Commodity prices are included as they are known to capture the global business cycle that affects the domestic economy, and due to the fact that they usually ensure that the impulse responses does not show a price puzzle. The Index of Commodity Prices Australia (ICP) will be used for commodity prices. ICP is a measure of the average change in prices of Australia’s major export commodities over time using price data from a basket of commodities, including minerals, agricultural products, and energy resources. The ICP is a key indicator of Australia’s terms of trade. The inclusion of the U.S. GDP is also important as it has been Australia’s one of the major trading partners and the largest economy that influence the world economy heavily.</p>
 <p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
 <p>Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for exchange rate and cash rate, allowing the coefficients to be interpreted as elasticities. The exchange rate is presented AUD/USD, while the cash rate is presented in percentage.</p>
+<p>Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate as its primary policy tool in the early 1990s, replacing the “interest rate on 90-day bills” as the target for monetary policy. Additionally, I cannot use data after Q2 2019 due to a break in the credit data at that time.</p>
 <p>Below is how I obtain data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load data from RBA and Fed</span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load data from RBA and FRB</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>temp_ex_comp          <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GRCPAIAD"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">fredr_set_key</span>(<span class="st">"7afc2e18e3cf3585055851ad2f310f53"</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>temp_ex_usrealgdp     <span class="ot">&lt;-</span> <span class="fu">fredr</span>(<span class="at">series_id =</span> <span class="st">"GDPC1"</span>)</span>
@@ -243,15 +269,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_realgdp)   <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(dm_realgdp))</span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(ex_usrealgdp) <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(ex_usrealgdp))</span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># merge data</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># merge original data</span></span>
 <span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>merged_data  <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">merge</span>(ex_comp, ex_usrealgdp, dm_realgdp, dm_price, dm_credit, dm_deposit, dm_us_ex_rate, dm_cashrate))</span>
 <span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>                           </span>
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># transform original data into log</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>log_merged_data <span class="ot">&lt;-</span> <span class="fu">log</span>(merged_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>log_merged_data <span class="ot">&lt;-</span> <span class="fu">log</span>(merged_data)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co"># merge original and log transformed data for estimation</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co"># dm_us_ex_rate, dm_cashrate are original, others are log transformed.</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>y           <span class="ot">=</span> <span class="fu">cbind</span>(log_merged_data[,<span class="dv">1</span>],</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">2</span>],</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">3</span>],</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">4</span>],</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">8</span>],</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">6</span>],</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>                    merged_data[,<span class="dv">5</span>],</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>                    merged_data[,<span class="dv">7</span>]</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>                  </span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>                    </span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.</p>
-<section id="figure-1.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-1.-time-series-of-log-differenced-variables-from-1990-q1-to-2019-q2">Figure 1. Time series of log differenced variables from 1990 Q1 to 2019 Q2</h6>
+<section id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not">Figure 1. Time series of log variables from 1990 Q1 to 2019 Q2 except USD exchange rate and cash rate is not</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
@@ -294,27 +334,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+<section id="integration-order-verification" class="level2">
+<h2 class="anchored" data-anchor-id="integration-order-verification">Integration order verification</h2>
+<p>I conduct Augmented Dickey-Fuller test for log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the time series. The results of the test are displayed in the table below. Across all variables except exchange rate, I cannot not reject the null hypothesis of unit root.</p>
+<section id="table-1.-augmented-dickey-fuller-test-for-log-transformed-variables-except-ex_rate-and-cash-rate" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="table-1.-augmented-dickey-fuller-test-for-log-transformed-variables-except-ex_rate-and-cash-rate">Table 1. Augmented Dickey-Fuller test for log transformed variables except ex_rate and cash rate</h6>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                  Test statistic P-value Lags
+Commodity price           -2.040   0.560    4
+US real GDP               -1.904   0.616    4
+AU Real GDP               -0.510   0.980    4
+CPI                       -2.276   0.462    4
+Cash rate                 -2.021   0.568    4
+Banks' deposit            -1.811   0.655    4
+Banks' credit             -2.847   0.225    4
+USD exchange rate         -1.717   0.694    4</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="section-3" class="level1">
+<h1></h1>
+<p>Then I conduct Augmented Dickey-Fuller test for differenced log transformed variables and original cash rate and exchange rate using the “adf()” function to examines the presence of a unit root in the differenced time series. The results of the test are displayed in the table below. As we can expect, most of variables except banks’ deposit and credit, P-values of the tests are below 5% or 1%, implying the rejection of null hypothesis of unit root.</p>
+<section id="table-2.-augmented-dickey-fuller-test-for-quarter-on-quarter-differenced-variables" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="table-2.-augmented-dickey-fuller-test-for-quarter-on-quarter-differenced-variables">Table 2. Augmented Dickey-Fuller test for quarter on quarter differenced variables</h6>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                  Test statistic P-value Lags
+Commodity price           -5.813   0.010    4
+US real GDP               -4.382   0.010    4
+AU Real GDP               -5.488   0.010    4
+CPI                       -3.882   0.017    4
+Cash rate                 -4.588   0.010    4
+Banks' deposit            -3.082   0.128    4
+Banks' credit             -2.526   0.358    4
+USD exchange rate         -4.585   0.010    4</code></pre>
+</div>
+</div>
+</section>
 </section>
 <section id="the-model-and-hypothesis" class="level1">
 <h1>The model and hypothesis</h1>
 <section id="the-model" class="level2">
 <h2 class="anchored" data-anchor-id="the-model">The model</h2>
-<p>The structural VAR model with <span class="math inline">\(p\)</span> lags is given by</p>
+<p>The structural VAR model with <span class="math inline">\(4\)</span> lags is given by</p>
 <p><span class="math display">\[
 \begin{align}
-  B_0y_t &amp;= b_0 + B_1 y_{t-1} + \dots + B_p y_{t-p} + u_t \\
+  B_0y_t &amp;= b_0 + B_1 y_{t-1} + \dots + B_4 y_{t-4} + u_t \\
   u_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, I_N)
 \end{align}
-\]</span> Where <span class="math inline">\(B_0\)</span> is a matrix of contemporaneous relationships, <span class="math inline">\(y_t\)</span> is a vector of endogenous variables, <span class="math inline">\(y_{t-1}\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(y_{t-p}\)</span> are vectors of lags, and <span class="math inline">\(u_t\)</span> is a vector of independent structural shocks.</p>
-<p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), the U.S. real GDP (<span class="math inline">\(usgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), USD exchange rate (<span class="math inline">\(ex_t\)</span>), and cash rate (<span class="math inline">\(i_t\)</span>).</p>
+\]</span> Where <span class="math inline">\(B_0\)</span> is a matrix of contemporaneous relationships, <span class="math inline">\(y_t\)</span> is a vector of endogenous variables, <span class="math inline">\(y_{t-1}\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(y_{t-1}\)</span> are vectors of lags, and <span class="math inline">\(u_t\)</span> is a vector of independent structural shocks.</p>
+<p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), the U.S. real GDP (<span class="math inline">\(usgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), cash rate (<span class="math inline">\(i_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), and USD exchange rate (<span class="math inline">\(ex_t\)</span>).</p>
 <p>Premultiplying <span class="math inline">\(B_0^{-1}\)</span> to the structural VAR model gives us the reduced form representation as follows:</p>
 <p><span class="math display">\[
 \begin{align}
-  y_t &amp;= \mu_0 + A_1 y_{t-1} + \dots + A_p y_{t-p} + \epsilon_t \\
+  y_t &amp;= \mu_0 + A_1 y_{t-1} + \dots + A_4 y_{t-4} + \epsilon_t \\
   \epsilon_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, \Sigma)
 \end{align}
 \]</span> where <span class="math inline">\(A_i=B_0^{-1}B_i\)</span>, <span class="math inline">\(\epsilon_t=B_0^{-1}u_t\)</span>, and <span class="math inline">\(\Sigma=\)</span><span class="math inline">\(B_0^{-1}B_0^{-1 \prime}\)</span></p>
-<p>Using the reduced form equations, we can estimate <span class="math inline">\(\Sigma\)</span>. However <span class="math inline">\(\Sigma\)</span> has <span class="math inline">\(8(8+1)/2=36\)</span> unique elements, which is the number of equations, yet we have <span class="math inline">\(8^2=64\)</span> unknowns in <span class="math inline">\(B_0\)</span>. Hence I need to impose exclusion restrictions on <span class="math inline">\(B_0\)</span> to identify the system.</p>
+<p>Using the reduced form equations, we can estimate <span class="math inline">\(\Sigma\)</span>. However <span class="math inline">\(\Sigma\)</span> has <span class="math inline">\(8(8+1)/2=36\)</span> unique elements, which is the number of equations, yet we have <span class="math inline">\(8^2=64\)</span> unknowns in <span class="math inline">\(B_0\)</span>. Hence I impose exclusion restrictions on <span class="math inline">\(B_0\)</span> to identify the system.</p>
+</section>
+<section id="identification" class="level2">
+<h2 class="anchored" data-anchor-id="identification">Identification</h2>
 <p>Assumptions for <span class="math inline">\(B_0\)</span> matrix is as follows:</p>
 <ul>
 <li>Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.</li>
@@ -325,6 +408,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Credit is affected from the external sector, GDP, inflation, cash rate, and deposit but not affected by other domestic variables contemporaneously. Since the deposit is the most stable and major funding source for banks, I assume that banks reduces credit outstanding in response to deposit change.</li>
 <li>The exchange rate is affected from all variables contemporaneously.</li>
 </ul>
+<p>Following equation summarizes the contemporaneous relationships among the variables:</p>
+<p><span class="math display">\[
+B_0y_t =
+\begin{bmatrix}
+a_{11} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{21} &amp; a_{22} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{31} &amp; a_{32} &amp; a_{33} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{41} &amp; a_{42} &amp; a_{43} &amp; a_{44} &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{51} &amp; a_{52} &amp; a_{53} &amp; a_{54} &amp; a_{55} &amp; 0 &amp; 0 &amp; 0 \\
+a_{61} &amp; a_{62} &amp; a_{63} &amp; a_{64} &amp; a_{65} &amp; a_{66} &amp; 0 &amp; 0 \\
+a_{71} &amp; a_{72} &amp; a_{73} &amp; a_{74} &amp; a_{75} &amp; a_{76} &amp; a_{77} &amp; 0 \\
+a_{81} &amp; a_{82} &amp; a_{83} &amp; a_{84} &amp; a_{85} &amp; a_{86} &amp; a_{87} &amp; a_{88} \\
+\end{bmatrix}
+\begin{bmatrix}
+com_t \\
+usgdp_t \\
+gdp_t \\
+\pi_t \\
+i_t \\
+deposit_t \\
+credit_t \\
+ex_t \\
+\end{bmatrix}
+\]</span></p>
 <p>Note that this assumption and thus order of the variables in <span class="math inline">\(y_t\)</span> is subject to change over the course of the research upon any better identification assumption.</p>
 </section>
 </section>
@@ -341,9 +448,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-bernanke1992federal" class="csl-entry" role="listitem">
+Bernanke, Ben, and Alan S Blinder. 1992. <span>“The Federal Funds Rate and the Transmission of Monetary Policy.”</span> <em>American Economic Review</em> 82 (4): 901–21.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
