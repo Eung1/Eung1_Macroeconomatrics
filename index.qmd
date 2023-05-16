@@ -49,6 +49,7 @@ library(tidyr)
 library(tibble)
 library(lattice)
 library(gridExtra)
+library(FinTS)
 
 
 ```
@@ -160,6 +161,8 @@ y           = cbind(log_merged_data[,1],
                   
                     
 )
+
+
 
 ```
 
@@ -349,12 +352,118 @@ pa_dm_cashrate = pacf(merged_data[,8],  main = "PACF, Cash Rate")
 
 ## Integration order verification
 
-```{r integratio order}
+I conduct Augmented Dickey-Fuller test for log transformed variables and original cash rate and exchange rate using the "adf()" function to examines the presence of a unit root in the time series. The results of the test are displayed in the table below. Across all variables except exchange rate, I cannot not reject the null hypothesis of unit root.
 
-adf = tseries::adf.test(GDP$ln_GDP, k = 4)
-diff_adf = tseries::adf.test(GDP$ln_GDP_diff, k = 3)
-FinTS::Acf(GDP$ln_GDP)
-# please use the outputs to create a table reporting test statistic, p-value, the variable (and transformation), lag order. Write a conclusion regarding the integration order.
+
+```{r ADF test1}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+
+#ADF test
+
+adf_ <- list()
+for (i in 1:8) {
+  adf_result = adf.test(y[,i], k = 4)
+  adf_[[i]] <- adf_result
+}
+
+head(adf_)
+
+# View the ADF test results
+summary(adf_result)
+
+adf_table <- data.frame(Test_Statistic = numeric(length(adf_)), 
+                        p_value = numeric(length(adf_)), 
+                        Lags_Used = numeric(length(adf_)))
+
+# Fill in the data frame with the test results
+for (i in 1:length(adf_)) {
+  adf_table[i, "Test_Statistic"] = round(adf_[[i]]$statistic,3)
+  adf_table[i, "p_value"] = round(adf_[[i]]$p.value,3)
+  adf_table[i, "Lags_Used"] = round(adf_[[i]]$parameter,3)
+}
+```
+
+###### Table 1. Augmented Dickey-Fuller test for log transformed variables except ex_rate and cash rate {style="text-align: center;"}
+```{r ADF test1 print}
+#| echo: false
+#| message: false
+#| warning: false
+
+
+# Print the data frame
+rownames(adf_table)<- c("Commodity price", "US real GDP", "AU Real GDP", "CPI","Cash rate","Banks' deposit", "Banks' credit", "USD exchange rate")
+colnames(adf_table)<- c("Test statistic", "P-value", "Lags")
+print(adf_table)
+
+
+```
+
+#
+
+Then I conduct Augmented Dickey-Fuller test for differenced log transformed variables and original cash rate and exchange rate using the "adf()" function to examines the presence of a unit root in the differenced time series. The results of the test are displayed in the table below. As we can expect, most of variables except banks' deposit and credit, P-values of the tests are below 5% or 1%, implying the rejection of null hypothesis of unit root.
+
+
+```{r ADF test2}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# compute dfferenced variables
+dff_y           = cbind(dff_log_merged_data[,1],
+                         dff_log_merged_data[,2],
+                         dff_log_merged_data[,3],
+                         dff_log_merged_data[,4],
+                         dff_log_merged_data[,8],
+                         dff_log_merged_data[,6],
+                         dff_merged_data[,5],
+                         dff_merged_data[,7]
+                  
+                    
+)
+
+# ADF test
+dff_adf_ <- list()
+for (i in 1:8) {
+  dff_adf_result = adf.test(dff_y[,i], k = 4)
+  dff_adf_[[i]] <- dff_adf_result
+}
+
+head(dff_adf_)
+
+# View the ADF test results
+summary(dff_adf_result)
+
+dff_adf_table <- data.frame(Test_Statistic = numeric(length(dff_adf_)), 
+                        p_value = numeric(length(dff_adf_)), 
+                        Lags_Used = numeric(length(dff_adf_)))
+
+# Fill in the data frame with the test results
+for (i in 1:length(dff_adf_)) {
+  dff_adf_table[i, "Test_Statistic"] = round(dff_adf_[[i]]$statistic,3)
+  dff_adf_table[i, "p_value"] = round(dff_adf_[[i]]$p.value,3)
+  dff_adf_table[i, "Lags_Used"] = round(dff_adf_[[i]]$parameter,3)
+}
+
+```
+
+###### Table 2. Augmented Dickey-Fuller test for quarter on quarter differenced variables {style="text-align: center;"}
+```{r ADF test2 print}
+#| echo: false
+#| message: false
+#| warning: false
+
+
+# Print the data frame
+rownames(dff_adf_table)<- c("Commodity price", "US real GDP", "AU Real GDP", "CPI","Cash rate","Banks' deposit", "Banks' credit", "USD exchange rate")
+colnames(dff_adf_table)<- c("Test statistic", "P-value", "Lags")
+print(dff_adf_table)
+
+
 ```
 
 
