@@ -209,13 +209,13 @@ div.csl-indent {
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>The reason why the objective question is of interest is that banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., <span class="citation" data-cites="bernanke1992federal">Bernanke and Blinder (<a href="#ref-bernanke1992federal" role="doc-biblioref">1992</a>)</span>; Jimenez et al.&nbsp;2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).</p>
-<p>One suggestion to fill this gap is proposed by Dreschler et al.&nbsp;(2017). In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks’ credit.</p>
+<p>The reason why the objective question is of interest is that banks’ credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., <span class="citation" data-cites="bernanke1992federal">Bernanke and Blinder (<a href="#ref-bernanke1992federal" role="doc-biblioref">1992</a>)</span>; <span class="citation" data-cites="jimenez2014hazardous">Gabriel Jiménez (<a href="#ref-jimenez2014hazardous" role="doc-biblioref">2014</a>)</span>). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (<span class="citation" data-cites="woodford2010financial">Woodford (<a href="#ref-woodford2010financial" role="doc-biblioref">2010</a>)</span>).</p>
+<p>One suggestion to fill this gap is proposed by <span class="citation" data-cites="drechsler2017deposits">Drechsler, Savov, and Schnabl (<a href="#ref-drechsler2017deposits" role="doc-biblioref">2017</a>)</span>. In the paper, they argue that banks’ credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank’s balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks’ credit.</p>
 </section>
 </section>
 <section id="data-and-their-properties" class="level1">
 <h1>Data and their properties</h1>
-<p>Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks’ credit, deposit, US exchange rate, and cash rate.</p>
+<p>Following <span class="citation" data-cites="berkelmans2005credit">Berkelmans and Berkelmans (<a href="#ref-berkelmans2005credit" role="doc-biblioref">2005</a>)</span>, variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks’ credit, deposit, US exchange rate, and cash rate.</p>
 <p>At the moment, I load the related packages for the data work as follows:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readrba)</span>
@@ -461,21 +461,27 @@ ex_t \\
 </section>
 </section>
 <section id="references" class="level1 unnumbered">
-<h1 class="unnumbered">References</h1>
-<ul>
-<li><p>Itamar Drechsler, Alexi Savov, and Philipp Schnabl, 2017. ”The Deposits Channel of Monetary Policy,” The Quarterly Journal of Economics, Oxford University Press, vol.&nbsp;132(4), pages 1819-1876.</p></li>
-<li><p>Kilian, L., &amp; Lütkepohl, H. 2017. “Structural Vector Autoregressive Analysis (Themes in Modern Econometrics),” Cambridge: Cambridge University Press.</p></li>
-<li><p>Leon Berkelmans, 2005. “Credit and Monetary Policy: An Australian SVAR,” RBA Research Discussion Papers rdp2005-06, Reserve Bank of Australia.</p></li>
-<li><p>Siami-Namini, S., &amp; Hudson, D. (2016, November). US monetary policy and commodities price fluctuations. In Presentation at the 86th Annual Meeting of the Southern Economic Association. Washington DC.</p></li>
-</ul>
+
 
 
 
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-berkelmans2005credit" class="csl-entry" role="listitem">
+Berkelmans, Leon, and Leon Berkelmans. 2005. <span>“Credit and Monetary Policy: An Australian SVAR.”</span>
+</div>
 <div id="ref-bernanke1992federal" class="csl-entry" role="listitem">
 Bernanke, Ben, and Alan S Blinder. 1992. <span>“The Federal Funds Rate and the Transmission of Monetary Policy.”</span> <em>American Economic Review</em> 82 (4): 901–21.
+</div>
+<div id="ref-drechsler2017deposits" class="csl-entry" role="listitem">
+Drechsler, Itamar, Alexi Savov, and Philipp Schnabl. 2017. <span>“The Deposits Channel of Monetary Policy.”</span> <em>The Quarterly Journal of Economics</em> 132 (4): 1819–76.
+</div>
+<div id="ref-jimenez2014hazardous" class="csl-entry" role="listitem">
+Gabriel Jiménez, José-Luis Peydró, Steven Ongena. 2014. <span>“Hazardous Times for Monetary Policy: What Do Twenty-Three Million Bank Loans Say about the Effects of Monetary Policy on Credit Risk-Taking?”</span> <em>Econometrica</em> 82 (2): 463–505.
+</div>
+<div id="ref-woodford2010financial" class="csl-entry" role="listitem">
+Woodford, Michael. 2010. <span>“Financial Intermediation and Macroeconomic Analysis.”</span> <em>Journal of Economic Perspectives</em> 24 (4): 21–44.
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

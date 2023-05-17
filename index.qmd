@@ -21,14 +21,14 @@ The research objective is to investigate the relationship among monetary policy,
 
 ## Motivation
 
-The reason why the objective question is of interest is that banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., @bernanke1992federal; Jimenez et al. 2014). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (Woodford 2010).
+The reason why the objective question is of interest is that banks' credit plays an important role in the economy as it supports investment for firms, consumption for households, and sometimes causes inflationary pressure. Thus, the effect of monetary policy on credit has been deemed to be an important concern for researchers and central bankers. A channel that explains how monetary policy works through credit is called the credit channel. In the credit channel, changes in monetary policy affect the required reserves of banks, which cause banks to change the quantity of loans they provide (e.g., @bernanke1992federal; @jimenez2014hazardous). However, the effect of changes in reserves has been estimated to be too small to exert a meaningful influence on bank lending (@woodford2010financial).
 
-One suggestion to fill this gap is proposed by Dreschler et al. (2017). In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks' credit. 
+One suggestion to fill this gap is proposed by @drechsler2017deposits. In the paper, they argue that banks' credit substantially reacts to monetary policy through changes in deposits. According to their estimation, it accounts for the entire transmission of monetary policy through the bank's balance sheet. I incorporate this deposit channel in the SVAR framework to evaluate the effect of monetary policy with deposit change on banks' credit. 
 
 
 #  Data and their properties
 
-Following Berkelmans (2005), variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks' credit, deposit, US exchange rate, and cash rate.
+Following @berkelmans2005credit, variables are largely divided into two groups: the external and domestic sectors. For the external sector, real commodity prices (such as oil prices) and real U.S. GDP are used. The domestic sector is captured by real Australian GDP, inflation rate, banks' credit, deposit, US exchange rate, and cash rate.
 
 At the moment, I load the related packages for the data work as follows:
 
@@ -840,14 +840,4 @@ axis(4, (0.5*(fevd.au.credit[1:8,7]+fevd.au.credit[2:9,7]))[c(5,6,7)], c("mps","
 
 
 # References {.unnumbered}
-
-- Itamar Drechsler, Alexi Savov, and Philipp Schnabl, 2017. ”The Deposits Channel of Monetary
-Policy,” The Quarterly Journal of Economics, Oxford University Press, vol. 132(4), pages 1819-1876.
-
-- Kilian, L., & Lütkepohl, H. 2017. "Structural Vector Autoregressive Analysis (Themes in Modern Econometrics)," Cambridge: Cambridge University Press.
-
-- Leon Berkelmans, 2005. "Credit and Monetary Policy: An Australian SVAR," RBA Research Discussion Papers rdp2005-06, Reserve Bank of Australia.
-
-- Siami-Namini, S., & Hudson, D. (2016, November). US monetary policy and commodities price fluctuations. In Presentation at the 86th Annual Meeting of the Southern Economic Association. Washington DC.
-
 
