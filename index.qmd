@@ -997,7 +997,7 @@ axis(4, (0.5*(fevd.au.credit[1:8,2]+fevd.au.credit[2:9,2]))[c(2,4)], c("crd", "m
 
 # Identiying assumptions: case 3 (7 variables without deposit)
 ```{r, warning=FALSE, message=FALSE}
-#| echo: true
+#| echo: false
 #| message: false
 #| warning: false
 #| results: hide
