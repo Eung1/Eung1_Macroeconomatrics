@@ -163,10 +163,12 @@ div.csl-indent {
   <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a></li>
   </ul></li>
   <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a></li>
-  <li><a href="#identiying-assumptions" id="toc-identiying-assumptions" class="nav-link" data-scroll-target="#identiying-assumptions">Identiying assumptions</a>
+  <li><a href="#identiying-assumptions-case-1" id="toc-identiying-assumptions-case-1" class="nav-link" data-scroll-target="#identiying-assumptions-case-1">Identiying assumptions: case 1</a>
   <ul class="collapse">
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
   </ul></li>
+  <li><a href="#identiying-assumptions-case-2" id="toc-identiying-assumptions-case-2" class="nav-link" data-scroll-target="#identiying-assumptions-case-2">Identiying assumptions: case 2</a></li>
+  <li><a href="#identiying-assumptions-case-3-7-variables-without-deposit" id="toc-identiying-assumptions-case-3-7-variables-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3-7-variables-without-deposit">Identiying assumptions: case 3 (7 variables without deposit)</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -403,8 +405,9 @@ USD exchange rate         -4.585   0.010    4</code></pre>
 <h1>Hypothesis</h1>
 <p>I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks’ credit is heavily influenced by changes in deposits in response to monetary policy.</p>
 </section>
-<section id="identiying-assumptions" class="level1">
-<h1>Identiying assumptions</h1>
+<section id="identiying-assumptions-case-1" class="level1">
+<h1>Identiying assumptions: case 1</h1>
+<p>In this case, I apply a lower triangular matrix to <span class="math inline">\(B_0\)</span> matrix.</p>
 <p>Assumptions for <span class="math inline">\(B_0\)</span> matrix is as follows:</p>
 <ul>
 <li>Since Australian economy is a small open economy, I assume that the domestic variables have no effect on external variables while shocks from the external sector have simultaneous effect on the domestic economy.</li>
@@ -458,6 +461,109 @@ ex_t \\
 </div>
 </div>
 </section>
+</section>
+</section>
+<section id="identiying-assumptions-case-2" class="level1">
+<h1>Identiying assumptions: case 2</h1>
+<p>In case 2, I additionally apply a long-run restriction to the baseline model (case 1 model). The restriction that I additionally impose is that monetary policy has no effect on the Australian real GDP in the long run. Since the algorithm (Algorithm 1 in lecture 13) I use works only for exactly identified models, the restrictions of interest to be imposed on the system must exactly identify the model. Hence, to make a room for a long-run restriction, I allow monetary policy to have an effect on the Australian real GDP contemporaneously and then I impose a restriction that the monetary policy has no effect on the Australian real GDP in the long run.</p>
+<p>Following equation summarizes the restrictions I impose for IRFs on horizons 0 and <span class="math inline">\(\infty\)</span>:</p>
+<p><span class="math display">\[
+\begin{align*}
+\Theta_0 = B = B_0^{-1} &amp;=
+\begin{bmatrix}
+* &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; 0 \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+\end{bmatrix}
+\\
+\Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &amp;=
+\begin{bmatrix}
+* &amp; * &amp; * &amp; * &amp; 0 &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+\end{bmatrix}
+\end{align*}
+\]</span></p>
+<p>Where the structural form model is <span class="math inline">\(QB_0y_t=Qb_0+QB_1y_{t-1}+QB_2y_{t-2}+QB_3y_{t-3}+QB_3y_{t-4}+Qu_t, \quad u_t|Y_{t-1} \sim iid(0_8, I_8)\)</span></p>
+<section id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 7. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/irf-au-mps plots3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="figure-8.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-8.-fevd-of-banks-credit-plots">Figure 8. FEVD of banks’ credit plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/fevd-credit plots3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="identiying-assumptions-case-3-7-variables-without-deposit" class="level1">
+<h1>Identiying assumptions: case 3 (7 variables without deposit)</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dm_us_ex_rate, dm_cashrate are original, others are log transformed.</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y2          <span class="ot">=</span> <span class="fu">cbind</span>(log_merged_data[,<span class="dv">1</span>],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">2</span>],</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">3</span>],</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">4</span>],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">8</span>],</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">5</span>],</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">7</span>]</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(y2) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"commodity price"</span>, <span class="st">"usgdp"</span>, <span class="st">"GDP"</span>, <span class="st">"CPI"</span>, <span class="st">"Cash rate"</span>, <span class="st">"Bank credit"</span>, <span class="st">"AUD/USD ER"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In case 3, I shut down the deposit channel to see how banks’ credit respond upon cash rate shock. Following equation summarizes the contemporaneous relationships among the variables in this case:</p>
+<p><span class="math display">\[
+B_0y_t =
+\begin{bmatrix}
+a_{11} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{21} &amp; a_{22} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{31} &amp; a_{32} &amp; a_{33} &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+a_{41} &amp; a_{42} &amp; a_{43} &amp; a_{44} &amp; 0 &amp; 0 &amp; 0 \\
+a_{51} &amp; a_{52} &amp; a_{53} &amp; a_{54} &amp; a_{55} &amp; 0 &amp; 0 \\
+a_{61} &amp; a_{62} &amp; a_{63} &amp; a_{64} &amp; a_{65} &amp; a_{66} &amp; 0 \\
+a_{71} &amp; a_{72} &amp; a_{73} &amp; a_{74} &amp; a_{75} &amp; a_{76} &amp; a_{77}\\
+\end{bmatrix}
+\begin{bmatrix}
+com_t \\
+usgdp_t \\
+gdp_t \\
+\pi_t \\
+i_t \\
+credit_t \\
+ex_t \\
+\end{bmatrix}
+\]</span></p>
+<section id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 9. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/irf-au-mps plots2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="figure-10.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-fevd-of-banks-credit-plots">Figure 10. FEVD of banks’ credit plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/fevd-credit plots2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 </section>
 <section id="references" class="level1 unnumbered">
