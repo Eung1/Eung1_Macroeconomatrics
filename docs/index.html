@@ -471,9 +471,9 @@ ex_t \\
 \begin{align*}
 \Theta_0 = B = B_0^{-1} &amp;=
 \begin{bmatrix}
-* &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
 * &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
-* &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+* &amp; * &amp; * &amp; 0 &amp; * &amp; 0 &amp; 0 &amp; 0 \\
 * &amp; * &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
 * &amp; * &amp; * &amp; * &amp; * &amp; 0 &amp; 0 &amp; 0 \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; 0 &amp; 0 \\
@@ -483,9 +483,9 @@ ex_t \\
 \\
 \Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &amp;=
 \begin{bmatrix}
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; 0 &amp; * &amp; * &amp; * \\
-* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
-* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
@@ -514,19 +514,6 @@ ex_t \\
 </section>
 <section id="identiying-assumptions-case-3-7-variables-without-deposit" class="level1">
 <h1>Identiying assumptions: case 3 (7 variables without deposit)</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dm_us_ex_rate, dm_cashrate are original, others are log transformed.</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y2          <span class="ot">=</span> <span class="fu">cbind</span>(log_merged_data[,<span class="dv">1</span>],</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">2</span>],</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">3</span>],</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">4</span>],</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">8</span>],</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">5</span>],</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">7</span>]</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                    )</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(y2) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"commodity price"</span>, <span class="st">"usgdp"</span>, <span class="st">"GDP"</span>, <span class="st">"CPI"</span>, <span class="st">"Cash rate"</span>, <span class="st">"Bank credit"</span>, <span class="st">"AUD/USD ER"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <p>In case 3, I shut down the deposit channel to see how banks’ credit respond upon cash rate shock. Following equation summarizes the contemporaneous relationships among the variables in this case:</p>
 <p><span class="math display">\[
 B_0y_t =
