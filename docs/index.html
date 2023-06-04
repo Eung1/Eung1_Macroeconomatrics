@@ -165,10 +165,20 @@ div.csl-indent {
   <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a></li>
   <li><a href="#identiying-assumptions-case-1" id="toc-identiying-assumptions-case-1" class="nav-link" data-scroll-target="#identiying-assumptions-case-1">Identiying assumptions: case 1</a>
   <ul class="collapse">
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#the-prior-distibution" id="toc-the-prior-distibution" class="nav-link" data-scroll-target="#the-prior-distibution">The prior distibution</a></li>
+  <li><a href="#the-posterior-distibution" id="toc-the-posterior-distibution" class="nav-link" data-scroll-target="#the-posterior-distibution">The posterior distibution</a></li>
+  <li><a href="#empirical-investigation-for-baseline-model-case-1" id="toc-empirical-investigation-for-baseline-model-case-1" class="nav-link" data-scroll-target="#empirical-investigation-for-baseline-model-case-1">Empirical Investigation for baseline model (case 1)</a></li>
   </ul></li>
-  <li><a href="#identiying-assumptions-case-2" id="toc-identiying-assumptions-case-2" class="nav-link" data-scroll-target="#identiying-assumptions-case-2">Identiying assumptions: case 2</a></li>
-  <li><a href="#identiying-assumptions-case-3-7-variables-without-deposit" id="toc-identiying-assumptions-case-3-7-variables-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3-7-variables-without-deposit">Identiying assumptions: case 3 (7 variables without deposit)</a></li>
+  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4"></a></li>
+  <li><a href="#identiying-assumptions-case-2long-run-restriction" id="toc-identiying-assumptions-case-2long-run-restriction" class="nav-link" data-scroll-target="#identiying-assumptions-case-2long-run-restriction">Identiying assumptions: case 2(Long-run restriction)</a>
+  <ul class="collapse">
+  <li><a href="#normalization-and-q-matrix" id="toc-normalization-and-q-matrix" class="nav-link" data-scroll-target="#normalization-and-q-matrix">Normalization and Q matrix</a></li>
+  <li><a href="#empirical-investigation-for-model-with-long-run-restriction-case-2" id="toc-empirical-investigation-for-model-with-long-run-restriction-case-2" class="nav-link" data-scroll-target="#empirical-investigation-for-model-with-long-run-restriction-case-2">Empirical Investigation for model with long-run restriction (case 2)</a></li>
+  </ul></li>
+  <li><a href="#identiying-assumptions-case-3-7-variables-without-deposit" id="toc-identiying-assumptions-case-3-7-variables-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3-7-variables-without-deposit">Identiying assumptions: case 3 (7 variables without deposit)</a>
+  <ul class="collapse">
+  <li><a href="#empirical-investigation-for-model-without-deposit-case-3" id="toc-empirical-investigation-for-model-without-deposit-case-3" class="nav-link" data-scroll-target="#empirical-investigation-for-model-without-deposit-case-3">Empirical Investigation for model without deposit (case 3)</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -200,7 +210,9 @@ div.csl-indent {
 </header>
 
 <blockquote class="blockquote">
-<p><strong>Abstract.</strong></p>
+<p><strong>Abstract.</strong> This research investigates the relationship between monetary policy, banks’ deposit, and credit in Australia. By incorporating the deposit channel in the analysis, it is found that changes in deposits play a role in transmitting monetary policy effects on credit and real economy. The study shows that credit and real GDP respond more sensitively to monetary policy shocks when deposits are included in the model. This finding emphasizes the importance of considering the deposit channel in understanding the impact of monetary policy on credit and other macro variables in Australia.</p>
+</blockquote>
+<blockquote class="blockquote">
 <p><strong>Keywords.</strong> SVAR, monetary policy, credit, deposit</p>
 </blockquote>
 <section id="the-objective-question-and-motivation" class="level1">
@@ -240,58 +252,6 @@ div.csl-indent {
 <p>For the domestic sector, real GDP is included to capture the level of domestic economic activity, while the inflation rate is included as the Reserve Bank of Australia (RBA) has adopted an inflation target since 1990, which strongly affects monetary policy. Banks’ credit and deposit are key variables in the model as they form contemporaneous relationship with monetary policy. Finally, the cash rate is the primary tool of monetary policy for the RBA, and it is therefore an essential variable to include in the model.</p>
 <p>Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of Australia (RBA) and the Australian Bureau of Statistics (ABS) using the “readrba” and “readabs” packages in R. The data were mostly transformed into logarithmic form, except for exchange rate and cash rate, allowing the coefficients to be interpreted as elasticities. The exchange rate is presented AUD/USD, while the cash rate is presented in percentage.</p>
 <p>Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate as its primary policy tool in the early 1990s, replacing the “interest rate on 90-day bills” as the target for monetary policy. Additionally, I cannot use data after Q2 2019 due to a break in the credit data at that time.</p>
-<p>Below is how I obtain data.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load data from RBA and FRB</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>temp_ex_comp          <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GRCPAIAD"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">fredr_set_key</span>(<span class="st">"7afc2e18e3cf3585055851ad2f310f53"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>temp_ex_usrealgdp     <span class="ot">&lt;-</span> <span class="fu">fredr</span>(<span class="at">series_id =</span> <span class="st">"GDPC1"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>temp_dm_realgdp       <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GGDPCVGDP"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>temp_dm_price         <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"GCPIAG"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>temp_dm_credit        <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DLCACN"</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>   temp_M3            <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DMAM3N"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>   temp_currency      <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"DMACN"</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>   value              <span class="ot">&lt;-</span> temp_M3<span class="sc">$</span>value <span class="sc">-</span> temp_currency<span class="sc">$</span>value</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>temp_dm_deposit       <span class="ot">&lt;-</span> <span class="fu">cbind</span>(temp_M3[,<span class="dv">1</span>], value, temp_M3[,<span class="dv">4</span>])</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>temp_dm_us_ex_rate    <span class="ot">&lt;-</span> readrba<span class="sc">::</span><span class="fu">read_rba</span>(<span class="at">series_id =</span> <span class="st">"FXRUSD"</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>temp_dm_cashrate      <span class="ot">&lt;-</span> <span class="fu">read_cashrate</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"target"</span>))</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># change data to quarterly</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>ex_comp          <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_ex_comp<span class="sc">$</span>value, temp_ex_comp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>ex_usrealgdp     <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_ex_usrealgdp<span class="sc">$</span>value, temp_ex_usrealgdp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>dm_realgdp       <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_realgdp<span class="sc">$</span>value, temp_dm_realgdp<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>dm_price         <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_price<span class="sc">$</span>value, temp_dm_price<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>dm_credit        <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_credit<span class="sc">$</span>value, temp_dm_credit<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>dm_deposit       <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_deposit<span class="sc">$</span>value, temp_dm_deposit<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>dm_us_ex_rate    <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_us_ex_rate<span class="sc">$</span>value, temp_dm_us_ex_rate<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>dm_cashrate      <span class="ot">&lt;-</span> <span class="fu">to.quarterly</span>(<span class="fu">xts</span>(temp_dm_cashrate<span class="sc">$</span>value, temp_dm_cashrate<span class="sc">$</span>date), <span class="at">OHLC =</span> <span class="cn">FALSE</span>) </span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># unify date so that I can merge with other data</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(ex_usrealgdp) <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"1947-03-01"</span>), <span class="at">by =</span> <span class="st">"3 months"</span>, <span class="at">length.out =</span> <span class="fu">nrow</span>(ex_usrealgdp))</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_realgdp)   <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"1959-09-01"</span>), <span class="at">by =</span> <span class="st">"3 months"</span>, <span class="at">length.out =</span> <span class="fu">nrow</span>(dm_realgdp))</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_price)     <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(dm_price))</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(dm_realgdp)   <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(dm_realgdp))</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">index</span>(ex_usrealgdp) <span class="ot">&lt;-</span> <span class="fu">as.yearqtr</span>(<span class="fu">index</span>(ex_usrealgdp))</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># merge original data</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>merged_data  <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">merge</span>(ex_comp, ex_usrealgdp, dm_realgdp, dm_price, dm_credit, dm_deposit, dm_us_ex_rate, dm_cashrate))</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>                           </span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># transform original data into log</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>log_merged_data <span class="ot">&lt;-</span> <span class="fu">log</span>(merged_data)</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co"># merge original and log transformed data for estimation</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co"># dm_us_ex_rate, dm_cashrate are original, others are log transformed.</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>y           <span class="ot">=</span> <span class="fu">cbind</span>(log_merged_data[,<span class="dv">1</span>],</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">2</span>],</span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">3</span>],</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">4</span>],</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">8</span>],</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">6</span>],</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>                    log_merged_data[,<span class="dv">5</span>],</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>                        merged_data[,<span class="dv">7</span>]</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>                    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <p>Below is how data look like. As we see below, stock and flow variables mostly have upward trend and it disappears when I take difference. Some variables such as GDP and deposit exhibit spark around 2020 as below.</p>
 <section id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-1.-time-series-of-log-variables-from-1990-q1-to-2019-q2-except-usd-exchange-rate-and-cash-rate-is-not">Figure 1. Time series of log variables from 1990 Q1 to 2019 Q2 except USD exchange rate and cash rate is not</h6>
@@ -443,8 +403,53 @@ ex_t \\
 \end{bmatrix}
 \]</span></p>
 <p>Note that this assumption and thus order of the variables in <span class="math inline">\(y_t\)</span> is subject to change over the course of the research upon any better identifying assumptions. One problem that arises from using quarterly data instead of monthly is difficulty of setting identifying assumptions. When it is monthly data, we can utilize the assumption of informational delay. When deciding on monetary policy in the Australian economy, RBA takes into consideration a range of variables including, but are not limited to, CPI and GDP. However, due to informational delay, CPI, GDP, and other relevant variables may not be immediately available to the monetary authorities. This allows us to claim no contemporaneous relation between policy rate and some variables. This is difficult to argue in quarterly data since a quarter may be enough time to have contemporaneous relation between policy rate and some other variables.</p>
-<section id="results" class="level2">
-<h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="the-prior-distibution" class="level2">
+<h2 class="anchored" data-anchor-id="the-prior-distibution">The prior distibution</h2>
+<p>The prior parameters are set as follows: <span class="math inline">\(\kappa_1\)</span>, which is the overall shrinkage parameter to control the dispersion around the prior mean, is set to 1. <span class="math inline">\(\kappa_2\)</span>, the overall shrinkage for the constant term, is set to 100. <span class="math inline">\(\kappa_3\)</span> is set to 1.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for prior distribution </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>kappa<span class="fl">.1</span>        <span class="ot">=</span> <span class="dv">1</span><span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>kappa<span class="fl">.2</span>        <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>kappa<span class="fl">.3</span>        <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>A.prior        <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(A.hat),<span class="fu">ncol</span>(A.hat))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>A.prior[<span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>,]  <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(N)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>V.prior        <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,N)))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>S.prior        <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(Sigma.hat))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>nu.prior       <span class="ot">=</span> N<span class="sc">+</span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="the-posterior-distibution" class="level2">
+<h2 class="anchored" data-anchor-id="the-posterior-distibution">The posterior distibution</h2>
+<p>Using the likelihood and the prior distribution I obtain the posterior as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># normal-inverse Wishard posterior parameters</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(X)<span class="sc">%*%</span>X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>V.bar       <span class="ot">=</span> <span class="fu">solve</span>(V.bar.inv)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>A.bar       <span class="ot">=</span> V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))<span class="sc">%*%</span>A.prior)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(Y) <span class="sc">+</span> nu.prior</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>S.bar       <span class="ot">=</span> S.prior <span class="sc">+</span> <span class="fu">t</span>(Y)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">t</span>(A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))<span class="sc">%*%</span>A.prior <span class="sc">-</span> <span class="fu">t</span>(A.bar)<span class="sc">%*%</span>V.bar.inv<span class="sc">%*%</span>A.bar</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(S.bar)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior draws </span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(S, <span class="at">df=</span>nu.bar, <span class="at">Sigma=</span>S.bar.inv)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(Sigma.posterior,<span class="dv">3</span>,solve)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(Sigma.posterior,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(A.bar),S))),<span class="fu">c</span>(<span class="fu">dim</span>(A.bar),S))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(V.bar))</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(Sigma.posterior[,,s])</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(cholSigma.s)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  A.posterior[,,s]<span class="ot">=</span> A.bar <span class="sc">+</span> L<span class="sc">%*%</span>A.posterior[,,s]<span class="sc">%*%</span>cholSigma.s</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="empirical-investigation-for-baseline-model-case-1" class="level2">
+<h2 class="anchored" data-anchor-id="empirical-investigation-for-baseline-model-case-1">Empirical Investigation for baseline model (case 1)</h2>
+<p>As we see the Impulse Response Functions (IRFs) below, upon a cash rate shock, Australian real GDP decreases for more than a year and the impact statistically becomes zero in a longer term, deposit increases for nearly two years and then the impact becomes statistically zero in a longer term, price increases and then the effect gradually becomes zero, credit, which is the variable of my interest, increases in the short term for about a year and then decreases and the effect becomes statistically zero, and exchange rate increases shortly and then becomes statistically indistinguishable from zero.</p>
 <section id="figure-5.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-5.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 5. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
@@ -453,6 +458,11 @@ ex_t \\
 </div>
 </div>
 </section>
+</section>
+</section>
+<section id="section-4" class="level1">
+<h1></h1>
+<p>The contribution of the shocks to the mean square forecast error (MSFE) of the credit for 10 quarters ahead is given below. Specifically, it provides a sense of the relative importance of shocks in explaining the forecast variability of credit quantifying the percentage of the forecast error variance of credit that can be attributed to its own shocks and the shocks of other variables such as cash rate. Initially, its own shock contribute the most of the variance. However, as it proceeds, the role of its own shock shrinks considerably while other variables, especially cash rate (mps in the figure) explains much more of the variance as time goes by.</p>
 <section id="figure-6.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-6.-fevd-of-banks-credit-plots">Figure 6. FEVD of banks’ credit plots</h6>
 <div class="cell">
@@ -462,9 +472,8 @@ ex_t \\
 </div>
 </section>
 </section>
-</section>
-<section id="identiying-assumptions-case-2" class="level1">
-<h1>Identiying assumptions: case 2</h1>
+<section id="identiying-assumptions-case-2long-run-restriction" class="level1">
+<h1>Identiying assumptions: case 2(Long-run restriction)</h1>
 <p>In case 2, I additionally apply a long-run restriction to the baseline model (case 1 model). The restriction that I additionally impose is that monetary policy has no effect on the Australian real GDP in the long run. Since the algorithm (Algorithm 1 in lecture 13) I use works only for exactly identified models, the restrictions of interest to be imposed on the system must exactly identify the model. Hence, to make a room for a long-run restriction, I allow monetary policy to have an effect on the Australian real GDP contemporaneously and then I impose a restriction that the monetary policy has no effect on the Australian real GDP in the long run.</p>
 <p>Following equation summarizes the restrictions I impose for IRFs on horizons 0 and <span class="math inline">\(\infty\)</span>:</p>
 <p><span class="math display">\[
@@ -495,6 +504,145 @@ ex_t \\
 \end{align*}
 \]</span></p>
 <p>Where the structural form model is <span class="math inline">\(QB_0y_t=Qb_0+QB_1y_{t-1}+QB_2y_{t-2}+QB_3y_{t-3}+QB_3y_{t-4}+Qu_t, \quad u_t|Y_{t-1} \sim iid(0_8, I_8)\)</span></p>
+<section id="normalization-and-q-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="normalization-and-q-matrix">Normalization and Q matrix</h2>
+<p>To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner &amp; Zha (2010) requires a contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I rearrange the contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{align*}
+\Theta_0 = B = B_0^{-1} &amp;=
+\begin{bmatrix}
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; * &amp; 0 &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+\end{bmatrix}
+\\
+\Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &amp;=
+\begin{bmatrix}
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; 0 &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+\end{bmatrix}
+\end{align*}
+\]</span></p>
+<p>A problem encountered when using a rotation matrix is that structural shocks can only be identified up to a sign, necessitating the need for normalization as a solution. To address this issue, I normalize each draw, denoted as <span class="math inline">\(B^{(s)}\)</span>, from the posterior distribution using a function described in Waggoner &amp; Zha (2003). This function returns a normalized matrix, <span class="math inline">\(D_{i*}B_0^{(s)}\)</span>, for each <span class="math inline">\(s\)</span>th draw, where <span class="math inline">\(D_i\)</span> represents an element from a set of all possible 8 by 8 diagonal matrices. These matrices have diagonal elements consisting of all possible combinations of either 1 or -1.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># normalization process</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#1. setup: create an empty array</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>B.posterior.normalized <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#1-1. create Di whose rows contain every possible combinations of 1 and -1</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>combinations <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="fu">replicate</span>(<span class="dv">8</span>, values, <span class="at">simplify =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>diag.signs <span class="ot">=</span> <span class="fu">as.matrix</span>(combinations)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>B0.hat.inv <span class="ot">=</span> <span class="fu">solve</span>(B.posterior[,,<span class="dv">1</span>])</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#2. conduct normalization</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>B0        <span class="ot">&lt;-</span> <span class="fu">solve</span>(B.posterior[,,s])</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>Sigma.inv <span class="ot">&lt;-</span> <span class="fu">solve</span>(Sigma.posterior[,,s])</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>normalization.wz2003  <span class="ot">=</span> <span class="cf">function</span>(B0,B0.hat.inv, Sigma.inv, diag.signs){</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This function normalizes a matrix of contemporaneous effects</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># according to the algorithm by Waggoner &amp; Zha (2003, JOE)</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0        - an NxN matrix, to be normalized</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0.hat    - an NxN matrix, a normalized matrix</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  NNN               <span class="ot">=</span> <span class="fu">nrow</span>(B0)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  K                 <span class="ot">=</span> <span class="dv">2</span><span class="sc">^</span>NNN</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  distance          <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>,K)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>K){</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    B0.tmp.inv      <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">diag</span>(diag.signs[k,]) <span class="sc">%*%</span> B0)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    distance[k]     <span class="ot">=</span> <span class="fu">sum</span>(</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unlist</span>(</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span>NNN,</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(n){</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.hat.inv)[n,] <span class="sc">%*%</span>Sigma.inv <span class="sc">%*%</span> <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.hat.inv)[n,]</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>               }</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        )))</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  B0.out            <span class="ot">&lt;-</span> <span class="fu">diag</span>(diag.signs[<span class="fu">which.min</span>(distance),]) <span class="sc">%*%</span> B0</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(B0.out)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>B.posterior.normalized[,,s] <span class="ot">&lt;-</span> <span class="fu">solve</span>(B0.out)</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I proceed to formulate Q matrix by the algorithm1 proposed by Rubio-Ramírez, Waggoner &amp; Zha (2010) as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial setup</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>IR.<span class="fl">0.</span>tilde[,,s]               <span class="ot">=</span> B.posterior[,,s]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>IR.infinity.tilde[,,s]        <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">diag</span>(N)<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">10</span><span class="sc">:</span><span class="dv">17</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">18</span><span class="sc">:</span><span class="dv">25</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">26</span><span class="sc">:</span><span class="dv">33</span>,,s]))<span class="sc">%*%</span>B.posterior[,,s]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Reverse the order of column so that the ranks of restrictions are in descending order.</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>IR.<span class="fl">0.</span>tilde[,,s]               <span class="ot">=</span> IR.<span class="fl">0.</span>tilde[,<span class="fu">ncol</span>(IR.<span class="fl">0.</span>tilde[,,s])<span class="sc">:</span><span class="dv">1</span>,s]</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>IR.infinity.tilde[,,s]        <span class="ot">=</span> IR.infinity.tilde[,<span class="fu">ncol</span>(IR.infinity.tilde[,,s])<span class="sc">:</span><span class="dv">1</span>,s]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Orthogonal complement matrix</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>orthogonal.complement.matrix.TW <span class="ot">=</span> <span class="cf">function</span>(x){</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x is a mxn matrix and m&gt;n</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the function returns a mx(m-n) matrix, out, that is an orthogonal complement of x, i.e.:</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># t(x)%*%out = 0 and det(cbind(x,out))!=0</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  NN     <span class="ot">=</span> <span class="fu">dim</span>(x)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  tmp   <span class="ot">=</span> <span class="fu">qr.Q</span>(<span class="fu">qr</span>(x, <span class="at">tol =</span> <span class="fl">1e-10</span>),<span class="at">complete=</span><span class="cn">TRUE</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  out   <span class="ot">=</span> <span class="fu">as.matrix</span>(tmp[,(NN[<span class="dv">2</span>]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>NN[<span class="dv">1</span>]])</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Use Algorithm 1 to obtain Q</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>R8 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">16</span>)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>R7 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">1</span>), <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">15</span>))</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>R6 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">2</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">2</span>,<span class="dv">14</span>))</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>R5 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">3</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">3</span>,<span class="dv">13</span>))</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>R4 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">4</span>,<span class="dv">16</span>)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">1</span>,<span class="dv">1</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">2</span>,<span class="dv">2</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">3</span>,<span class="dv">4</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">4</span>,<span class="dv">11</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>R3 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">5</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">5</span>,<span class="dv">11</span>))</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>R2 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">6</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">6</span>,<span class="dv">10</span>))</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>R1 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">7</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">7</span>,<span class="dv">9</span>))</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>fAA             <span class="ot">=</span> <span class="fu">rbind</span>(IR.<span class="fl">0.</span>tilde[,,s],IR.infinity.tilde[,,s])</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>p1.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">t</span>(R1 <span class="sc">%*%</span> fAA))</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>p2.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R2 <span class="sc">%*%</span> fAA),p1.s))</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>p3.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R3 <span class="sc">%*%</span> fAA),p1.s,p2.s))</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>p4.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R4 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s))</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>p5.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R5 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s))</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>p6.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R6 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s))</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>p7.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R7 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s,p6.s))</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>p8.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s))</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>Q.s[,,s]         <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s))</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>IR<span class="fl">.0</span>[,,s]        <span class="ot">=</span> IR.<span class="fl">0.</span>tilde[,,s]<span class="sc">%*%</span><span class="fu">solve</span>(Q.s[,,s])</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>IR.infinity[,,s] <span class="ot">=</span> IR.infinity.tilde[,,s]<span class="sc">%*%</span><span class="fu">solve</span>(Q.s[,,s])    </span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="empirical-investigation-for-model-with-long-run-restriction-case-2" class="level2">
+<h2 class="anchored" data-anchor-id="empirical-investigation-for-model-with-long-run-restriction-case-2">Empirical Investigation for model with long-run restriction (case 2)</h2>
+<p>Unlike the baseline model, the relationship between Australian real GDP and cash rate in the long-run is restricted such that there cash rate has no effect on Australian real GDP. Though this alternative restriction, I expect that the result would not be quite different from the result of the baseline model. This is because if I look at the IRF of Australian real GDP to cash rate, the effect is not different from zero statistically.</p>
 <section id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 7. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
@@ -510,6 +658,7 @@ ex_t \\
 <p><img src="index_files/figure-html/fevd-credit plots3-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
 </section>
 </section>
 <section id="identiying-assumptions-case-3-7-variables-without-deposit" class="level1">
@@ -536,6 +685,9 @@ credit_t \\
 ex_t \\
 \end{bmatrix}
 \]</span></p>
+<section id="empirical-investigation-for-model-without-deposit-case-3" class="level2">
+<h2 class="anchored" data-anchor-id="empirical-investigation-for-model-without-deposit-case-3">Empirical Investigation for model without deposit (case 3)</h2>
+<p>As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks’ deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model.</p>
 <section id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
 <h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 9. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
@@ -551,6 +703,7 @@ ex_t \\
 <p><img src="index_files/figure-html/fevd-credit plots2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
 </section>
 </section>
 <section id="references" class="level1 unnumbered">

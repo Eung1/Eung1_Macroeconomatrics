@@ -8,7 +8,12 @@ execute:
 bibliography: references.bib
 ---
 
-> **Abstract.**  
+> **Abstract.**  This research investigates the relationship between monetary policy, banks' deposit, and credit  in Australia. By incorporating the deposit channel in the analysis, it is found that changes in deposits play a role in transmitting monetary policy effects on credit and real economy. The study shows that credit and real GDP respond more sensitively to monetary policy shocks when deposits are included in the model. This finding emphasizes the importance of considering the deposit channel in understanding the impact of monetary policy on credit and other macro variables in Australia.
+
+
+
+
+
 >
 > **Keywords.** SVAR, monetary policy, credit, deposit
 
@@ -112,9 +117,8 @@ Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate a
 
 
 
-Below is how I obtain data.
 ```{r, warning=FALSE, message=FALSE}
-#| echo: true
+#| echo: false
 #| message: false
 #| warning: false
 #| results: hide
@@ -564,7 +568,7 @@ Note that this assumption and thus order of the variables in $y_t$ is subject to
 
 
 
-## Results
+
 
 ```{r results for case 1}
 #| echo: false
@@ -620,7 +624,17 @@ Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
 # round(Sigma.hat,3)
 # round(cov2cor(Sigma.hat),3)
 
-# prior distribution
+```
+
+## The prior distibution
+
+The prior parameters are set as follows: $\kappa_1$, which is the overall shrinkage parameter to control the dispersion around the prior mean, is set to 1. $\kappa_2$, the overall shrinkage for the constant term, is set to 100. $\kappa_3$ is set to 1.
+
+```{r}
+#| echo: true
+#| message: false
+
+# Parameters for prior distribution 
 ############################################################
 kappa.1        = 1^2
 kappa.2        = 100
@@ -630,6 +644,14 @@ A.prior[2:9,]  = kappa.3*diag(N)
 V.prior        = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
 S.prior        = diag(diag(Sigma.hat))
 nu.prior       = N+1
+```
+
+## The posterior distibution
+
+Using the likelihood and the prior distribution I obtain the posterior as follows:
+```{r results for case 1_contd}
+#| echo: true
+#| message: false
 
 # normal-inverse Wishard posterior parameters
 ############################################################
@@ -653,9 +675,18 @@ for (s in 1:S){
   B.posterior[,,s]= t(cholSigma.s)
   A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s
 }
-# round(apply(A.posterior,1:2,mean),4)
-# round(apply(B.posterior,1:2,mean),4)
+```
 
+
+## Empirical Investigation for baseline model (case 1)
+
+As we see the Impulse Response Functions (IRFs) below, upon a cash rate shock, Australian real GDP decreases for more than a year and the impact statistically becomes zero in a longer term, deposit increases for nearly two years and then the impact becomes statistically zero in a longer term, price increases and then the effect gradually becomes zero, credit, which is the variable of my interest, increases in the short term for about a year and then decreases and the effect becomes statistically zero, and exchange rate increases shortly and then becomes statistically indistinguishable from zero.
+
+```{r results for case 1_contd2}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
 
 # Impulse response functions
 # Forecast Error Variance Decomposition
@@ -704,6 +735,9 @@ hh             = 1:11
 ```
 
 
+
+
+
 ###### Figure 5. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
 
 ```{r irf-au-mps plots, echo = FALSE}
@@ -728,6 +762,9 @@ for (n in 1:6){
 
 ```
 
+
+#
+The contribution of the shocks to the mean square forecast error (MSFE) of the credit for 10 quarters ahead is given below. Specifically, it provides a sense of the relative importance of shocks in explaining the forecast variability of credit quantifying the percentage of the forecast error variance of credit that can be attributed to its own shocks and the shocks of other variables such as cash rate. Initially, its own shock contribute the most of the variance. However, as it proceeds, the role of its own shock shrinks considerably while other variables, especially cash rate (mps in the figure) explains much more of the variance as time goes by.
 
 ###### Figure 6. FEVD of banks' credit plots {style="text-align: center;"}
 
@@ -759,7 +796,7 @@ axis(4, (0.5*(fevd.au.credit[1:8,7]+fevd.au.credit[2:9,7]))[c(5,7)], c("mps","cr
 
 
 
-# Identiying assumptions: case 2
+# Identiying assumptions: case 2(Long-run restriction)
 
 In case 2, I additionally apply a long-run restriction to the baseline model (case 1 model). The restriction that I additionally impose is that monetary policy has no effect on the Australian real GDP in the long run. Since the algorithm (Algorithm 1 in lecture 13) I use works only for exactly identified models, the restrictions of interest to be imposed on the system must exactly identify the model. Hence, to make a room for a long-run restriction, I allow monetary policy to have an effect on the Australian real GDP contemporaneously and then I impose a restriction that the monetary policy has no effect on the Australian real GDP in the long run.
 
@@ -797,6 +834,38 @@ $$
 Where the structural form model is $QB_0y_t=Qb_0+QB_1y_{t-1}+QB_2y_{t-2}+QB_3y_{t-3}+QB_3y_{t-4}+Qu_t,  \quad u_t|Y_{t-1} \sim iid(0_8, I_8)$
 
 
+## Normalization and Q matrix
+To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner & Zha (2010) requires a contemporaneous relationship matrix $B_0$ such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I rearrange the contemporaneous relationship matrix $B_0$ as follows:
+
+$$
+\begin{align*}
+\Theta_0 = B = B_0^{-1} &=
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 0 & 0 & 0 & * \\
+0 & 0 & 0 & 0 & 0 & 0 & * & * \\
+0 & 0 & 0 & * & 0 & * & * & * \\
+0 & 0 & 0 & 0 & * & * & * & * \\
+0 & 0 & 0 & * & * & * & * & * \\
+0 & 0 & * & * & * & * & * & * \\
+0 & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+\end{bmatrix}
+ \\
+\Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &=
+\begin{bmatrix}
+* & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+* & * & * & 0 & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+* & * & * & * & * & * & * & * \\
+\end{bmatrix}
+\end{align*}
+$$
+ 
+
 ```{r results for case 2: long-run restriction}
 #| echo: false
 #| message: false
@@ -826,12 +895,71 @@ Q.s                   = array(NA,c(N,N,S))
 # 
 #   }
 
+```
+
+
+A problem encountered when using a rotation matrix is that structural shocks can only be identified up to a sign, necessitating the need for normalization as a solution. To address this issue, I normalize each draw, denoted as $B^{(s)}$, from the posterior distribution using a function described in Waggoner & Zha (2003). This function returns a normalized matrix, $D_{i*}B_0^{(s)}$, for each $s$th draw, where $D_i$ represents an element from a set of all possible 8 by 8 diagonal matrices. These matrices have diagonal elements consisting of all possible combinations of either 1 or -1.
+
+```{r results for case 2: long-run restriction_contd}
+#| echo: true
+#| message: false
+
+# normalization process
+
+#1. setup: create an empty array
+B.posterior.normalized = array(NA,c(N,N,S))
+
+#1-1. create Di whose rows contain every possible combinations of 1 and -1
+values <- c(-1, 1)
+combinations <- expand.grid(replicate(8, values, simplify = FALSE))
+diag.signs = as.matrix(combinations)
+B0.hat.inv = solve(B.posterior[,,1])
+
+#2. conduct normalization
+for (s in 1:S) {
+B0        <- solve(B.posterior[,,s])
+Sigma.inv <- solve(Sigma.posterior[,,s])
+normalization.wz2003  = function(B0,B0.hat.inv, Sigma.inv, diag.signs){
+  # This function normalizes a matrix of contemporaneous effects
+  # according to the algorithm by Waggoner & Zha (2003, JOE)
+  # B0        - an NxN matrix, to be normalized
+  # B0.hat    - an NxN matrix, a normalized matrix
+
+  NNN               = nrow(B0)
+  K                 = 2^NNN
+  distance          = rep(NA,K)
+  for (k in 1:K){
+    B0.tmp.inv      = solve(diag(diag.signs[k,]) %*% B0)
+    distance[k]     = sum(
+      unlist(
+        lapply(1:NNN,
+               function(n){
+                 t(B0.tmp.inv - B0.hat.inv)[n,] %*%Sigma.inv %*% t(B0.tmp.inv - B0.hat.inv)[n,]
+               }
+        )))
+  }
+  B0.out            <- diag(diag.signs[which.min(distance),]) %*% B0
+  
+  return(B0.out)
+B.posterior.normalized[,,s] <- solve(B0.out)
+  }
+}
+```
+
+
+I proceed to formulate Q matrix by the algorithm1 proposed by Rubio-Ramírez, Waggoner & Zha (2010) as follows:
+```{r results for case 2: long-run restriction_contd2}
+#| echo: true
+#| message: false
+
+
+# Initial setup
 for (s in 1:S){
 IR.0.tilde[,,s]               = B.posterior[,,s]
 IR.infinity.tilde[,,s]        = solve(diag(N)-t(A.posterior[2:9,,s])-t(A.posterior[10:17,,s])-t(A.posterior[18:25,,s])-t(A.posterior[26:33,,s]))%*%B.posterior[,,s]
   }
 
-#reverse the order of column so that the rank of restrictions are in decending order.
+# Reverse the order of column so that the ranks of restrictions are in descending order.
 for (s in 1:S){
 IR.0.tilde[,,s]               = IR.0.tilde[,ncol(IR.0.tilde[,,s]):1,s]
 IR.infinity.tilde[,,s]        = IR.infinity.tilde[,ncol(IR.infinity.tilde[,,s]):1,s]
@@ -869,12 +997,9 @@ R2 = cbind(diag(6),matrix(0, 6,10))
 R1 = cbind(diag(7),matrix(0, 7,9))
 
 
-
-
 for (s in 1:S){
 fAA             = rbind(IR.0.tilde[,,s],IR.infinity.tilde[,,s])
 p1.s            = orthogonal.complement.matrix.TW(t(R1 %*% fAA))
-#p1.s            = matrix(c(0, rep(0, 7)), nrow = 8, ncol = 1)
 p2.s            = orthogonal.complement.matrix.TW(cbind(t(R2 %*% fAA),p1.s))
 p3.s            = orthogonal.complement.matrix.TW(cbind(t(R3 %*% fAA),p1.s,p2.s))
 p4.s            = orthogonal.complement.matrix.TW(cbind(t(R4 %*% fAA),p1.s,p2.s,p3.s))
@@ -884,16 +1009,20 @@ p7.s            = orthogonal.complement.matrix.TW(cbind(t(R7 %*% fAA),p1.s,p2.s,
 p8.s            = orthogonal.complement.matrix.TW(cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s))
 
 Q.s[,,s]         = t(cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s))
-#Q[2,]           = -Q[2,]  ##??? why?
-#B0[,,s]         = Q.s%*%B0.posterior.tilde[,,s]
-#Binf[,,s]       = Q.s%*%Binf.tilde[,,s]
 IR.0[,,s]        = IR.0.tilde[,,s]%*%solve(Q.s[,,s])
-IR.infinity[,,s] = IR.infinity.tilde[,,s]%*%solve(Q.s[,,s])         
+IR.infinity[,,s] = IR.infinity.tilde[,,s]%*%solve(Q.s[,,s])    
 }
+```
 
-#R1%*%rbind(IR.0,IR.infinity)%*%diag(3)[,1]    # Verifying that the restrictions hold: OK!
-#R2%*%rbind(IR.0,IR.infinity)%*%diag(3)[,2]    # Verifying that the restrictions hold: OK! (this is a numerical zero)
+## Empirical Investigation for model with long-run restriction (case 2)
 
+Unlike the baseline model, the relationship between Australian real GDP and cash rate in the long-run is restricted such that there cash rate has no effect on Australian real GDP. Though this alternative restriction, I expect that the result would not be quite different from the result of the baseline model. This is because if I look at the IRF of Australian real GDP to cash rate, the effect is not different from zero statistically.
+
+```{r results for case 2: long-run restriction_IRF, FEVD}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
 
 
 # Impulse response functions
@@ -940,7 +1069,12 @@ rownames(IRFs.k1) = colnames(Y)[8:3]
 
 IRFs.k1.hdi    = apply(IRF.posterior[1:6,4,,],1:2,hdi, credMass=0.68)
 hh             = 1:11
+
+
+
 ```
+
+
 
 
 ###### Figure 7. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
@@ -1166,6 +1300,11 @@ rownames(IRFs.k1) = colnames(Y)[3:7]
 IRFs.k1.hdi    = apply(IRF.posterior[3:7,5,,],1:2,hdi, credMass=0.68)
 hh             = 1:9
 ```
+
+
+## Empirical Investigation for model without deposit (case 3)
+As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks' deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model. 
+
 
 
 ###### Figure 9. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
