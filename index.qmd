@@ -745,21 +745,40 @@ hh             = 1:11
 
 # irf-au-mps plots
 
-par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
-for (n in 1:6){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
-  if (n==5 | n==6){
-    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
-  } else {
-    axis(1,c(1,2,6,11),c("","","",""))
+# par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+# for (n in 1:6){
+#   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
+#   plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
+#   if (n==5 | n==6){
+#     axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+#   } else {
+#     axis(1,c(1,2,6,11),c("","","",""))
+#   }
+#   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+#   polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+#   abline(h=0)
+#   lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
+#   
+# }
+
+plot_irfs = function(irfs, irfs.hdi, hhs, x.locs, x.labs){
+  par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+  for (n in 1:nrow(irfs)){
+    ylims     = range(irfs[n,hhs],irfs.hdi[,n,hhs])
+    plot(hhs,irfs[n,hhs], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(irfs)[n])
+    if (n==(nrow(irfs)-1) | n==nrow(irfs)){
+      axis(1,x.locs,x.labs)
+    } else {
+      axis(1,x.locs,c("","","",""))
+    }
+    axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+    polygon(c(hhs,(h+1):1), c(irfs.hdi[1,n,hhs],irfs.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+    abline(h=0)
+    lines(hhs, irfs[n,hhs],lwd=2,col=mcxs1)
   }
-  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
-  abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
-  
 }
+
+plot_irfs(IRFs.k1, IRFs.k1.hdi, hh, c(1,2,6,11), c('','1 quarter','5 quarter','10 quarter'))
 
 ```
 
@@ -1085,21 +1104,25 @@ hh             = 1:11
 
 # irf-au-mps plots
 
-par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
-for (n in 1:6){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
-  if (n==5 | n==6){
-    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
-  } else {
-    axis(1,c(1,2,6,11),c("","","",""))
-  }
-  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
-  abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
-  
-}
+# par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+# for (n in 1:6){
+#   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
+#   plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
+#   if (n==5 | n==6){
+#     axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+#   } else {
+#     axis(1,c(1,2,6,11),c("","","",""))
+#   }
+#   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+#   polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+#   abline(h=0)
+#   lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
+#   
+# }
+
+
+plot_irfs(IRFs.k1, IRFs.k1.hdi, hh, c(1,2,6,11), c('','1 quarter','5 quarter','10 quarter'))
+
 
 ```
 
@@ -1315,21 +1338,24 @@ As we see the figure of response function of banks credit to cash rate shock, ba
 
 # irf-au-mps plots
 
-par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
-for (n in 1:5){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
-  if (n==4 | n==5){
-    axis(1,c(1,2,5,9),c("","1 quarter","1 year","2 years"))
-  } else {
-    axis(1,c(1,2,5,9),c("","","",""))
-  }
-  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
-  abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
-  
-}
+# par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+# for (n in 1:5){
+#   ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
+#   plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
+#   if (n==4 | n==5){
+#     axis(1,c(1,2,5,9),c("","1 quarter","1 year","2 years"))
+#   } else {
+#     axis(1,c(1,2,5,9),c("","","",""))
+#   }
+#   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+#   polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+#   abline(h=0)
+#   lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
+#   
+# }
+
+plot_irfs(IRFs.k1, IRFs.k1.hdi, hh, c(1,2,5,9), c('','1 quarter','1 year','2 years'))
+
 ```
 
 
