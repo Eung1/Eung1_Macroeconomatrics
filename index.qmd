@@ -266,8 +266,8 @@ Once we take the first difference between quarters, we observe that the trend di
 # This code is from Thomas Kronholm Moeller.
 
 # difference quarter on quarter
-dff_merged_data <- na.omit(merged_data - lag(merged_data))
-dff_log_merged_data <- na.omit(log_merged_data - lag(log_merged_data))
+dff_merged_data <- na.omit(merged_data - stats::lag(merged_data))
+dff_log_merged_data <- na.omit(log_merged_data - stats::lag(log_merged_data))
 
 
 dff_pl_ex_comp = ggplot(data = dff_log_merged_data[,1], aes(x = index(dff_log_merged_data[,1]), y = dff_log_merged_data[,1])) +
@@ -728,7 +728,8 @@ save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k1.RData")
 load("irf-fevd-k1.RData")
 IRFs.k1           = apply(IRF.posterior[3:8,5,,],1:2,mean)
 IRFs.inf.k1       = apply(IRF.inf.posterior[3:8,5,],1,mean)
-rownames(IRFs.k1) = colnames(Y)[3:8]
+#rownames(IRFs.k1) = colnames(Y)[3:8]
+rownames(IRFs.k1) = c('GDP','CPI','Cash Rate','Deposits','Bank Credit','AUD/USD ER')
 
 IRFs.k1.hdi    = apply(IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
 hh             = 1:11
@@ -1065,7 +1066,8 @@ save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k1.RData3")
 load("irf-fevd-k1.RData3")
 IRFs.k1           = apply(IRF.posterior[1:6,4,,],1:2,mean)
 IRFs.inf.k1       = apply(IRF.inf.posterior[1:6,4,],1,mean)
-rownames(IRFs.k1) = colnames(Y)[8:3]
+#rownames(IRFs.k1) = colnames(Y)[8:3]
+rownames(IRFs.k1) = c('AUD/USD ER','Bank Credit','Deposits','Cash Rate','CPI','GDP')
 
 IRFs.k1.hdi    = apply(IRF.posterior[1:6,4,,],1:2,hdi, credMass=0.68)
 hh             = 1:11
