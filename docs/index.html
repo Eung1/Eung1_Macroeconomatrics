@@ -175,10 +175,20 @@ div.csl-indent {
   <li><a href="#normalization-and-q-matrix" id="toc-normalization-and-q-matrix" class="nav-link" data-scroll-target="#normalization-and-q-matrix">Normalization and Q matrix</a></li>
   <li><a href="#empirical-investigation-for-model-with-long-run-restriction-case-2" id="toc-empirical-investigation-for-model-with-long-run-restriction-case-2" class="nav-link" data-scroll-target="#empirical-investigation-for-model-with-long-run-restriction-case-2">Empirical Investigation for model with long-run restriction (case 2)</a></li>
   </ul></li>
-  <li><a href="#identiying-assumptions-case-3-7-variables-without-deposit" id="toc-identiying-assumptions-case-3-7-variables-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3-7-variables-without-deposit">Identiying assumptions: case 3 (7 variables without deposit)</a>
+  <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5"></a></li>
+  <li><a href="#identiying-assumptions-case-3-7-variables-without-deposit" id="toc-identiying-assumptions-case-3-7-variables-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3-7-variables-without-deposit">Identiying assumptions: case 3 (7 variables without deposit)</a></li>
+  <li><a href="#identiying-assumptions-case-3model-without-deposit" id="toc-identiying-assumptions-case-3model-without-deposit" class="nav-link" data-scroll-target="#identiying-assumptions-case-3model-without-deposit">Identiying assumptions: case 3(model without deposit)</a>
   <ul class="collapse">
   <li><a href="#empirical-investigation-for-model-without-deposit-case-3" id="toc-empirical-investigation-for-model-without-deposit-case-3" class="nav-link" data-scroll-target="#empirical-investigation-for-model-without-deposit-case-3">Empirical Investigation for model without deposit (case 3)</a></li>
   </ul></li>
+  <li><a href="#stochastic-volatility-heteroskedasticity" id="toc-stochastic-volatility-heteroskedasticity" class="nav-link" data-scroll-target="#stochastic-volatility-heteroskedasticity">Stochastic volatility heteroskedasticity</a>
+  <ul class="collapse">
+  <li><a href="#model-equations" id="toc-model-equations" class="nav-link" data-scroll-target="#model-equations">Model equations</a></li>
+  <li><a href="#gibbs-sampler" id="toc-gibbs-sampler" class="nav-link" data-scroll-target="#gibbs-sampler">Gibbs sampler</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#estimation-of-hyperparameters" id="toc-estimation-of-hyperparameters" class="nav-link" data-scroll-target="#estimation-of-hyperparameters">Estimation of hyperparameters</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -307,7 +317,7 @@ div.csl-indent {
 <pre><code>                  Test statistic P-value Lags
 Commodity price           -2.040   0.560    4
 US real GDP               -1.904   0.616    4
-AU Real GDP               -0.510   0.980    4
+AU Real GDP               -0.506   0.980    4
 CPI                       -2.276   0.462    4
 Cash rate                 -4.990   0.010    4
 Banks' deposit            -1.811   0.655    4
@@ -328,7 +338,7 @@ USD exchange rate         -1.717   0.694    4</code></pre>
 <pre><code>                  Test statistic P-value Lags
 Commodity price           -5.813   0.010    4
 US real GDP               -4.382   0.010    4
-AU Real GDP               -5.488   0.010    4
+AU Real GDP               -5.484   0.010    4
 CPI                       -3.882   0.017    4
 Cash rate                 -4.482   0.010    4
 Banks' deposit            -3.082   0.128    4
@@ -506,159 +516,199 @@ ex_t \\
 <p>Where the structural form model is <span class="math inline">\(QB_0y_t=Qb_0+QB_1y_{t-1}+QB_2y_{t-2}+QB_3y_{t-3}+QB_3y_{t-4}+Qu_t, \quad u_t|Y_{t-1} \sim iid(0_8, I_8)\)</span></p>
 <section id="normalization-and-q-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="normalization-and-q-matrix">Normalization and Q matrix</h2>
-<p>To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner &amp; Zha (2010) requires a contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I rearrange the contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> as follows:</p>
+<p>To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner &amp; Zha (2010) requires a contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I transpose the contemporaneous relationship matrix <span class="math inline">\(B_0\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{align*}
-\Theta_0 = B = B_0^{-1} &amp;=
+B_0' &amp;=
 \begin{bmatrix}
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * \\
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * \\
-0 &amp; 0 &amp; 0 &amp; * &amp; 0 &amp; * &amp; * &amp; * \\
-0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * &amp; * \\
-0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * \\
-0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
-0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; * &amp; 0 &amp; * &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * &amp; * \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; * \\
 \end{bmatrix}
 \\
-\Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &amp;=
+\Theta_{\infty}' = (B_0-B_1-B_2-B_3-B_4)' &amp;=
 \begin{bmatrix}
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
-* &amp; * &amp; * &amp; 0 &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
+* &amp; * &amp; 0 &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * &amp; * \\
 \end{bmatrix}
 \end{align*}
 \]</span></p>
-<p>A problem encountered when using a rotation matrix is that structural shocks can only be identified up to a sign, necessitating the need for normalization as a solution. To address this issue, I normalize each draw, denoted as <span class="math inline">\(B^{(s)}\)</span>, from the posterior distribution using a function described in Waggoner &amp; Zha (2003). This function returns a normalized matrix, <span class="math inline">\(D_{i*}B_0^{(s)}\)</span>, for each <span class="math inline">\(s\)</span>th draw, where <span class="math inline">\(D_i\)</span> represents an element from a set of all possible 8 by 8 diagonal matrices. These matrices have diagonal elements consisting of all possible combinations of either 1 or -1.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># normalization process</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#1. setup: create an empty array</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>B.posterior.normalized <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#1-1. create Di whose rows contain every possible combinations of 1 and -1</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>combinations <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="fu">replicate</span>(<span class="dv">8</span>, values, <span class="at">simplify =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>diag.signs <span class="ot">=</span> <span class="fu">as.matrix</span>(combinations)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>B0.hat.inv <span class="ot">=</span> <span class="fu">solve</span>(B.posterior[,,<span class="dv">1</span>])</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#2. conduct normalization</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>B0        <span class="ot">&lt;-</span> <span class="fu">solve</span>(B.posterior[,,s])</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>Sigma.inv <span class="ot">&lt;-</span> <span class="fu">solve</span>(Sigma.posterior[,,s])</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>normalization.wz2003  <span class="ot">=</span> <span class="cf">function</span>(B0,B0.hat.inv, Sigma.inv, diag.signs){</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This function normalizes a matrix of contemporaneous effects</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># according to the algorithm by Waggoner &amp; Zha (2003, JOE)</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0        - an NxN matrix, to be normalized</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0.hat    - an NxN matrix, a normalized matrix</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  NNN               <span class="ot">=</span> <span class="fu">nrow</span>(B0)</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  K                 <span class="ot">=</span> <span class="dv">2</span><span class="sc">^</span>NNN</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  distance          <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>,K)</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>K){</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    B0.tmp.inv      <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">diag</span>(diag.signs[k,]) <span class="sc">%*%</span> B0)</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    distance[k]     <span class="ot">=</span> <span class="fu">sum</span>(</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unlist</span>(</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span>NNN,</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(n){</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.hat.inv)[n,] <span class="sc">%*%</span>Sigma.inv <span class="sc">%*%</span> <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.hat.inv)[n,]</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>               }</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        )))</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  B0.out            <span class="ot">&lt;-</span> <span class="fu">diag</span>(diag.signs[<span class="fu">which.min</span>(distance),]) <span class="sc">%*%</span> B0</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(B0.out)</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>B.posterior.normalized[,,s] <span class="ot">&lt;-</span> <span class="fu">solve</span>(B0.out)</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial setup</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>B0.posterior.tilde[,,s]       <span class="ot">=</span> <span class="fu">solve</span>(B.posterior[,,s])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Bplus.posterior.tilde[,,s]    <span class="ot">=</span> B0.posterior.tilde[,,s]<span class="sc">%*%</span><span class="fu">t</span>(A.posterior[,,s])</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># transpose so that the ranks of restrictions are in descending order.</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>B0.posterior.transposed.tilde[,,s]      <span class="ot">=</span> <span class="fu">t</span>(B0.posterior.tilde[,,s])</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>IR.infinity.transposed.tilde[,,s]       <span class="ot">=</span> <span class="fu">t</span>(B0.posterior.tilde[,,s]<span class="sc">-</span>Bplus.posterior.tilde[,<span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>,s]<span class="sc">-</span>Bplus.posterior.tilde[,<span class="dv">10</span><span class="sc">:</span><span class="dv">17</span>,s]<span class="sc">-</span>Bplus.posterior.tilde[,<span class="dv">18</span><span class="sc">:</span><span class="dv">25</span>,s]<span class="sc">-</span>Bplus.posterior.tilde[,<span class="dv">26</span><span class="sc">:</span><span class="dv">33</span>,s])</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Orthogonal complement matrix</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>orthogonal.complement.matrix.TW <span class="ot">=</span> <span class="cf">function</span>(x){</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x is a mxn matrix and m&gt;n</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the function returns a mx(m-n) matrix, out, that is an orthogonal complement of x, i.e.:</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># t(x)%*%out = 0 and det(cbind(x,out))!=0</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  NN     <span class="ot">=</span> <span class="fu">dim</span>(x)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  tmp   <span class="ot">=</span> <span class="fu">qr.Q</span>(<span class="fu">qr</span>(x, <span class="at">tol =</span> <span class="fl">1e-10</span>),<span class="at">complete=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  out   <span class="ot">=</span> <span class="fu">as.matrix</span>(tmp[,(NN[<span class="dv">2</span>]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>NN[<span class="dv">1</span>]])</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Use Algorithm 1 to obtain Q</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>R1 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">7</span>,<span class="dv">1</span>), <span class="fu">diag</span>(<span class="dv">7</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">7</span>,<span class="dv">8</span>))</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>R2 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">2</span>), <span class="fu">diag</span>(<span class="dv">6</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">8</span>))</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>R3 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">5</span>,<span class="dv">16</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>R3[<span class="dv">1</span>,<span class="dv">4</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>R3[<span class="dv">2</span>,<span class="dv">6</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>R3[<span class="dv">3</span>,<span class="dv">7</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>R3[<span class="dv">4</span>,<span class="dv">8</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>R3[<span class="dv">5</span>,<span class="dv">13</span>] <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>R4 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">4</span>,<span class="dv">4</span>), <span class="fu">diag</span>(<span class="dv">4</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">4</span>,<span class="dv">8</span>))</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>R5 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">3</span>,<span class="dv">5</span>), <span class="fu">diag</span>(<span class="dv">3</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">3</span>,<span class="dv">8</span>))</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>R6 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">6</span>), <span class="fu">diag</span>(<span class="dv">2</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">8</span>))</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>R7 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">7</span>), <span class="fu">diag</span>(<span class="dv">1</span>), <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">8</span>))</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>fAA             <span class="ot">=</span> <span class="fu">rbind</span>(B0.posterior.transposed.tilde[,,s],IR.infinity.transposed.tilde[,,s])</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>p1.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">t</span>(R1 <span class="sc">%*%</span> fAA))</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>p2.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R2 <span class="sc">%*%</span> fAA),p1.s))</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>p3.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R3 <span class="sc">%*%</span> fAA),p1.s,p2.s))</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>p4.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R4 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s))</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>p5.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R5 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s))</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>p6.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R6 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s))</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>p7.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R7 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s,p6.s))</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>p8.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s))</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>Q[,,s]            <span class="ot">=</span> <span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s)</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>B0.posterior[,,s]    <span class="ot">=</span> Q[,,s]<span class="sc">%*%</span>B0.posterior.tilde[,,s]</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>Bplus.posterior[,,s] <span class="ot">=</span> Q[,,s]<span class="sc">%*%</span>Bplus.posterior.tilde[,,s]  <span class="do">######!!@@@</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>IR.infinity[,,s]     <span class="ot">=</span> <span class="fu">solve</span>(B0.posterior[,,s]<span class="sc">-</span>Bplus.posterior[,<span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>,s]<span class="sc">-</span>Bplus.posterior[,<span class="dv">10</span><span class="sc">:</span><span class="dv">17</span>,s]<span class="sc">-</span>Bplus.posterior[,<span class="dv">18</span><span class="sc">:</span><span class="dv">25</span>,s]<span class="sc">-</span>Bplus.posterior[,<span class="dv">26</span><span class="sc">:</span><span class="dv">33</span>,s])</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>I proceed to formulate Q matrix by the algorithm1 proposed by Rubio-Ramírez, Waggoner &amp; Zha (2010) as follows:</p>
+<p>The posterior <span class="math inline">\(B_0\)</span> matrix requires a normalization since it exhibits symmetric distribution round zero. We can additionally confirm this by looking at the IRF plots in Figure 7. Below is the normalization function for this.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initial setup</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>IR.<span class="fl">0.</span>tilde[,,s]               <span class="ot">=</span> B.posterior[,,s]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>IR.infinity.tilde[,,s]        <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">diag</span>(N)<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">10</span><span class="sc">:</span><span class="dv">17</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">18</span><span class="sc">:</span><span class="dv">25</span>,,s])<span class="sc">-</span><span class="fu">t</span>(A.posterior[<span class="dv">26</span><span class="sc">:</span><span class="dv">33</span>,,s]))<span class="sc">%*%</span>B.posterior[,,s]</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Reverse the order of column so that the ranks of restrictions are in descending order.</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>IR.<span class="fl">0.</span>tilde[,,s]               <span class="ot">=</span> IR.<span class="fl">0.</span>tilde[,<span class="fu">ncol</span>(IR.<span class="fl">0.</span>tilde[,,s])<span class="sc">:</span><span class="dv">1</span>,s]</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>IR.infinity.tilde[,,s]        <span class="ot">=</span> IR.infinity.tilde[,<span class="fu">ncol</span>(IR.infinity.tilde[,,s])<span class="sc">:</span><span class="dv">1</span>,s]</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># initial setup</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># create diag.signs matrix</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#1.Function to convert decimal to binary with leading zeros</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>decimal_to_binary <span class="ot">&lt;-</span> <span class="cf">function</span>(decimal, length) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  binary <span class="ot">&lt;-</span> <span class="fu">numeric</span>(length)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> length<span class="sc">:</span><span class="dv">1</span>) {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    binary[i] <span class="ot">&lt;-</span> decimal <span class="sc">%%</span> <span class="dv">2</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    decimal <span class="ot">&lt;-</span> decimal <span class="sc">%/%</span> <span class="dv">2</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(binary)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Orthogonal complement matrix</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>orthogonal.complement.matrix.TW <span class="ot">=</span> <span class="cf">function</span>(x){</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x is a mxn matrix and m&gt;n</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the function returns a mx(m-n) matrix, out, that is an orthogonal complement of x, i.e.:</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># t(x)%*%out = 0 and det(cbind(x,out))!=0</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  NN     <span class="ot">=</span> <span class="fu">dim</span>(x)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  tmp   <span class="ot">=</span> <span class="fu">qr.Q</span>(<span class="fu">qr</span>(x, <span class="at">tol =</span> <span class="fl">1e-10</span>),<span class="at">complete=</span><span class="cn">TRUE</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  out   <span class="ot">=</span> <span class="fu">as.matrix</span>(tmp[,(NN[<span class="dv">2</span>]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>NN[<span class="dv">1</span>]])</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Use Algorithm 1 to obtain Q</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>R8 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">16</span>)</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>R7 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">1</span>), <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">15</span>))</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>R6 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">2</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">2</span>,<span class="dv">14</span>))</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>R5 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">3</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">3</span>,<span class="dv">13</span>))</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>R4 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">4</span>,<span class="dv">16</span>)</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">1</span>,<span class="dv">1</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">2</span>,<span class="dv">2</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">3</span>,<span class="dv">4</span>]  <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>R4[<span class="dv">4</span>,<span class="dv">11</span>] <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>R3 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">5</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">5</span>,<span class="dv">11</span>))</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>R2 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">6</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">6</span>,<span class="dv">10</span>))</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>R1 <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">diag</span>(<span class="dv">7</span>),<span class="fu">matrix</span>(<span class="dv">0</span>, <span class="dv">7</span>,<span class="dv">9</span>))</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>fAA             <span class="ot">=</span> <span class="fu">rbind</span>(IR.<span class="fl">0.</span>tilde[,,s],IR.infinity.tilde[,,s])</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>p1.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">t</span>(R1 <span class="sc">%*%</span> fAA))</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>p2.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R2 <span class="sc">%*%</span> fAA),p1.s))</span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>p3.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R3 <span class="sc">%*%</span> fAA),p1.s,p2.s))</span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>p4.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R4 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s))</span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>p5.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R5 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s))</span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>p6.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R6 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s))</span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>p7.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(R7 <span class="sc">%*%</span> fAA),p1.s,p2.s,p3.s,p4.s,p5.s,p6.s))</span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>p8.s            <span class="ot">=</span> <span class="fu">orthogonal.complement.matrix.TW</span>(<span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s))</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>Q.s[,,s]         <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">cbind</span>(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s))</span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>IR<span class="fl">.0</span>[,,s]        <span class="ot">=</span> IR.<span class="fl">0.</span>tilde[,,s]<span class="sc">%*%</span><span class="fu">solve</span>(Q.s[,,s])</span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>IR.infinity[,,s] <span class="ot">=</span> IR.infinity.tilde[,,s]<span class="sc">%*%</span><span class="fu">solve</span>(Q.s[,,s])    </span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 2.Generate the matrix with 256 rows and 8 columns</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>diag.signs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="dv">256</span>, <span class="at">ncol =</span> <span class="dv">8</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 3.Populate the matrix with unique combinations of -1 and 1</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">255</span>) {</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  binary <span class="ot">&lt;-</span> <span class="fu">decimal_to_binary</span>(i, <span class="dv">8</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  binary[binary <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  diag.signs[i <span class="sc">+</span> <span class="dv">1</span>, ] <span class="ot">&lt;-</span> binary</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Function</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>normalization.wz2003  <span class="ot">=</span> <span class="cf">function</span>(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.posterior.inv, diag.signs){</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This function normalizes a matrix of contemporaneous effects</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># according to the algorithm by Waggoner &amp; Zha (2003, JOE)</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0        - an NxN matrix, to be normalized</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># B0.hat    - an NxN matrix, a normalized matrix</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  N                 <span class="ot">=</span> <span class="fu">nrow</span>(B0.posterior.tmp)</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  K                 <span class="ot">=</span> <span class="dv">2</span><span class="sc">^</span>N</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  distance          <span class="ot">=</span> <span class="fu">rep</span>(<span class="cn">NA</span>,K)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>K){</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    B0.tmp.inv      <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">diag</span>(diag.signs[k,]) <span class="sc">%*%</span> B0.posterior.tmp)</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    distance[k]     <span class="ot">=</span> <span class="fu">sum</span>(</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unlist</span>(</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span>N,</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(n){</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.posterior.hat.inv)[n,] <span class="sc">%*%</span>Sigma.posterior.inv <span class="sc">%*%</span> <span class="fu">t</span>(B0.tmp.inv <span class="sc">-</span> B0.posterior.hat.inv)[n,]</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>               }</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>        )))</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>  B0.out            <span class="ot">=</span> <span class="fu">diag</span>(diag.signs[<span class="fu">which.min</span>(distance),]) <span class="sc">%*%</span> B0.posterior.tmp</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(B0.out)</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtain normalized B0</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>t0<span class="ot">=</span>  <span class="fu">proc.time</span>()</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>ttt<span class="ot">=</span><span class="dv">1</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>B0.posterior.hat.inv <span class="ot">=</span> <span class="sc">-</span><span class="fu">solve</span>(B0.posterior[,,<span class="dv">1</span>]) <span class="co"># does - reverse the IRF?</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>Sigma.posterior.inv <span class="ot">=</span> <span class="fu">solve</span>(Sigma.posterior[,,s])</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>B0.posterior.tmp    <span class="ot">=</span> B0.posterior[,,s]</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>B0.posterior.norm[,,s] <span class="ot">=</span> <span class="fu">normalization.wz2003</span>(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.posterior.inv, diag.signs)</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>ttt<span class="ot">=</span>ttt<span class="sc">+</span>s<span class="sc">/</span>s</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>t1          <span class="ot">=</span> <span class="fu">proc.time</span>()</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> elapsed 
+32.80233 </code></pre>
+</div>
 </div>
 </section>
 <section id="empirical-investigation-for-model-with-long-run-restriction-case-2" class="level2">
 <h2 class="anchored" data-anchor-id="empirical-investigation-for-model-with-long-run-restriction-case-2">Empirical Investigation for model with long-run restriction (case 2)</h2>
 <p>Unlike the baseline model, the relationship between Australian real GDP and cash rate in the long-run is restricted such that there cash rate has no effect on Australian real GDP. Though this alternative restriction, I expect that the result would not be quite different from the result of the baseline model. This is because if I look at the IRF of Australian real GDP to cash rate, the effect is not different from zero statistically.</p>
-<section id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-7.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 7. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<p>Since it is before normalization, it shows some weird plots as below.</p>
+<section id="figure-7.-irf-to-cash-rate-shock-with-long-run-restiction-before-normalization" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-7.-irf-to-cash-rate-shock-with-long-run-restiction-before-normalization">Figure 7. IRF to cash rate shock with long-run restiction before normalization</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots3-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="figure-8.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-8.-fevd-of-banks-credit-plots">Figure 8. FEVD of banks’ credit plots</h6>
+<section id="figure-8.-fevd-of-banks-credit-plots-with-long-run-restiction-before-normalization" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-8.-fevd-of-banks-credit-plots-with-long-run-restiction-before-normalization">Figure 8. FEVD of banks’ credit plots with long-run restiction before normalization</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/fevd-credit plots3-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
+</section>
+</section>
+<section id="section-5" class="level1">
+<h1></h1>
+<p>Below is IRF with long-run restiction and normalization.Though the point estimations deviate from zero but most of the confident intervals of variables include zero except real GDP which decrease but it gets to zero statistically as time proceeds.</p>
+<section id="figure-9.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization">Figure 9. IRF to cash rate shock with long-run restiction and normalization</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/irf-au-mps plots3_normalized-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 </section>
 <section id="identiying-assumptions-case-3-7-variables-without-deposit" class="level1">
@@ -685,19 +735,22 @@ credit_t \\
 ex_t \\
 \end{bmatrix}
 \]</span></p>
+</section>
+<section id="identiying-assumptions-case-3model-without-deposit" class="level1">
+<h1>Identiying assumptions: case 3(model without deposit)</h1>
 <section id="empirical-investigation-for-model-without-deposit-case-3" class="level2">
 <h2 class="anchored" data-anchor-id="empirical-investigation-for-model-without-deposit-case-3">Empirical Investigation for model without deposit (case 3)</h2>
 <p>As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks’ deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model.</p>
-<section id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 9. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="figure-10.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-fevd-of-banks-credit-plots">Figure 10. FEVD of banks’ credit plots</h6>
+<section id="figure-11.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-11.-fevd-of-banks-credit-plots">Figure 11. FEVD of banks’ credit plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/fevd-credit plots2-1.png" class="img-fluid" width="672"></p>
@@ -705,6 +758,179 @@ ex_t \\
 </div>
 </section>
 </section>
+</section>
+<section id="stochastic-volatility-heteroskedasticity" class="level1">
+<h1>Stochastic volatility heteroskedasticity</h1>
+<section id="model-equations" class="level2">
+<h2 class="anchored" data-anchor-id="model-equations">Model equations</h2>
+<p><span class="math display">\[
+Y = X\alpha + E
+\]</span> <span class="math display">\[
+E|X \sim MN(0_{T\times N},\Sigma,diag(h))
+\]</span></p>
+<p><span class="math display">\[
+h = (h_1,...,h_T)'
+\]</span> <span class="math display">\[
+\sigma^2 = (exp\{h_1\}, ... , exp\{h_t\})
+\]</span> <span class="math inline">\(h_t\)</span> - follows a Stochastic Volatility process</p>
+<p>The likelihood function is then <span class="math display">\[
+L(\alpha,\Sigma|Y,X,h) = det(diag(h)^{-N/2}det(\Sigma)^{-T/2}\times exp\{  -1/2 [\Sigma ^ {-1} (Y-\alpha X)' diag(h)^{-1}(Y-\alpha X)] \}
+\]</span> The full conditional posterior distribution for <span class="math inline">\(\alpha,\Sigma\)</span> is given by <span class="math display">\[
+P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
+\]</span> where <span class="math display">\[
+\bar{V}=(X'diag(h)^{-1}X+\underline{V}^{-1})^{-1}
+\]</span> <span class="math display">\[
+\bar{\alpha}=\bar{V}(X'diag(h)^{-1}Y+\underline{V}^{-1}\underline{\alpha})
+\]</span> <span class="math display">\[
+\bar{S}=\underline{V}+Y'diag(h)^{-1}Y+\underline{\alpha'}\underline{V}^{-1}\underline{\alpha}-\bar{\alpha'}\bar{V}^{-1}\bar{\alpha}
+\]</span> <span class="math display">\[
+\bar{\nu}= T + \underline{\nu}
+\]</span></p>
+</section>
+<section id="gibbs-sampler" class="level2">
+<h2 class="anchored" data-anchor-id="gibbs-sampler">Gibbs sampler</h2>
+<p>At each iteration s:</p>
+<p>Step 1. Sample <span class="math inline">\(h^{S}\)</span> from the distribution <span class="math inline">\(P(h|Y,X,A, \Sigma)\)</span> Step 2. Sample <span class="math inline">\(\alpha^{S},\Sigma^{s}\)</span> from the <span class="math inline">\(P(A,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})\)</span></p>
+<p>Return <span class="math inline">\(\{\alpha^{S},\Sigma^{S},h^{S}]\}_{s=1}^S\)</span></p>
+<p>Technics for sampling h is listed in the previous section.</p>
+<p>Then it follows that <span class="math inline">\(\bar{V} = (X'diag(h)^{-1}X + \underline{V}^{-1})^{-1}\)</span> <span class="math inline">\(\bar{A} = \bar{V}(X'diag(h)^{-1}Y + \underline{V}^{-1}\underline{A})^{-1}\)</span> <span class="math inline">\(\bar{S} = \underline{S} + Y'diag(h)^{-1}Y + \underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}\)</span> <span class="math inline">\(\bar{\nu}=T + \underline{\nu}\)</span>.</p>
+</section>
+<section id="algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="algorithm">Algorithm</h2>
+<p>Following is the algorithm for the part above to sample draws from full conditional posterior distribution. For each iteration, it draws h from a corresponding distribution and then using h, and then draws A and sigma from a multivariate normal distribution.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>SVcommon.Gibbs.iteration <span class="ot">=</span> <span class="cf">function</span>(S,aux, priors){</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># A single iteration of the Gibbs sampler for the SV component</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># aux is a list containing:</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   Y - a TxN matrix</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   X - a TxK matrix</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   H - a Tx1 matrix</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   h0 - a scalar</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sigma.v2 - a scalar</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   s - a Tx1 matrix</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   A - a KxN matrix</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   Sigma - an NxN matrix</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sigma2 - a Tx1 matrix</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># priors is a list containing:</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   h0.v - a positive scalar</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   h0.m - a scalar</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sigmav.s - a positive scalar</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sigmav.nu - a positive scalar</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   HH - a TxT matrix</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  T             <span class="ot">=</span> <span class="fu">dim</span>(aux<span class="sc">$</span>Y)[<span class="dv">1</span>]</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  N             <span class="ot">=</span> <span class="fu">dim</span>(aux<span class="sc">$</span>Y)[<span class="dv">2</span>]</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  alpha.st      <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">1.92677</span>,<span class="fl">1.34744</span>,<span class="fl">0.73504</span>,<span class="fl">0.02266</span>,<span class="dv">0</span><span class="fl">-0.85173</span>,<span class="sc">-</span><span class="fl">1.97278</span>,<span class="sc">-</span><span class="fl">3.46788</span>,<span class="sc">-</span><span class="fl">5.55246</span>,<span class="sc">-</span><span class="fl">8.68384</span>,<span class="sc">-</span><span class="fl">14.65000</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  sigma.st      <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.11265</span>,<span class="fl">0.17788</span>,<span class="fl">0.26768</span>,<span class="fl">0.40611</span>,<span class="fl">0.62699</span>,<span class="fl">0.98583</span>,<span class="fl">1.57469</span>,<span class="fl">2.54498</span>,<span class="fl">4.16591</span>,<span class="fl">7.33342</span>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  pi.st         <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.00609</span>,<span class="fl">0.04775</span>,<span class="fl">0.13057</span>,<span class="fl">0.20674</span>,<span class="fl">0.22715</span>,<span class="fl">0.18842</span>,<span class="fl">0.12047</span>,<span class="fl">0.05591</span>,<span class="fl">0.01575</span>,<span class="fl">0.00115</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  Lambda        <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">chol</span>(aux<span class="sc">$</span>Sigma))</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  Z             <span class="ot">=</span> <span class="fu">rowSums</span>( ( aux<span class="sc">$</span>Y <span class="sc">-</span> aux<span class="sc">$</span>X <span class="sc">%*%</span> aux<span class="sc">$</span>A ) <span class="sc">%*%</span> Lambda ) <span class="sc">/</span> <span class="fu">sqrt</span>(N)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  Y.tilde       <span class="ot">=</span> <span class="fu">as.vector</span>(<span class="fu">log</span>((Z <span class="sc">+</span> <span class="fl">0.0000001</span>)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  Ytilde.alpha  <span class="ot">=</span> <span class="fu">as.matrix</span>(Y.tilde <span class="sc">-</span> alpha.st[<span class="fu">as.vector</span>(aux<span class="sc">$</span>s)])</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sampling initial condition</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>  V.h0.bar      <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>((<span class="dv">1</span> <span class="sc">/</span> priors<span class="sc">$</span>h0.v) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">/</span> aux<span class="sc">$</span>sigma.v2))</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  m.h0.bar      <span class="ot">=</span> V.h0.bar<span class="sc">*</span>((priors<span class="sc">$</span>h0.m <span class="sc">/</span> priors<span class="sc">$</span>h0.v) <span class="sc">+</span> (aux<span class="sc">$</span>H[<span class="dv">1</span>] <span class="sc">/</span> aux<span class="sc">$</span>sigma.v2))</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  h0.draw       <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">mean =</span> m.h0.bar, <span class="at">sd =</span> <span class="fu">sqrt</span>(V.h0.bar))</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>  aux<span class="sc">$</span>h0        <span class="ot">=</span> h0.draw</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sampling sigma.v2</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>  sigma.v2.s    <span class="ot">=</span> priors<span class="sc">$</span>sigmav.s <span class="sc">+</span> <span class="fu">sum</span>(<span class="fu">c</span>(aux<span class="sc">$</span>H[<span class="dv">1</span>] <span class="sc">-</span> aux<span class="sc">$</span>h0, <span class="fu">diff</span>(aux<span class="sc">$</span>H))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>  sigma.v2.draw <span class="ot">=</span> sigma.v2.s <span class="sc">/</span> <span class="fu">rchisq</span>(<span class="dv">1</span>, priors<span class="sc">$</span>sigmav.nu <span class="sc">+</span> T)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  aux<span class="sc">$</span>sigma.v2  <span class="ot">=</span> sigma.v2.draw</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sampling auxiliary states</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  Pr.tmp        <span class="ot">=</span> <span class="fu">simplify2array</span>(<span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,<span class="cf">function</span>(x){</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dnorm</span>(Y.tilde, <span class="at">mean =</span> <span class="fu">as.vector</span>(aux<span class="sc">$</span>H <span class="sc">+</span> alpha.st[x]), <span class="at">sd =</span> <span class="fu">sqrt</span>(sigma.st[x]), <span class="at">log =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> <span class="fu">log</span>(pi.st[x])</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  Pr            <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">apply</span>(Pr.tmp, <span class="dv">1</span>, <span class="cf">function</span>(x){<span class="fu">exp</span>(x <span class="sc">-</span> <span class="fu">max</span>(x)) <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">exp</span>(x <span class="sc">-</span> <span class="fu">max</span>(x)))}))</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  s.cum         <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">apply</span>(Pr, <span class="dv">1</span>, cumsum))</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>  r             <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fu">runif</span>(T), <span class="dv">10</span>), <span class="at">ncol =</span> <span class="dv">10</span>)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>  ss            <span class="ot">=</span> <span class="fu">apply</span>(s.cum <span class="sc">&lt;</span> r, <span class="dv">1</span>, sum) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>  aux<span class="sc">$</span>s         <span class="ot">=</span> <span class="fu">as.matrix</span>(ss)</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sampling log-volatilities using functions for tridiagonal precision matrix</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>  Sigma.s.inv   <span class="ot">=</span> <span class="fu">diag</span>(<span class="dv">1</span> <span class="sc">/</span> sigma.st[<span class="fu">as.vector</span>(aux<span class="sc">$</span>s)])</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  D.inv         <span class="ot">=</span> Sigma.s.inv <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">/</span> aux<span class="sc">$</span>sigma.v2) <span class="sc">*</span> priors<span class="sc">$</span>HH</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>  b             <span class="ot">=</span> <span class="fu">as.matrix</span>(Ytilde.alpha <span class="sc">/</span> sigma.st[<span class="fu">as.vector</span>(aux<span class="sc">$</span>s)] <span class="sc">+</span> (aux<span class="sc">$</span>h0<span class="sc">/</span>aux<span class="sc">$</span>sigma.v2)<span class="sc">*</span><span class="fu">diag</span>(T)[,<span class="dv">1</span>])</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>  lead.diag     <span class="ot">=</span> <span class="fu">diag</span>(D.inv)</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>  sub.diag      <span class="ot">=</span> mgcv<span class="sc">::</span><span class="fu">sdiag</span>(D.inv, <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>  D.chol        <span class="ot">=</span> mgcv<span class="sc">::</span><span class="fu">trichol</span>(<span class="at">ld =</span> lead.diag, <span class="at">sd =</span> sub.diag)</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>  D.L           <span class="ot">=</span> <span class="fu">diag</span>(D.chol<span class="sc">$</span>ld)</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>  mgcv<span class="sc">::</span><span class="fu">sdiag</span>(D.L,<span class="sc">-</span><span class="dv">1</span>) <span class="ot">=</span> D.chol<span class="sc">$</span>sd</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>  x             <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">rnorm</span>(T))</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>  a             <span class="ot">=</span> <span class="fu">forwardsolve</span>(D.L, b)</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>  draw          <span class="ot">=</span> <span class="fu">backsolve</span>(<span class="fu">t</span>(D.L), a <span class="sc">+</span> x)</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>  aux<span class="sc">$</span>H         <span class="ot">=</span> <span class="fu">as.matrix</span>(draw)</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>  aux<span class="sc">$</span>sigma2    <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">exp</span>(draw))</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>  <span class="do">#### Draw A and Sigma   #### </span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>  A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>X)<span class="sc">%*%</span><span class="fu">t</span>(X)<span class="sc">%*%</span>Y</span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>  Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(Y<span class="sc">-</span>X<span class="sc">%*%</span>A.hat)<span class="sc">%*%</span>(Y<span class="sc">-</span>X<span class="sc">%*%</span>A.hat)<span class="sc">/</span><span class="fu">nrow</span>(Y)</span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.1</span>     <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.2</span>     <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.3</span>     <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>  A.prior     <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(A.hat),<span class="fu">ncol</span>(A.hat))</span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>  A.prior[<span class="dv">2</span><span class="sc">:</span>(N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(N)</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>  V.prior     <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,N)))</span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>  S.prior     <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(Sigma.hat))</span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>  nu.prior    <span class="ot">=</span> N<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>  <span class="co"># normal-inverse Wishard posterior parameters</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>  V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(aux<span class="sc">$</span>X)<span class="sc">%*%</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(aux<span class="sc">$</span>sigma2))<span class="sc">%*%</span>aux<span class="sc">$</span>X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))</span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>  V.bar       <span class="ot">=</span> <span class="fu">solve</span>(V.bar.inv)</span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>  A.bar       <span class="ot">=</span> V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(aux<span class="sc">$</span>X)<span class="sc">%*%</span>aux<span class="sc">$</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))<span class="sc">%*%</span>A.prior)</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>  nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(aux<span class="sc">$</span>Y) <span class="sc">+</span> nu.prior</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>  S.bar       <span class="ot">=</span> S.prior <span class="sc">+</span> <span class="fu">t</span>(aux<span class="sc">$</span>Y)<span class="sc">%*%</span>aux<span class="sc">$</span>Y <span class="sc">+</span> <span class="fu">t</span>(A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(V.prior))<span class="sc">%*%</span>A.prior <span class="sc">-</span> <span class="fu">t</span>(A.bar)<span class="sc">%*%</span>V.bar.inv<span class="sc">%*%</span>A.bar</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>  S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(S.bar)</span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>  <span class="co"># posterior draws </span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>  Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(S, <span class="at">df=</span>nu.bar, <span class="at">Sigma=</span>S.bar.inv)</span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>  Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(Sigma.posterior,<span class="dv">3</span>,solve)</span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>  Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(Sigma.posterior,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>  A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(A.bar),S))),<span class="fu">c</span>(<span class="fu">dim</span>(A.bar),S))</span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>  B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>  L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(V.bar))</span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>  B1.posterior <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,(<span class="dv">1</span><span class="sc">+</span>N<span class="sc">*</span>p),S))</span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>    cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(Sigma.posterior[,,s])</span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>    B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(cholSigma.s)</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>    A.posterior[,,s]<span class="ot">=</span> A.bar <span class="sc">+</span> L<span class="sc">%*%</span>A.posterior[,,s]<span class="sc">%*%</span>cholSigma.s</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>    B1.posterior[,,s] <span class="ot">=</span>  B.posterior[,,s]<span class="sc">%*%</span><span class="fu">t</span>(A.posterior[,,s])</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">A.posterior =</span> A.posterior, <span class="at">B.posterior =</span> B.posterior, <span class="at">Sigma.posterior =</span> Sigma.posterior,<span class="at">B1.posterior =</span> B1.posterior))</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="estimation-of-hyperparameters" class="level1">
+<h1>Estimation of hyperparameters</h1>
+<p>Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well.</p>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>This research aimed to investigate the relationship between monetary policy, banks’ deposits, and credit growth in Australia. The objective was to understand how changes in monetary policy influence banks’ credit together with deposit growth. The study incorporated the deposit channel proposed by <span class="citation" data-cites="drechsler2017deposits">Drechsler, Savov, and Schnabl (<a href="#ref-drechsler2017deposits" role="doc-biblioref">2017</a>)</span> in the SVAR framework to evaluate the effect of monetary policy with deposit changes on banks’ credit. The findings indicate that when deposits are included in the model, banks’ credit decreases more in response to a positive cash rate shock, and GDP exhibits a larger decrease compared to the model without the deposit. These observations highlight the importance of considering the deposit channel in understanding the transmission of monetary policy and its impact on both real and financial economy variables.</p>
 </section>
 <section id="references" class="level1 unnumbered">
 

@@ -124,7 +124,7 @@ Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate a
 #| results: hide
 
 # load data from RBA and FRB
-temp_ex_comp          <- readrba::read_rba(series_id = "GRCPAIAD")
+temp_ex_comp          <- read_rba(series_id = "GRCPAIAD")
                          fredr_set_key("7afc2e18e3cf3585055851ad2f310f53")
 temp_ex_usrealgdp     <- fredr(series_id = "GDPC1")
 
@@ -620,9 +620,6 @@ t0          = proc.time() # read processor time
 ############################################################
 A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
 Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
-# round(A.hat,3)
-# round(Sigma.hat,3)
-# round(cov2cor(Sigma.hat),3)
 
 ```
 
@@ -700,10 +697,11 @@ for (s in 1:S){
   IRF.inf.posterior[,,s]          = J %*% solve(diag(N*p)-A.bold) %*% t(J) %*% B.posterior[,,s]
   A.bold.power    = A.bold
   for (i in 1:(h+1)){
+    tmp = B.posterior[,,s]
     if (i==1){
-      IRF.posterior[,,i,s]        = B.posterior[,,s]
+      IRF.posterior[,,i,s]        = tmp
     } else {
-      IRF.posterior[,,i,s]        = J %*% A.bold.power %*% t(J) %*% IRF.posterior[,,i-1,s]
+      IRF.posterior[,,i,s]        = J %*% A.bold.power %*% t(J) %*% tmp
       A.bold.power                = A.bold.power %*% A.bold
     }
     for (n in 1:N){
@@ -835,29 +833,29 @@ Where the structural form model is $QB_0y_t=Qb_0+QB_1y_{t-1}+QB_2y_{t-2}+QB_3y_{
 
 
 ## Normalization and Q matrix
-To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner & Zha (2010) requires a contemporaneous relationship matrix $B_0$ such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I rearrange the contemporaneous relationship matrix $B_0$ as follows:
+To apply a long-run restriction, I need a rotation matrix for it. Obtaining the rotation matrix under the algorithm in Rubio-Ramírez, Waggoner & Zha (2010) requires a contemporaneous relationship matrix $B_0$ such that the number of restrictions in each column is weakly decreasing from the left to the right. Thus, I transpose the contemporaneous relationship matrix $B_0$ as follows:
 
 $$
 \begin{align*}
-\Theta_0 = B = B_0^{-1} &=
+B_0' &=
 \begin{bmatrix}
-0 & 0 & 0 & 0 & 0 & 0 & 0 & * \\
-0 & 0 & 0 & 0 & 0 & 0 & * & * \\
-0 & 0 & 0 & * & 0 & * & * & * \\
-0 & 0 & 0 & 0 & * & * & * & * \\
-0 & 0 & 0 & * & * & * & * & * \\
-0 & 0 & * & * & * & * & * & * \\
-0 & * & * & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
+0 & * & * & * & * & * & * & * \\
+0 & 0 & * & * & * & * & * & * \\
+0 & 0 & 0 & * & * & * & * & * \\
+0 & 0 & * & 0 & * & * & * & * \\
+0 & 0 & 0 & 0 & 0 & * & * & * \\
+0 & 0 & 0 & 0 & 0 & 0 & * & * \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & * \\
 \end{bmatrix}
  \\
-\Theta_{\infty} = (B_0-B_1-B_2-B_3-B_4)^{-1} &=
+\Theta_{\infty}' = (B_0-B_1-B_2-B_3-B_4)' &=
 \begin{bmatrix}
 * & * & * & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
-* & * & * & 0 & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
+* & * & 0 & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
 * & * & * & * & * & * & * & * \\
@@ -877,77 +875,20 @@ $$
 
 # obtain Bplus.posterior.tilde and Binf = B0-B1-B2-B3-B4
 ############################################################
-B0.posterior.tilde    = array(NA,c(N,N,S))
-Bplus.posterior.tilde = array(NA,c(N,N*p+1,S))
-Binf.tilde            = array(NA,c(N,N,S))
-IR.0.tilde            = array(NA,c(N,N,S))
-IR.infinity.tilde     = array(NA,c(N,N,S))
-IR.0                  = array(NA,c(N,N,S))
-IR.infinity           = array(NA,c(N,N,S))
-Q.s                   = array(NA,c(N,N,S))
+B0.posterior.tilde               = array(NA,c(N,N,S))
+B0.posterior.transposed.tilde    = array(NA,c(N,N,S))
+B0.posterior                     = array(NA,c(N,N,S))
+B0.posterior.norm                = array(NA,c(N,N,S))
+Bplus.posterior                  = array(NA,c(N,N*p+1,S))
+Bplus.posterior.tilde            = array(NA,c(N,N*p+1,S))
+IR.infinity                      = array(NA,c(N,N,S))
+IR.infinity.transposed.tilde     = array(NA,c(N,N,S))
+Q                                = array(NA,c(N,N,S))
 
-# for (s in 1:S){
-#   B0.posterior.tilde[,,s]     = solve(B.posterior[,,s])
-#   Bplus.posterior.tilde[,,s]  = B0.posterior.tilde[,,s]%*%t(A.posterior[,,s])
-#   Binf.tilde[,,s]             =   B0.posterior.tilde[,,s] - Bplus.posterior.tilde[,2:9,s] - Bplus.posterior.tilde[,10:17,s] - Bplus.posterior.tilde[,18:25,s] - Bplus.posterior.tilde[,26:33,s]
-# IR.0.tilde[,,s]               = solve(B0.posterior.tilde[,,s])
-# IR.infinity.tilde[,,s]        = solve(Binf.tilde[,,s])
-# 
-#   }
 
 ```
 
 
-A problem encountered when using a rotation matrix is that structural shocks can only be identified up to a sign, necessitating the need for normalization as a solution. To address this issue, I normalize each draw, denoted as $B^{(s)}$, from the posterior distribution using a function described in Waggoner & Zha (2003). This function returns a normalized matrix, $D_{i*}B_0^{(s)}$, for each $s$th draw, where $D_i$ represents an element from a set of all possible 8 by 8 diagonal matrices. These matrices have diagonal elements consisting of all possible combinations of either 1 or -1.
-
-```{r results for case 2: long-run restriction_contd}
-#| echo: true
-#| message: false
-
-# normalization process
-
-#1. setup: create an empty array
-B.posterior.normalized = array(NA,c(N,N,S))
-
-#1-1. create Di whose rows contain every possible combinations of 1 and -1
-values <- c(-1, 1)
-combinations <- expand.grid(replicate(8, values, simplify = FALSE))
-diag.signs = as.matrix(combinations)
-B0.hat.inv = solve(B.posterior[,,1])
-
-#2. conduct normalization
-for (s in 1:S) {
-B0        <- solve(B.posterior[,,s])
-Sigma.inv <- solve(Sigma.posterior[,,s])
-normalization.wz2003  = function(B0,B0.hat.inv, Sigma.inv, diag.signs){
-  # This function normalizes a matrix of contemporaneous effects
-  # according to the algorithm by Waggoner & Zha (2003, JOE)
-  # B0        - an NxN matrix, to be normalized
-  # B0.hat    - an NxN matrix, a normalized matrix
-
-  NNN               = nrow(B0)
-  K                 = 2^NNN
-  distance          = rep(NA,K)
-  for (k in 1:K){
-    B0.tmp.inv      = solve(diag(diag.signs[k,]) %*% B0)
-    distance[k]     = sum(
-      unlist(
-        lapply(1:NNN,
-               function(n){
-                 t(B0.tmp.inv - B0.hat.inv)[n,] %*%Sigma.inv %*% t(B0.tmp.inv - B0.hat.inv)[n,]
-               }
-        )))
-  }
-  B0.out            <- diag(diag.signs[which.min(distance),]) %*% B0
-  
-  return(B0.out)
-B.posterior.normalized[,,s] <- solve(B0.out)
-  }
-}
-```
-
-
-I proceed to formulate Q matrix by the algorithm1 proposed by Rubio-Ramírez, Waggoner & Zha (2010) as follows:
 ```{r results for case 2: long-run restriction_contd2}
 #| echo: true
 #| message: false
@@ -955,14 +896,14 @@ I proceed to formulate Q matrix by the algorithm1 proposed by Rubio-Ramírez, Wa
 
 # Initial setup
 for (s in 1:S){
-IR.0.tilde[,,s]               = B.posterior[,,s]
-IR.infinity.tilde[,,s]        = solve(diag(N)-t(A.posterior[2:9,,s])-t(A.posterior[10:17,,s])-t(A.posterior[18:25,,s])-t(A.posterior[26:33,,s]))%*%B.posterior[,,s]
+B0.posterior.tilde[,,s]       = solve(B.posterior[,,s])
+Bplus.posterior.tilde[,,s]    = B0.posterior.tilde[,,s]%*%t(A.posterior[,,s])
   }
 
-# Reverse the order of column so that the ranks of restrictions are in descending order.
+# transpose so that the ranks of restrictions are in descending order.
 for (s in 1:S){
-IR.0.tilde[,,s]               = IR.0.tilde[,ncol(IR.0.tilde[,,s]):1,s]
-IR.infinity.tilde[,,s]        = IR.infinity.tilde[,ncol(IR.infinity.tilde[,,s]):1,s]
+B0.posterior.transposed.tilde[,,s]      = t(B0.posterior.tilde[,,s])
+IR.infinity.transposed.tilde[,,s]       = t(B0.posterior.tilde[,,s]-Bplus.posterior.tilde[,2:9,s]-Bplus.posterior.tilde[,10:17,s]-Bplus.posterior.tilde[,18:25,s]-Bplus.posterior.tilde[,26:33,s])
   }
 
 
@@ -981,24 +922,23 @@ orthogonal.complement.matrix.TW = function(x){
 
 # Use Algorithm 1 to obtain Q
 ############################################################
-R8 = matrix(0,1,16)
-R7 = cbind(diag(1), matrix(0, 1, 15))
-R6 = cbind(diag(2),matrix(0, 2,14))
-R5 = cbind(diag(3),matrix(0, 3,13))
+R1 = cbind(matrix(0,7,1), diag(7), matrix(0,7,8))
+R2 = cbind(matrix(0,6,2), diag(6), matrix(0,6,8))
+R3 = matrix(0, 5,16)
+R3[1,4] = 1
+R3[2,6] = 1
+R3[3,7] = 1
+R3[4,8] = 1
+R3[5,13] = 1
+R4 = cbind(matrix(0,4,4), diag(4), matrix(0,4,8))
+R5 = cbind(matrix(0,3,5), diag(3), matrix(0,3,8))
+R6 = cbind(matrix(0,2,6), diag(2), matrix(0,2,8))
+R7 = cbind(matrix(0,1,7), diag(1), matrix(0,1,8))
 
-R4 = matrix(0, 4,16)
-R4[1,1]  = 1
-R4[2,2]  = 1
-R4[3,4]  = 1
-R4[4,11] = 1
-
-R3 = cbind(diag(5),matrix(0, 5,11))
-R2 = cbind(diag(6),matrix(0, 6,10))
-R1 = cbind(diag(7),matrix(0, 7,9))
 
 
 for (s in 1:S){
-fAA             = rbind(IR.0.tilde[,,s],IR.infinity.tilde[,,s])
+fAA             = rbind(B0.posterior.transposed.tilde[,,s],IR.infinity.transposed.tilde[,,s])
 p1.s            = orthogonal.complement.matrix.TW(t(R1 %*% fAA))
 p2.s            = orthogonal.complement.matrix.TW(cbind(t(R2 %*% fAA),p1.s))
 p3.s            = orthogonal.complement.matrix.TW(cbind(t(R3 %*% fAA),p1.s,p2.s))
@@ -1008,11 +948,88 @@ p6.s            = orthogonal.complement.matrix.TW(cbind(t(R6 %*% fAA),p1.s,p2.s,
 p7.s            = orthogonal.complement.matrix.TW(cbind(t(R7 %*% fAA),p1.s,p2.s,p3.s,p4.s,p5.s,p6.s))
 p8.s            = orthogonal.complement.matrix.TW(cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s))
 
-Q.s[,,s]         = t(cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s))
-IR.0[,,s]        = IR.0.tilde[,,s]%*%solve(Q.s[,,s])
-IR.infinity[,,s] = IR.infinity.tilde[,,s]%*%solve(Q.s[,,s])    
+Q[,,s]            = cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s)
+
+B0.posterior[,,s]    = Q[,,s]%*%B0.posterior.tilde[,,s]
+Bplus.posterior[,,s] = Q[,,s]%*%Bplus.posterior.tilde[,,s]  ######!!@@@
+IR.infinity[,,s]     = solve(B0.posterior[,,s]-Bplus.posterior[,2:9,s]-Bplus.posterior[,10:17,s]-Bplus.posterior[,18:25,s]-Bplus.posterior[,26:33,s])
+
 }
+
 ```
+
+The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. We can additionally confirm this by looking at the IRF plots in Figure 7. Below is the normalization function for this.
+
+```{r results for case 2: long-run restriction_contd2, normalization}
+#| echo: true
+#| message: false
+
+
+# initial setup
+
+# create diag.signs matrix
+#1.Function to convert decimal to binary with leading zeros
+decimal_to_binary <- function(decimal, length) {
+  binary <- numeric(length)
+  for (i in length:1) {
+    binary[i] <- decimal %% 2
+    decimal <- decimal %/% 2
+  }
+  return(binary)
+}
+
+# 2.Generate the matrix with 256 rows and 8 columns
+diag.signs <- matrix(0, nrow = 256, ncol = 8)
+
+# 3.Populate the matrix with unique combinations of -1 and 1
+for (i in 0:255) {
+  binary <- decimal_to_binary(i, 8)
+  binary[binary == 0] <- -1
+  diag.signs[i + 1, ] <- binary
+}
+
+
+# Function
+normalization.wz2003  = function(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.posterior.inv, diag.signs){
+  # This function normalizes a matrix of contemporaneous effects
+  # according to the algorithm by Waggoner & Zha (2003, JOE)
+  # B0        - an NxN matrix, to be normalized
+  # B0.hat    - an NxN matrix, a normalized matrix
+  
+  N                 = nrow(B0.posterior.tmp)
+  K                 = 2^N
+  distance          = rep(NA,K)
+  for (k in 1:K){
+    B0.tmp.inv      = solve(diag(diag.signs[k,]) %*% B0.posterior.tmp)
+    distance[k]     = sum(
+      unlist(
+        lapply(1:N,
+               function(n){
+                 t(B0.tmp.inv - B0.posterior.hat.inv)[n,] %*%Sigma.posterior.inv %*% t(B0.tmp.inv - B0.posterior.hat.inv)[n,]
+               }
+        )))
+  }
+  B0.out            = diag(diag.signs[which.min(distance),]) %*% B0.posterior.tmp
+  
+  return(B0.out)
+}
+
+#Obtain normalized B0
+t0=  proc.time()
+ttt=1
+B0.posterior.hat.inv = -solve(B0.posterior[,,1]) # does - reverse the IRF?
+for (s in 1:S){
+Sigma.posterior.inv = solve(Sigma.posterior[,,s])
+B0.posterior.tmp    = B0.posterior[,,s]
+
+B0.posterior.norm[,,s] = normalization.wz2003(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.posterior.inv, diag.signs)
+ttt=ttt+s/s
+}
+t1          = proc.time()
+(t1-t0)[3]/60 # Time of computations in minutes
+
+```
+
 
 ## Empirical Investigation for model with long-run restriction (case 2)
 
@@ -1028,56 +1045,59 @@ Unlike the baseline model, the relationship between Australian real GDP and cash
 # Impulse response functions
 # Forecast Error Variance Decomposition
 ############################################################
-IRF.posterior     = array(NA,c(N,N,h+1,S))
-IRF.inf.posterior = array(NA,c(N,N,S))
-FEVD.posterior    = array(NA,c(N,N,h+1,S))
-J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+
+t0          = proc.time()
+
+LRR.IRF.posterior     = array(NA,c(N,N,h+1,S))
+LRR.IRF.inf.posterior = array(NA,c(N,N,S))
+LRR.FEVD.posterior    = array(NA,c(N,N,h+1,S))
+J                     = cbind(diag(N),matrix(0,N,N*(p-1)))
 for (s in 1:S){
-  A.bold          = rbind(Q.s[,,s]%*%t(A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
-  IRF.inf.posterior[,,s]          = IR.infinity[,,s]
-  A.bold.power    = A.bold
+  LRR.A.bold          = rbind(t(A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  LRR.IRF.inf.posterior[,,s]          = J %*% solve(diag(N*p)-LRR.A.bold) %*% t(J) %*% solve(B0.posterior[,,s])
+  LRR.A.bold.power    = LRR.A.bold
   for (i in 1:(h+1)){
+    LRR.tmp = solve(B0.posterior[,,s])
     if (i==1){
-      IRF.posterior[,,i,s]        = IR.0[,,s]
+      LRR.IRF.posterior[,,i,s]        = LRR.tmp
     } else {
-      IRF.posterior[,,i,s]        = J %*% A.bold.power %*% t(J) %*% IRF.posterior[,,i-1,s]
-#      A.bold.power                = A.bold.power %*% A.bold
+      LRR.IRF.posterior[,,i,s]        = J %*% LRR.A.bold.power %*% t(J) %*% LRR.tmp
+      LRR.A.bold.power                = LRR.A.bold.power %*% LRR.A.bold
     }
     for (n in 1:N){
       for (nn in 1:N){
-        FEVD.posterior[n,nn,i,s]  = sum(IRF.posterior[n,nn,1:i,s]^2)
+        LRR.FEVD.posterior[n,nn,i,s]  = sum(LRR.IRF.posterior[n,nn,1:i,s]^2)
       }
     }
-    FEVD.posterior[,,i,s]         = diag(1/apply(FEVD.posterior[,,i,s],1,sum))%*%FEVD.posterior[,,i,s]
+    LRR.FEVD.posterior[,,i,s]         = diag(1/apply(LRR.FEVD.posterior[,,i,s],1,sum))%*%LRR.FEVD.posterior[,,i,s]
   }
 }
-FEVD.posterior    = 100*FEVD.posterior
+LRR.FEVD.posterior    = 100*LRR.FEVD.posterior
 
 t1          = proc.time()
 (t1-t0)[3]/60 # Time of computations in minutes
 
-# save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k002.RData")
-save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k1.RData3")
+save(LRR.IRF.posterior,LRR.IRF.inf.posterior, LRR.FEVD.posterior, file="irf-fevd-k1.RData3")
 
 
 # Plots of responses to domestic monetary policy shock
 ############################################################
 load("irf-fevd-k1.RData3")
-IRFs.k1           = apply(IRF.posterior[1:6,4,,],1:2,mean)
-IRFs.inf.k1       = apply(IRF.inf.posterior[1:6,4,],1,mean)
-rownames(IRFs.k1) = colnames(Y)[8:3]
+LRR.IRFs.k1           = apply(LRR.IRF.posterior[3:8,5,,],1:2,mean)
+LRR.IRFs.inf.k1       = apply(LRR.IRF.inf.posterior[3:8,5,],1,mean)
+rownames(LRR.IRFs.k1) = colnames(Y)[3:8]
 
-IRFs.k1.hdi    = apply(IRF.posterior[1:6,4,,],1:2,hdi, credMass=0.68)
+LRR.IRFs.k1.hdi    = apply(LRR.IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
 hh             = 1:11
 
 
 
 ```
 
+Since it is before normalization, it shows some weird plots as below.
 
 
-
-###### Figure 7. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 7. IRF to cash rate shock with long-run restiction before normalization {style="text-align: center;"}
 
 ```{r irf-au-mps plots3, echo = FALSE}
 
@@ -1085,47 +1105,140 @@ hh             = 1:11
 
 par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
 for (n in 1:6){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
+  ylims     = range(LRR.IRFs.k1[n,hh],LRR.IRFs.k1.hdi[,n,hh])
+  plot(hh,LRR.IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(LRR.IRFs.k1)[n])
   if (n==5 | n==6){
     axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
   } else {
     axis(1,c(1,2,6,11),c("","","",""))
   }
   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  polygon(c(hh,(h+1):1), c(LRR.IRFs.k1.hdi[1,n,hh],LRR.IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
   abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  lines(hh, LRR.IRFs.k1[n,hh],lwd=2,col=mcxs1)
   
 }
 
 ```
 
 
-###### Figure 8. FEVD of banks' credit plots {style="text-align: center;"}
+###### Figure 8. FEVD of banks' credit plots with long-run restiction before normalization {style="text-align: center;"}
 
 
 ```{r fevd-credit plots3, echo = FALSE}
 # Plots of FEVD of Australian banks credit
 ############################################################
-load("irf-fevd-k1.RData")
+load("irf-fevd-k1.RData3")
 hh            = 1:(h+1)
-fevd.au.credit= apply(FEVD.posterior[2,,,],1:2,mean)
-fevd.au.credit= rbind(rep(0,h+1),apply(fevd.au.credit,2,cumsum))
+LRR.fevd.au.credit= apply(LRR.FEVD.posterior[7,,,],1:2,mean)
+LRR.fevd.au.credit= rbind(rep(0,h+1),apply(LRR.fevd.au.credit,2,cumsum))
 
 colors = c("deepskyblue1","deepskyblue2","maroon1","maroon","maroon2","magenta","maroon3","maroon4")
 
 
 par(mar=rep(4,4),cex.axis=1, cex.lab=0.8)
-plot(hh,fevd.au.credit[1,], type="n", ylim=c(0,100), axes=FALSE, xlab="", ylab="")
+plot(hh,LRR.fevd.au.credit[1,], type="n", ylim=c(0,100), axes=FALSE, xlab="", ylab="")
 axis(1,hh,c("","1 quarter","","","","5 quarter","","","","","10 quarter"))
 axis(2,c(0,50,100),c("","FEVD[au.credit]",""))
 for (n in 1:N){
-  polygon(c(hh,(h+1):1), c(fevd.au.credit[n,hh],fevd.au.credit[n+1,(h+1):1]), col=colors[n],border=colors[n])
+  polygon(c(hh,(h+1):1), c(LRR.fevd.au.credit[n,hh],LRR.fevd.au.credit[n+1,(h+1):1]), col=colors[n],border=colors[n])
 }
-axis(4, (0.5*(fevd.au.credit[1:8,2]+fevd.au.credit[2:9,2]))[c(2,4)], c("crd", "mps"))
+axis(4, (0.5*(LRR.fevd.au.credit[1:8,7]+LRR.fevd.au.credit[2:9,7]))[c(5,7)], c("crd", "mps"))
 
 ```
+
+
+
+```{r results for case 2: long-run restriction_IRF, FEVD_normalized}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+
+# Impulse response functions
+# Forecast Error Variance Decomposition
+############################################################
+
+t0          = proc.time()
+
+norm.LRR.IRF.posterior     = array(NA,c(N,N,h+1,S))
+norm.LRR.IRF.inf.posterior = array(NA,c(N,N,S))
+norm.LRR.FEVD.posterior    = array(NA,c(N,N,h+1,S))
+norm.J                     = cbind(diag(N),matrix(0,N,N*(p-1)))
+for (s in 1:S){
+  norm.LRR.A.bold          = rbind(t(A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  norm.LRR.IRF.inf.posterior[,,s]          = norm.J %*% solve(diag(N*p)-norm.LRR.A.bold) %*% t(norm.J) %*% solve(B0.posterior.norm[,,s])
+  norm.LRR.A.bold.power    = norm.LRR.A.bold
+  for (i in 1:(h+1)){
+    norm.LRR.tmp = solve(B0.posterior.norm[,,s])
+    if (i==1){
+      norm.LRR.IRF.posterior[,,i,s]        = norm.LRR.tmp
+    } else {
+      norm.LRR.IRF.posterior[,,i,s]        = norm.J %*% norm.LRR.A.bold.power %*% t(norm.J) %*% norm.LRR.tmp
+      norm.LRR.A.bold.power                = norm.LRR.A.bold.power %*% norm.LRR.A.bold
+    }
+    for (n in 1:N){
+      for (nn in 1:N){
+        norm.LRR.FEVD.posterior[n,nn,i,s]  = sum(norm.LRR.IRF.posterior[n,nn,1:i,s]^2)
+      }
+    }
+    norm.LRR.FEVD.posterior[,,i,s]         = diag(1/apply(norm.LRR.FEVD.posterior[,,i,s],1,sum))%*%norm.LRR.FEVD.posterior[,,i,s]
+  }
+}
+norm.LRR.FEVD.posterior    = 100*norm.LRR.FEVD.posterior
+
+t1          = proc.time()
+(t1-t0)[3]/60 # Time of computations in minutes
+
+save(norm.LRR.IRF.posterior,norm.LRR.IRF.inf.posterior, norm.LRR.FEVD.posterior, file="irf-fevd-k1.RData4")
+
+
+# Plots of responses to domestic monetary policy shock
+############################################################
+load("irf-fevd-k1.RData4")
+norm.LRR.IRFs.k1           = apply(norm.LRR.IRF.posterior[3:8,5,,],1:2,mean)
+norm.LRR.IRFs.inf.k1       = apply(norm.LRR.IRF.inf.posterior[3:8,5,],1,mean)
+rownames(norm.LRR.IRFs.k1) = colnames(Y)[3:8]
+
+norm.LRR.IRFs.k1.hdi    = apply(norm.LRR.IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
+hh             = 1:11
+
+
+
+```
+#
+
+Below is IRF with long-run restiction and normalization.Though the point estimations deviate from zero but most of the confident intervals of variables include zero except real GDP which decrease but it gets to zero statistically as time proceeds.
+
+###### Figure 9. IRF to cash rate shock with long-run restiction and normalization {style="text-align: center;"}
+
+```{r irf-au-mps plots3_normalized, echo = FALSE}
+
+# irf-au-mps plots
+
+par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+for (n in 1:6){
+  ylims     = range(norm.LRR.IRFs.k1[n,hh],norm.LRR.IRFs.k1.hdi[,n,hh])
+  plot(hh,norm.LRR.IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(norm.LRR.IRFs.k1)[n])
+  if (n==5 | n==6){
+    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+  } else {
+    axis(1,c(1,2,6,11),c("","","",""))
+  }
+  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+  polygon(c(hh,(h+1):1), c(norm.LRR.IRFs.k1.hdi[1,n,hh],norm.LRR.IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  abline(h=0)
+  lines(hh, norm.LRR.IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  
+}
+
+```
+
+
+
+
+
 
 
 
@@ -1194,17 +1307,15 @@ set.seed(123456)
 # setup
 ############################################################
 N2      = 7
-p       = 4
-S       = 50000
-h       = 8
+# p, s, h are the same as in the basline model
 
 # create Y and X
 ############################################################
 y2      = ts(y2)
-Y       = ts(y2[5:118,], start=c(1991,1), frequency=4)
-X       = matrix(1,nrow(Y),1)
+Y2       = ts(y2[5:118,], start=c(1991,1), frequency=4)
+X2       = matrix(1,nrow(Y2),1)
 for (i in 1:p){
-  X     = cbind(X,y2[5:118-i,])
+  X2     = cbind(X2,y2[5:118-i,])
 }
 
 
@@ -1212,102 +1323,99 @@ t0          = proc.time() # read processor time
 
 # MLE
 ############################################################
-A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
-Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
-# round(A.hat,3)
-# round(Sigma.hat,3)
-# round(cov2cor(Sigma.hat),3)
+V7.A.hat       = solve(t(X2)%*%X2)%*%t(X2)%*%Y2
+V7.Sigma.hat   = t(Y2-X2%*%V7.A.hat)%*%(Y2-X2%*%V7.A.hat)/nrow(Y2)
+
 
 # prior distribution
 ############################################################
-kappa.1        = 1^2
-kappa.2        = 100
-kappa.3        = 1
-A.prior        = matrix(0,nrow(A.hat),ncol(A.hat))
-A.prior[2:8,]  = kappa.3*diag(N2)
-V.prior        = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N2)))
-S.prior        = diag(diag(Sigma.hat))
-nu.prior       = N2+1
+#Kappa 1,2,3 are the same as in the baseline model
+
+V7.A.prior        = matrix(0,nrow(V7.A.hat),ncol(V7.A.hat))
+V7.A.prior[2:8,]  = kappa.3*diag(N2)
+V7.V.prior        = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N2)))
+V7.S.prior        = diag(diag(V7.Sigma.hat))
+V7.nu.prior       = N2+1
 
 # normal-inverse Wishard posterior parameters
 ############################################################
-V.bar.inv   = t(X)%*%X + diag(1/diag(V.prior))
-V.bar       = solve(V.bar.inv)
-A.bar       = V.bar%*%(t(X)%*%Y + diag(1/diag(V.prior))%*%A.prior)
-nu.bar      = nrow(Y) + nu.prior
-S.bar       = S.prior + t(Y)%*%Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
-S.bar.inv   = solve(S.bar)
+V7.V.bar.inv   = t(X2)%*%X2 + diag(1/diag(V7.V.prior))
+V7.V.bar       = solve(V7.V.bar.inv)
+V7.A.bar       = V7.V.bar%*%(t(X2)%*%Y2 + diag(1/diag(V7.V.prior))%*%V7.A.prior)
+V7.nu.bar      = nrow(Y2) + V7.nu.prior
+V7.S.bar       = V7.S.prior + t(Y2)%*%Y2 + t(V7.A.prior)%*%diag(1/diag(V7.V.prior))%*%V7.A.prior - t(V7.A.bar)%*%V7.V.bar.inv%*%V7.A.bar
+V7.S.bar.inv   = solve(V7.S.bar)
 
 # posterior draws 
 ############################################################
-Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
-Sigma.posterior   = apply(Sigma.posterior,3,solve)
-Sigma.posterior   = array(Sigma.posterior,c(N2,N2,S))
-A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
-B.posterior       = array(NA,c(N2,N2,S))
-L                 = t(chol(V.bar))
+V7.Sigma.posterior   = rWishart(S, df=V7.nu.bar, Sigma=V7.S.bar.inv)
+V7.Sigma.posterior   = apply(V7.Sigma.posterior,3,solve)
+V7.Sigma.posterior   = array(V7.Sigma.posterior,c(N2,N2,S))
+V7.A.posterior       = array(rnorm(prod(c(dim(V7.A.bar),S))),c(dim(V7.A.bar),S))
+V7.B.posterior       = array(NA,c(N2,N2,S))
+V7.L                 = t(chol(V7.V.bar))
 for (s in 1:S){
-  cholSigma.s     = chol(Sigma.posterior[,,s])
-  B.posterior[,,s]= t(cholSigma.s)
-  A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s
+  V7.cholSigma.s     = chol(V7.Sigma.posterior[,,s])
+  V7.B.posterior[,,s]= t(V7.cholSigma.s)
+  V7.A.posterior[,,s]= V7.A.bar + V7.L%*%V7.A.posterior[,,s]%*%V7.cholSigma.s
 }
-# round(apply(A.posterior,1:2,mean),4)
-# round(apply(B.posterior,1:2,mean),4)
+
 
 
 # Impulse response functions
 # Forecast Error Variance Decomposition
 ############################################################
-IRF.posterior     = array(NA,c(N2,N2,h+1,S))
-IRF.inf.posterior = array(NA,c(N2,N2,S))
-FEVD.posterior    = array(NA,c(N2,N2,h+1,S))
-J                 = cbind(diag(N2),matrix(0,N2,N2*(p-1)))
+V7.IRF.posterior     = array(NA,c(N2,N2,h+1,S))
+V7.IRF.inf.posterior = array(NA,c(N2,N2,S))
+V7.FEVD.posterior    = array(NA,c(N2,N2,h+1,S))
+V7.J                 = cbind(diag(N2),matrix(0,N2,N2*(p-1)))
 for (s in 1:S){
-  A.bold          = rbind(t(A.posterior[2:(1+N2*p),,s]),cbind(diag(N2*(p-1)),matrix(0,N2*(p-1),N2)))
-  IRF.inf.posterior[,,s]          = J %*% solve(diag(N2*p)-A.bold) %*% t(J) %*% B.posterior[,,s]
-  A.bold.power    = A.bold
+  V7.A.bold          = rbind(t(V7.A.posterior[2:(1+N2*p),,s]),cbind(diag(N2*(p-1)),matrix(0,N2*(p-1),N2)))
+  V7.IRF.inf.posterior[,,s]          = V7.J %*% solve(diag(N2*p)-V7.A.bold) %*% t(V7.J) %*% V7.B.posterior[,,s]
+  V7.A.bold.power    = V7.A.bold
   for (i in 1:(h+1)){
+    V7.tmp = V7.B.posterior[,,s]
     if (i==1){
-      IRF.posterior[,,i,s]        = B.posterior[,,s]
+      V7.IRF.posterior[,,i,s]        = V7.tmp
     } else {
-      IRF.posterior[,,i,s]        = J %*% A.bold.power %*% t(J) %*% IRF.posterior[,,i-1,s]
-      A.bold.power                = A.bold.power %*% A.bold
+      V7.IRF.posterior[,,i,s]        = V7.J %*% V7.A.bold.power %*% t(V7.J) %*% V7.tmp
+      V7.A.bold.power                = V7.A.bold.power %*% V7.A.bold
     }
     for (n in 1:N2){
       for (nn in 1:N2){
-        FEVD.posterior[n,nn,i,s]  = sum(IRF.posterior[n,nn,1:i,s]^2)
+        V7.FEVD.posterior[n,nn,i,s]  = sum(V7.IRF.posterior[n,nn,1:i,s]^2)
       }
     }
-    FEVD.posterior[,,i,s]         = diag(1/apply(FEVD.posterior[,,i,s],1,sum))%*%FEVD.posterior[,,i,s]
+    V7.FEVD.posterior[,,i,s]         = diag(1/apply(V7.FEVD.posterior[,,i,s],1,sum))%*%V7.FEVD.posterior[,,i,s]
   }
 }
-FEVD.posterior    = 100*FEVD.posterior
+V7.FEVD.posterior    = 100*V7.FEVD.posterior
 
 t1          = proc.time()
 (t1-t0)[3]/60 # Time of computations in minutes
 
-# save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k002.RData")
-save(IRF.posterior,IRF.inf.posterior, FEVD.posterior, file="irf-fevd-k1.RData2")
+save(V7.IRF.posterior,V7.IRF.inf.posterior, V7.FEVD.posterior, file="irf-fevd-k1.RData2")
 
 
 # Plots of responses to domestic monetary policy shock
 ############################################################
 load("irf-fevd-k1.RData2")
-IRFs.k1           = apply(IRF.posterior[3:7,5,,],1:2,mean)
-IRFs.inf.k1       = apply(IRF.inf.posterior[3:7,5,],1,mean)
-rownames(IRFs.k1) = colnames(Y)[3:7]
+V7.IRFs.k1           = apply(V7.IRF.posterior[3:7,5,,],1:2,mean)
+V7.IRFs.inf.k1       = apply(V7.IRF.inf.posterior[3:7,5,],1,mean)
+rownames(V7.IRFs.k1) = colnames(Y2)[3:7]
 
-IRFs.k1.hdi    = apply(IRF.posterior[3:7,5,,],1:2,hdi, credMass=0.68)
-hh             = 1:9
+V7.IRFs.k1.hdi    = apply(V7.IRF.posterior[3:7,5,,],1:2,hdi, credMass=0.68)
+hh             = 1:11
 ```
 
+# Identiying assumptions: case 3(model without deposit)
 
 ## Empirical Investigation for model without deposit (case 3)
 As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks' deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model. 
 
 
 
-###### Figure 9. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
 
 ```{r irf-au-mps plots2, echo = FALSE}
 
@@ -1315,23 +1423,23 @@ As we see the figure of response function of banks credit to cash rate shock, ba
 
 par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
 for (n in 1:5){
-  ylims     = range(IRFs.k1[n,hh],IRFs.k1.hdi[,n,hh])
-  plot(hh,IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(IRFs.k1)[n])
+  ylims     = range(V7.IRFs.k1[n,hh],V7.IRFs.k1.hdi[,n,hh])
+  plot(hh,V7.IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(V7.IRFs.k1)[n])
   if (n==4 | n==5){
-    axis(1,c(1,2,5,9),c("","1 quarter","1 year","2 years"))
+    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
   } else {
-    axis(1,c(1,2,5,9),c("","","",""))
+    axis(1,c(1,2,6,11),c("","","",""))
   }
   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(IRFs.k1.hdi[1,n,hh],IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  polygon(c(hh,(h+1):1), c(V7.IRFs.k1.hdi[1,n,hh],V7.IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
   abline(h=0)
-  lines(hh, IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  lines(hh, V7.IRFs.k1[n,hh],lwd=2,col=mcxs1)
   
 }
 ```
 
 
-###### Figure 10. FEVD of banks' credit plots {style="text-align: center;"}
+###### Figure 11. FEVD of banks' credit plots {style="text-align: center;"}
 
 
 ```{r fevd-credit plots2, echo = FALSE}
@@ -1339,21 +1447,224 @@ for (n in 1:5){
 ############################################################
 load("irf-fevd-k1.RData2")
 hh            = 1:(h+1)
-fevd.au.credit= apply(FEVD.posterior[6,,,],1:2,mean)
-fevd.au.credit= rbind(rep(0,h+1),apply(fevd.au.credit,2,cumsum))
+V7.fevd.au.credit= apply(V7.FEVD.posterior[6,,,],1:2,mean)
+V7.fevd.au.credit= rbind(rep(0,h+1),apply(V7.fevd.au.credit,2,cumsum))
 
 colors = c("deepskyblue1","deepskyblue2","maroon1","maroon","maroon2","magenta","maroon3")
 
 
 par(mar=rep(4,4),cex.axis=1, cex.lab=0.8)
-plot(hh,fevd.au.credit[1,], type="n", ylim=c(0,100), axes=FALSE, xlab="", ylab="")
-axis(1,hh,c("","1 quarter","","","1 year","","","","2 years"))
+plot(hh,V7.fevd.au.credit[1,], type="n", ylim=c(0,100), axes=FALSE, xlab="", ylab="")
+axis(1,hh,c("","1 quarter","","","","5 quarter","","","","","10 quarter"))
 axis(2,c(0,50,100),c("","FEVD[au.credit]",""))
 for (n in 1:N2){
-  polygon(c(hh,(h+1):1), c(fevd.au.credit[n,hh],fevd.au.credit[n+1,(h+1):1]), col=colors[n],border=colors[n])
+  polygon(c(hh,(h+1):1), c(V7.fevd.au.credit[n,hh],V7.fevd.au.credit[n+1,(h+1):1]), col=colors[n],border=colors[n])
 }
-axis(4, (0.5*(fevd.au.credit[1:7,6]+fevd.au.credit[2:8,6]))[c(5,6)], c("mps","crds"))
+axis(4, (0.5*(V7.fevd.au.credit[1:7,6]+V7.fevd.au.credit[2:8,6]))[c(5,6)], c("mps","crds"))
 ```
+
+# Stochastic volatility heteroskedasticity
+
+## Model equations
+$$
+Y = X\alpha + E
+$$
+$$
+E|X \sim MN(0_{T\times N},\Sigma,diag(h))
+$$
+
+$$
+h = (h_1,...,h_T)'
+$$
+$$
+\sigma^2 = (exp\{h_1\}, ... , exp\{h_t\})
+$$
+$h_t$ - follows a Stochastic Volatility process
+
+The likelihood function is then
+$$
+L(\alpha,\Sigma|Y,X,h) = det(diag(h)^{-N/2}det(\Sigma)^{-T/2}\times exp\{  -1/2 [\Sigma ^ {-1} (Y-\alpha X)' diag(h)^{-1}(Y-\alpha X)] \}
+$$
+The full conditional posterior distribution for $\alpha,\Sigma$ is given by
+$$
+P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
+$$
+where
+$$
+\bar{V}=(X'diag(h)^{-1}X+\underline{V}^{-1})^{-1}
+$$
+$$
+\bar{\alpha}=\bar{V}(X'diag(h)^{-1}Y+\underline{V}^{-1}\underline{\alpha})
+$$
+$$
+\bar{S}=\underline{V}+Y'diag(h)^{-1}Y+\underline{\alpha'}\underline{V}^{-1}\underline{\alpha}-\bar{\alpha'}\bar{V}^{-1}\bar{\alpha}
+$$
+$$
+\bar{\nu}= T + \underline{\nu}
+$$
+
+
+## Gibbs sampler
+
+At each iteration s:
+
+   Step 1. Sample $h^{S}$ from the distribution $P(h|Y,X,A, \Sigma)$
+   Step 2. Sample $\alpha^{S},\Sigma^{s}$ from the $P(A,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})$
+   
+Return $\{\alpha^{S},\Sigma^{S},h^{S}]\}_{s=1}^S$
+
+Technics for sampling h is listed in the previous section.
+
+Then it follows that 
+$\bar{V} = (X'diag(h)^{-1}X + \underline{V}^{-1})^{-1}$
+$\bar{A} = \bar{V}(X'diag(h)^{-1}Y + \underline{V}^{-1}\underline{A})^{-1}$
+$\bar{S} = \underline{S} + Y'diag(h)^{-1}Y + \underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}$
+$\bar{\nu}=T + \underline{\nu}$.
+
+
+## Algorithm
+
+Following is the algorithm for the part above to sample draws from full conditional posterior distribution. For each iteration, it draws h from a corresponding distribution and then using h, and then draws A and sigma from a multivariate normal distribution.
+
+```{r setup, include=TRUE, cache = FALSE}
+#| eval: false
+#| echo: true
+#| 
+SVcommon.Gibbs.iteration = function(S,aux, priors){
+  # A single iteration of the Gibbs sampler for the SV component
+  #
+  # aux is a list containing:
+  #   Y - a TxN matrix
+  #   X - a TxK matrix
+  #   H - a Tx1 matrix
+  #   h0 - a scalar
+  #   sigma.v2 - a scalar
+  #   s - a Tx1 matrix
+  #   A - a KxN matrix
+  #   Sigma - an NxN matrix
+  #   sigma2 - a Tx1 matrix
+  #
+  # priors is a list containing:
+  #   h0.v - a positive scalar
+  #   h0.m - a scalar
+  #   sigmav.s - a positive scalar
+  #   sigmav.nu - a positive scalar
+  #   HH - a TxT matrix
+  
+  
+ 
+  
+  T             = dim(aux$Y)[1]
+  N             = dim(aux$Y)[2]
+  alpha.st      = c(1.92677,1.34744,0.73504,0.02266,0-0.85173,-1.97278,-3.46788,-5.55246,-8.68384,-14.65000)
+  sigma.st      = c(0.11265,0.17788,0.26768,0.40611,0.62699,0.98583,1.57469,2.54498,4.16591,7.33342)
+  pi.st         = c(0.00609,0.04775,0.13057,0.20674,0.22715,0.18842,0.12047,0.05591,0.01575,0.00115)
+  
+
+  Lambda        = solve(chol(aux$Sigma))
+  Z             = rowSums( ( aux$Y - aux$X %*% aux$A ) %*% Lambda ) / sqrt(N)
+  Y.tilde       = as.vector(log((Z + 0.0000001)^2))
+  Ytilde.alpha  = as.matrix(Y.tilde - alpha.st[as.vector(aux$s)])
+  
+  # sampling initial condition
+  ############################################################
+  V.h0.bar      = 1/((1 / priors$h0.v) + (1 / aux$sigma.v2))
+  m.h0.bar      = V.h0.bar*((priors$h0.m / priors$h0.v) + (aux$H[1] / aux$sigma.v2))
+  h0.draw       = rnorm(1, mean = m.h0.bar, sd = sqrt(V.h0.bar))
+  aux$h0        = h0.draw
+  
+  # sampling sigma.v2
+  ############################################################
+  sigma.v2.s    = priors$sigmav.s + sum(c(aux$H[1] - aux$h0, diff(aux$H))^2)
+  sigma.v2.draw = sigma.v2.s / rchisq(1, priors$sigmav.nu + T)
+  aux$sigma.v2  = sigma.v2.draw
+  
+  # sampling auxiliary states
+  ############################################################
+  Pr.tmp        = simplify2array(lapply(1:10,function(x){
+    dnorm(Y.tilde, mean = as.vector(aux$H + alpha.st[x]), sd = sqrt(sigma.st[x]), log = TRUE) + log(pi.st[x])
+  }))
+  Pr            = t(apply(Pr.tmp, 1, function(x){exp(x - max(x)) / sum(exp(x - max(x)))}))
+  s.cum         = t(apply(Pr, 1, cumsum))
+  r             = matrix(rep(runif(T), 10), ncol = 10)
+  ss            = apply(s.cum < r, 1, sum) + 1
+  aux$s         = as.matrix(ss)
+  
+  
+  # sampling log-volatilities using functions for tridiagonal precision matrix
+  ############################################################
+  Sigma.s.inv   = diag(1 / sigma.st[as.vector(aux$s)])
+  D.inv         = Sigma.s.inv + (1 / aux$sigma.v2) * priors$HH
+  b             = as.matrix(Ytilde.alpha / sigma.st[as.vector(aux$s)] + (aux$h0/aux$sigma.v2)*diag(T)[,1])
+  lead.diag     = diag(D.inv)
+  sub.diag      = mgcv::sdiag(D.inv, -1)
+  D.chol        = mgcv::trichol(ld = lead.diag, sd = sub.diag)
+  D.L           = diag(D.chol$ld)
+  mgcv::sdiag(D.L,-1) = D.chol$sd
+  x             = as.matrix(rnorm(T))
+  a             = forwardsolve(D.L, b)
+  draw          = backsolve(t(D.L), a + x)
+  aux$H         = as.matrix(draw)
+  aux$sigma2    = as.matrix(exp(draw))
+  
+  
+  
+  #### Draw A and Sigma   #### 
+  A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
+  Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
+  
+  kappa.1     = 1
+  kappa.2     = 100
+  kappa.3     = 1
+  A.prior     = matrix(0,nrow(A.hat),ncol(A.hat))
+  A.prior[2:(N+1),] = kappa.3*diag(N)
+  V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+  S.prior     = diag(diag(Sigma.hat))
+  nu.prior    = N+1
+  
+  # normal-inverse Wishard posterior parameters
+  ############################################################
+  V.bar.inv   = t(aux$X)%*%(1/diag(aux$sigma2))%*%aux$X + diag(1/diag(V.prior))
+  V.bar       = solve(V.bar.inv)
+  A.bar       = V.bar%*%(t(aux$X)%*%aux$Y + diag(1/diag(V.prior))%*%A.prior)
+  nu.bar      = nrow(aux$Y) + nu.prior
+  S.bar       = S.prior + t(aux$Y)%*%aux$Y + t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
+  S.bar.inv   = solve(S.bar)
+  
+  # posterior draws 
+  ############################################################
+  Sigma.posterior   = rWishart(S, df=nu.bar, Sigma=S.bar.inv)
+  Sigma.posterior   = apply(Sigma.posterior,3,solve)
+  Sigma.posterior   = array(Sigma.posterior,c(N,N,S))
+  A.posterior       = array(rnorm(prod(c(dim(A.bar),S))),c(dim(A.bar),S))
+  B.posterior       = array(NA,c(N,N,S))
+  L                 = t(chol(V.bar))
+  B1.posterior = array(NA,c(N,(1+N*p),S))
+
+  for (s in 1:S){
+    cholSigma.s     = chol(Sigma.posterior[,,s])
+    B.posterior[,,s]= t(cholSigma.s)
+    A.posterior[,,s]= A.bar + L%*%A.posterior[,,s]%*%cholSigma.s
+    B1.posterior[,,s] =  B.posterior[,,s]%*%t(A.posterior[,,s])
+  }
+  
+  return(list(A.posterior = A.posterior, B.posterior = B.posterior, Sigma.posterior = Sigma.posterior,B1.posterior = B1.posterior))
+          
+
+}
+
+
+```
+
+
+# Estimation of hyperparameters
+Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well.
+
+
+#  Conclusion
+This research aimed to investigate the relationship between monetary policy, banks' deposits, and credit growth in Australia. The objective was to understand how changes in monetary policy influence  banks' credit together with deposit growth. The study incorporated the deposit channel proposed by @drechsler2017deposits in the SVAR framework to evaluate the effect of monetary policy with deposit changes on banks' credit. The findings indicate that when deposits are included in the model, banks' credit decreases more in response to a positive cash rate shock, and GDP exhibits a larger decrease compared to the model without the deposit. These observations highlight the importance of considering the deposit channel in understanding the transmission of monetary policy and its impact on both real and financial economy variables.
+
+
 
 # References {.unnumbered}
 
