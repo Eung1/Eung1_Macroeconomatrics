@@ -1,5 +1,5 @@
 ---
-title: "Research Proposal"
+title: "The Effect of Monetary Policy with Banks Deposit in Australia"
 author: "Eungwon Lee"
 
 execute:
@@ -1408,7 +1408,6 @@ V7.IRFs.k1.hdi    = apply(V7.IRF.posterior[3:7,5,,],1:2,hdi, credMass=0.68)
 hh             = 1:11
 ```
 
-# Identiying assumptions: case 3(model without deposit)
 
 ## Empirical Investigation for model without deposit (case 3)
 As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks' deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model. 
