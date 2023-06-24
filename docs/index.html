@@ -187,7 +187,10 @@ div.csl-indent {
   <li><a href="#gibbs-sampler" id="toc-gibbs-sampler" class="nav-link" data-scroll-target="#gibbs-sampler">Gibbs sampler</a></li>
   <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
   </ul></li>
-  <li><a href="#extension-2.-estimation-of-hyperparameters" id="toc-extension-2.-estimation-of-hyperparameters" class="nav-link" data-scroll-target="#extension-2.-estimation-of-hyperparameters">Extension 2. Estimation of hyperparameters</a></li>
+  <li><a href="#extension-2.-estimation-of-hyperparameters" id="toc-extension-2.-estimation-of-hyperparameters" class="nav-link" data-scroll-target="#extension-2.-estimation-of-hyperparameters">Extension 2. Estimation of hyperparameters</a>
+  <ul class="collapse">
+  <li><a href="#derivation-1" id="toc-derivation-1" class="nav-link" data-scroll-target="#derivation-1">Derivation</a></li>
+  </ul></li>
   <li><a href="#extension-3.-implementation-of-the-dummy-initial-observation" id="toc-extension-3.-implementation-of-the-dummy-initial-observation" class="nav-link" data-scroll-target="#extension-3.-implementation-of-the-dummy-initial-observation">Extension 3. Implementation of the dummy initial observation</a>
   <ul class="collapse">
   <li><a href="#empirical-investigation-for-extended-model" id="toc-empirical-investigation-for-extended-model" class="nav-link" data-scroll-target="#empirical-investigation-for-extended-model">Empirical Investigation for extended model</a></li>
@@ -718,8 +721,8 @@ B_0' &amp;=
 <span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>t1          <span class="ot">=</span> <span class="fu">proc.time</span>()</span>
 <span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> elapsed 
-3.444167 </code></pre>
+<pre><code>elapsed 
+ 3.2985 </code></pre>
 </div>
 </div>
 </section>
@@ -967,6 +970,49 @@ P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
 <p>Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well. As a second extension, I implement the following hierarchical structure:</p>
 <p>Prior for <span class="math inline">\(A\)</span>: <span class="math display">\[A|\Sigma, \kappa \sim \mathcal{MN}_{K \times N}(\underline{A},\Sigma, \kappa^{-1} \underline{V} )\]</span> prior for <span class="math inline">\(\kappa\)</span> <span class="math display">\[\kappa \sim\mathcal{G}(\underline{s}, \underline{a})\]</span> <span class="math inline">\(A\)</span> is assumed to follow a matrix normal distribution, denoted as <span class="math inline">\(\mathcal{MN}_{K\times N}\)</span>, with the following parameters: The mean is <span class="math inline">\(\underline{𝐴}\)</span>, <span class="math inline">\(\Sigma\)</span> is the row specific covariance matrix, and <span class="math inline">\(\kappa^{-1}\underline{V}\)</span> is the column specific covariance matrix.</p>
 <p><span class="math inline">\(\kappa\)</span> is a random variable representing a scalar parameter which is assumed to follow a gamma distribution, with the following parameters: <span class="math inline">\(\underline{s}\)</span> is a shape parameter, determining the shape of the gamma distribution, and <span class="math inline">\(\underline{a}\)</span> is a rate parameter, determining the rate or inverse scale of the gamma distribution. These prior distributions capture the assumptions and beliefs about the underlying values of A and <span class="math inline">\(\kappa\)</span> before observing any data.</p>
+<section id="derivation-1" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-1">Derivation</h2>
+<p><span class="math display">\[
+\begin{align*}
+Y   &amp;= XA + E \\
+E|X &amp;\sim \mathcal{MN}_{T \times N}(0_{T \times N},\Sigma,I_T) \\
+L(A,\Sigma|Y,X) &amp;\propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
+                &amp;= det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
+\end{align*}
+\]</span></p>
+<p>where <span class="math inline">\(\hat{A} = (X'X)^{-1}X'Y\)</span> and it follows that</p>
+<p><span class="math display">\[
+\begin{align*}
+L(A,\Sigma|Y,X) = \mathcal{NIW}_{K\times N}(\hat{A}, \quad (X'X)^{-1},  \quad (Y-X\hat{A})'(Y-X\hat{A}),  \quad T-N-K)
+\end{align*}
+\]</span></p>
+<p>The joint prior distribution for <span class="math inline">\((A, \Sigma)\)</span> of the same form is as follows:</p>
+<p><span class="math display">\[
+\begin{align*}
+p(A,\Sigma) &amp;= p(A|\Sigma) p(\Sigma) \\
+A|\Sigma,\kappa &amp;\sim \mathcal{MN}_{K \times N} (\underline{A}, \Sigma , \kappa^{-1}\underline{V}) \\
+\Sigma &amp;\sim \mathcal{IW}_{N}(\underline{S},\underline{\nu})
+\end{align*}
+\]</span></p>
+<p>And the full conditional posterior is followed by:</p>
+<p><span class="math display">\[
+\begin{align*}
+p(A,\Sigma |Y, X,\kappa) &amp;= p(A|Y, X, \Sigma) p(\Sigma|Y,X)p(\kappa) \\
+p(A|Y,X,\Sigma)   &amp;= \mathcal{MN}_{K \times N} (\bar{A}, \Sigma , \bar{V}) \\
+p(\Sigma|Y, X)    &amp;= \mathcal{IW}_{N}(\bar{S},\bar{\nu}) \\
+p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
+\end{align*}
+\]</span></p>
+<p>The posterior parameters are given by:</p>
+<p><span class="math display">\[
+\begin{align*}
+\bar{V}      &amp;= (X'X+ \kappa\underline{V}^{-1})^{-1} \\
+   \bar{A}   &amp;= \bar{V}(X'Y+\kappa\underline{V}^{-1} \underline{A}) \\
+   \bar{\nu} &amp;= T + \underline{\nu} \\
+   \bar{S}   &amp;= \underline{S} + Y'Y + \kappa\underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}
+\end{align*}
+\]</span></p>
+</section>
 </section>
 <section id="extension-3.-implementation-of-the-dummy-initial-observation" class="level1">
 <h1>Extension 3. Implementation of the dummy initial observation</h1>

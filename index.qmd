@@ -1642,6 +1642,62 @@ $A$ is assumed to follow a matrix normal distribution, denoted as $\mathcal{MN}_
 $\kappa$ is a random variable representing a scalar parameter which is assumed to follow a gamma distribution, with the following parameters: $\underline{s}$ is a shape parameter, determining the shape of the gamma distribution, and $\underline{a}$ is a rate parameter, determining the rate or inverse scale of the gamma distribution. These prior distributions capture the assumptions and beliefs about the underlying values of A and $\kappa$ before observing any data.
 
 
+## Derivation
+
+$$
+\begin{align*}
+Y   &= XA + E \\
+E|X &\sim \mathcal{MN}_{T \times N}(0_{T \times N},\Sigma,I_T) \\
+L(A,\Sigma|Y,X) &\propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
+                &= det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
+\end{align*}
+$$
+
+where $\hat{A} = (X'X)^{-1}X'Y$ and it follows that
+
+$$
+\begin{align*}
+L(A,\Sigma|Y,X) = \mathcal{NIW}_{K\times N}(\hat{A}, \quad (X'X)^{-1},  \quad (Y-X\hat{A})'(Y-X\hat{A}),  \quad T-N-K)
+\end{align*}
+$$
+
+
+
+The joint prior distribution for $(A, \Sigma)$ of the same form is as follows:
+
+$$
+\begin{align*}
+p(A,\Sigma) &= p(A|\Sigma) p(\Sigma) \\
+A|\Sigma,\kappa &\sim \mathcal{MN}_{K \times N} (\underline{A}, \Sigma , \kappa^{-1}\underline{V}) \\
+\Sigma &\sim \mathcal{IW}_{N}(\underline{S},\underline{\nu})
+\end{align*}
+$$
+
+
+And the full conditional posterior is followed by:
+
+$$
+\begin{align*}
+p(A,\Sigma |Y, X,\kappa) &= p(A|Y, X, \Sigma) p(\Sigma|Y,X)p(\kappa) \\
+p(A|Y,X,\Sigma)   &= \mathcal{MN}_{K \times N} (\bar{A}, \Sigma , \bar{V}) \\
+p(\Sigma|Y, X)    &= \mathcal{IW}_{N}(\bar{S},\bar{\nu}) \\
+p(\kappa)         &= \mathcal{G}(\underline{s}, \underline{a})
+\end{align*}
+$$
+
+
+The posterior parameters are given by:
+
+$$
+\begin{align*}
+\bar{V}      &= (X'X+ \kappa\underline{V}^{-1})^{-1} \\ 
+   \bar{A}   &= \bar{V}(X'Y+\kappa\underline{V}^{-1} \underline{A}) \\ 
+   \bar{\nu} &= T + \underline{\nu} \\ 
+   \bar{S}   &= \underline{S} + Y'Y + \kappa\underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}
+\end{align*}
+$$
+
+
 
 # Extension 3. Implementation of the dummy initial observation
 
