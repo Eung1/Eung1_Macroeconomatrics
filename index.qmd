@@ -468,15 +468,69 @@ $y_t$ contains eight variables: commodity prices ($com_t$), the U.S. real GDP ($
 Premultiplying $B_0^{-1}$ to the structural VAR model gives us the reduced form representation as follows:
 
 $$
-\begin{align}
+\begin{align*}
   y_t &= \mu_0 + A_1 y_{t-1} + \dots + A_4 y_{t-4} + \epsilon_t \\
   \epsilon_{t}| Y_{t-1} &\sim {iid} ( 0_N, \Sigma)
-\end{align}
+\end{align*}
 $$
 where $A_i=B_0^{-1}B_i$, $\epsilon_t=B_0^{-1}u_t$, and $\Sigma=$$B_0^{-1}B_0^{-1 \prime}$
 
 Using the reduced form equations, we can estimate $\Sigma$. However $\Sigma$ has $8(8+1)/2=36$ unique elements, which is the number of equations, yet we have $8^2=64$ unknowns in $B_0$. Hence I impose exclusion restrictions on $B_0$ to identify the system.
 
+
+## Derivation
+
+$$
+\begin{align*}
+Y   &= XA + E \\
+E|X &\sim \mathcal{MN}_{T \times N}(0_{T \times N},\Sigma,I_T) \\
+L(A,\Sigma|Y,X) &\propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
+                &= det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
+\end{align*}
+$$
+
+where $\hat{A} = (X'X)^{-1}X'Y$ and it follows that
+
+$$
+\begin{align*}
+L(A,\Sigma|Y,X) = \mathcal{NIW}_{K\times N}(\hat{A}, \quad (X'X)^{-1},  \quad (Y-X\hat{A})'(Y-X\hat{A}),  \quad T-N-K)
+\end{align*}
+$$
+
+
+
+The joint prior distribution for $(A, \Sigma)$ of the same form is as follows:
+
+$$
+\begin{align*}
+p(A,\Sigma) &= p(A|\Sigma) p(\Sigma) \\
+A|\Sigma &\sim \mathcal{MN}_{K \times N} (\underline{A}, \Sigma , \underline{V}) \\
+\Sigma &\sim \mathcal{IW}_{N}(\underline{S},\underline{\nu})
+\end{align*}
+$$
+
+
+And the full conditional posterior is followed by:
+
+$$
+\begin{align*}
+p(A,\Sigma |Y, X) &= p(A|Y, X, \Sigma) p(\Sigma|Y,X) \\
+p(A|Y,X,\Sigma)   &= \mathcal{MN}_{K \times N} (\bar{A}, \Sigma , \bar{V}) \\
+p(\Sigma|Y, X)    &= \mathcal{IW}_{N}(\bar{S},\bar{\nu})
+\end{align*}
+$$
+
+
+The posterior parameters are given by:
+
+$$
+\begin{align*}
+\bar{V}      &= (X'X+ \underline{V}^{-1})^{-1} \\ 
+   \bar{A}   &= \bar{V}(X'Y+\underline{V}^{-1} \underline{A}) \\ 
+   \bar{\nu} &= T + \underline{\nu} \\ 
+   \bar{S}   &= \underline{S} + Y'Y + \underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}
+\end{align*}
+$$
 
 # Hypothesis
 I want to estimate how monetary shocks affect credit while controlling for deposits. I expect that credit will be less responsive to monetary policy when deposits are included as an endogenous variable. This expectation is consistent with the deposit channel of monetary policy, where banks' credit is heavily influenced by changes in deposits in response to monetary policy.
@@ -1054,58 +1108,6 @@ hh             = 1:11
 
 ```
 
-Since it is before normalization, it shows some weird plots as below.
-
-
-###### Figure 7. IRF to cash rate shock with long-run restiction before normalization {style="text-align: center;"}
-
-```{r irf-au-mps plots3, echo = FALSE}
-
-# irf-au-mps plots
-
-par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
-for (n in 1:6){
-  ylims     = range(LRR.IRFs.k1[n,hh],LRR.IRFs.k1.hdi[,n,hh])
-  plot(hh,LRR.IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(LRR.IRFs.k1)[n])
-  if (n==5 | n==6){
-    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
-  } else {
-    axis(1,c(1,2,6,11),c("","","",""))
-  }
-  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(LRR.IRFs.k1.hdi[1,n,hh],LRR.IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
-  abline(h=0)
-  lines(hh, LRR.IRFs.k1[n,hh],lwd=2,col=mcxs1)
-  
-}
-
-```
-
-
-###### Figure 8. FEVD of banks' credit plots with long-run restiction before normalization {style="text-align: center;"}
-
-
-```{r fevd-credit plots3, echo = FALSE}
-# Plots of FEVD of Australian banks credit
-############################################################
-load("irf-fevd-k1.RData3")
-hh            = 1:(h+1)
-LRR.fevd.au.credit= apply(LRR.FEVD.posterior[7,,,],1:2,mean)
-LRR.fevd.au.credit= rbind(rep(0,h+1),apply(LRR.fevd.au.credit,2,cumsum))
-
-colors = c("deepskyblue1","deepskyblue2","maroon1","maroon","maroon2","magenta","maroon3","maroon4")
-
-
-par(mar=rep(4,4),cex.axis=1, cex.lab=0.8)
-plot(hh,LRR.fevd.au.credit[1,], type="n", ylim=c(0,100), axes=FALSE, xlab="", ylab="")
-axis(1,hh,c("","1 quarter","","","","5 quarter","","","","","10 quarter"))
-axis(2,c(0,50,100),c("","FEVD[au.credit]",""))
-for (n in 1:N){
-  polygon(c(hh,(h+1):1), c(LRR.fevd.au.credit[n,hh],LRR.fevd.au.credit[n+1,(h+1):1]), col=colors[n],border=colors[n])
-}
-axis(4, (0.5*(LRR.fevd.au.credit[1:8,7]+LRR.fevd.au.credit[2:9,7]))[c(5,7)], c("crd", "mps"))
-
-```
 
 
 
@@ -1629,12 +1631,21 @@ SVcommon.Gibbs.iteration = function(S,aux, priors){
 
 
 # Extension 2. Estimation of hyperparameters
-Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well.
+Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well. As a second extension, I implement the following hierarchical structure:
+
+Prior for $A$:
+$$A|\Sigma, \kappa \sim \mathcal{MN}_{K \times N}(\underline{A},\Sigma, \kappa^{-1} \underline{V} )$$
+prior for $\kappa$
+$$\kappa \sim\mathcal{G}(\underline{s}, \underline{a})$$
+$A$ is assumed to follow a matrix normal distribution, denoted as $\mathcal{MN}_{K\times N}$, with the following parameters: The mean is $\underline{𝐴}$, $\Sigma$ is the covariance matrix, which determines the variability of the elements in A. $\kappa$ is a precision parameter, with a value of $\kappa^{-1}$ determining the precision of the distribution and $\underline{V}$ is a matrix of the same dimensions as A, which acts as a precision matrix.
+
+$\kappa$ is a random variable representing a scalar parameter which is assumed to follow a gamma distribution, with the following parameters: $\underline{s}$ is a shape parameter, determining the shape of the gamma distribution, and $\underline{a}$ is a rate parameter, determining the rate or inverse scale of the gamma distribution. These prior distributions capture the assumptions and beliefs about the underlying values of A and $\kappa$ before observing any data.
+
 
 
 # Extension 3. Implementation of the dummy initial observation
 
-As the third extension, I add the ‘sum of coefficients’ and ‘dummy initial observation’ priors proposed in Doan et al. (1984) and Sims (1993), respectively to my baseline model. Both priors can be implemented by augmenting the system with dummy observations. In more detail, according to the authors, the ‘sum of coefficients’ prior tells that when the average of lagged values of a variable is at some level,it is likely to be a good forecast of future observations, and can be implemented by augmenting the system with the dummy observations.
+As a third extension, I add the ‘sum of coefficients’ and ‘dummy initial observation’ priors proposed in Doan et al. (1984) and Sims (1993), respectively to my baseline model. Both priors can be implemented by augmenting the system with dummy observations. In more detail, according to the authors, the ‘sum of coefficients’ prior tells that when the average of lagged values of a variable is at some level,it is likely to be a good forecast of future observations, and can be implemented by augmenting the system with the dummy observations.
 
 Necessity of adopting the ‘sum of coefficients' and ‘dummy initial observation’ is well argued by Carriero and Clark (2015) and Sims (1993). Carriero and Clark (2015) argues that if one decides to estimate the model in levels, which is the case for my model, then these priors implement the belief that there is unit-root in the system, which is a typical feature of macroeconomic datasets. Also, Sims (1993) provides examples that ‘without such elements in the prior, fitted multivariate time series models tend to imply that an unreasonably large share of the sample period variation in the data is accounted for by deterministic components’.
 
