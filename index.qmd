@@ -1851,7 +1851,7 @@ round(apply(ex22_Sigma.posterior, 1:2, mean),3)
 
 ## Empirical Investigation for extended model
 
-Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the direction is in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.
+Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the directions are in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.
 
 ```{r results for case 1_contd2_2}
 #| echo: false
