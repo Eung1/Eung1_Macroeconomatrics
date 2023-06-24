@@ -1637,7 +1637,7 @@ Prior for $A$:
 $$A|\Sigma, \kappa \sim \mathcal{MN}_{K \times N}(\underline{A},\Sigma, \kappa^{-1} \underline{V} )$$
 prior for $\kappa$
 $$\kappa \sim\mathcal{G}(\underline{s}, \underline{a})$$
-$A$ is assumed to follow a matrix normal distribution, denoted as $\mathcal{MN}_{K\times N}$, with the following parameters: The mean is $\underline{𝐴}$, $\Sigma$ is the covariance matrix, which determines the variability of the elements in A. $\kappa$ is a precision parameter, with a value of $\kappa^{-1}$ determining the precision of the distribution and $\underline{V}$ is a matrix of the same dimensions as A, which acts as a precision matrix.
+$A$ is assumed to follow a matrix normal distribution, denoted as $\mathcal{MN}_{K\times N}$, with the following parameters: The mean is $\underline{𝐴}$, $\Sigma$ is the row specific covariance matrix, and $\kappa^{-1}\underline{V}$ is the column specific covariance matrix.
 
 $\kappa$ is a random variable representing a scalar parameter which is assumed to follow a gamma distribution, with the following parameters: $\underline{s}$ is a shape parameter, determining the shape of the gamma distribution, and $\underline{a}$ is a rate parameter, determining the rate or inverse scale of the gamma distribution. These prior distributions capture the assumptions and beliefs about the underlying values of A and $\kappa$ before observing any data.
 
