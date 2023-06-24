@@ -77,45 +77,6 @@ Quarterly data between Q1 1990 and Q2 2019 was acquired from the Reserve Bank of
 
 Unfortunately, I cannot use data prior to Q1 1990 as RBA adopted the cash rate as its primary policy tool in the early 1990s, replacing the "interest rate on 90-day bills" as the target for monetary policy. Additionally, I cannot use data after Q2 2019 due to a break in the credit data at that time.
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-#| results: hide
-
-# test
-
-# I would suggest that you merged all the data into one table, such that you can call them easier. Doing this would also enable you to do loops over the variables. I have attached my own merge, which you can use if interested. You could then do ADF, ACF and plot using a loop over the variables in the table! I have included my own code of ADF if interested (I know that the code could be more efficiently written). 
-
-#Merging the series into vector Y
-#Y = na.omit(merge(tindp, tcpi, texpec, tlend, thp, tfci))
-#colnames(Y)<- c("indu", "cpi", "exp", "lend","hp","fci")
-
-# Code for ADF
-#max_lag = 12
-#adf_ <- list()
-#for (i in 1:6) {
-#  adf_result = adf.test(Y[,i], k = max_lag)
-#  adf_[[i]] <- adf_result
-#}
-#head(adf_)
-
-# View the ADF test results
-#summary(adf_result)
-
-#adf_table <- data.frame(Test_Statistic = numeric(length(adf_)), 
-#                        p_value = numeric(length(adf_)), 
-#                        Lags_Used = numeric(length(adf_)))
-
-# Fill in the data frame with the test results
-#for (i in 1:length(adf_)) {
-#  adf_table[i, "Test_Statistic"] = round(adf_[[i]]$statistic,3)
-#  adf_table[i, "p_value"] = round(adf_[[i]]$p.value,3)
-#  adf_table[i, "Lags_Used"] = round(adf_[[i]]$parameter,3)
-#}
-```
-
-
 
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
@@ -600,8 +561,7 @@ mcxs2.shade1= rgb(mcxs2.rgb[1],mcxs2.rgb[2],mcxs2.rgb[3], alpha=120, maxColorVal
 ############################################################
 N       = 8
 p       = 4
-S       = 50000
-#h      = 8
+S       = 5000
 h       = 10
 
 # create Y and X
@@ -1462,7 +1422,7 @@ for (n in 1:N2){
 axis(4, (0.5*(V7.fevd.au.credit[1:7,6]+V7.fevd.au.credit[2:8,6]))[c(5,6)], c("mps","crds"))
 ```
 
-# Stochastic volatility heteroskedasticity
+# Extension 1. Stochastic volatility heteroskedasticity
 
 ## Model equations
 $$
@@ -1668,8 +1628,309 @@ SVcommon.Gibbs.iteration = function(S,aux, priors){
 ```
 
 
-# Estimation of hyperparameters
+# Extension 2. Estimation of hyperparameters
 Estimating hyperparameters for the prior distribution from data can provide some advantages. By estimating the hyperparameters from data, we can expect that the prior distribution gets more data-driven since it incorporates information specific to the observed dataset. It can lead to more accurate and informative prior for the model. Also, potentially the overall fit of the model can be improved as well.
+
+
+# Extension 3. Implementation of the dummy initial observation
+
+As the third extension, I add the ‘sum of coefficients’ and ‘dummy initial observation’ priors proposed in Doan et al. (1984) and Sims (1993), respectively to my baseline model. Both priors can be implemented by augmenting the system with dummy observations. In more detail, according to the authors, the ‘sum of coefficients’ prior tells that when the average of lagged values of a variable is at some level,it is likely to be a good forecast of future observations, and can be implemented by augmenting the system with the dummy observations.
+
+Necessity of adopting the ‘sum of coefficients' and ‘dummy initial observation’ is well argued by Carriero and Clark (2015) and Sims (1993). Carriero and Clark (2015) argues that if one decides to estimate the model in levels, which is the case for my model, then these priors implement the belief that there is unit-root in the system, which is a typical feature of macroeconomic datasets. Also, Sims (1993) provides examples that ‘without such elements in the prior, fitted multivariate time series models tend to imply that an unreasonably large share of the sample period variation in the data is accounted for by deterministic components’.
+
+
+```{r second extension}
+#| echo: true
+#| message: false
+#| warning: false
+#| results: hide
+
+
+#Basic Model Test
+##############################################################################
+ex2_y = apply(matrix(rnorm(2*S), ncol = 2), 2, cumsum)
+ex2_Y = ex2_y[2:S,]
+ex2_X = cbind(1, ex2_y[1:S-1,])
+ex2_S = S
+
+# Prior
+##############
+
+# Setup
+ex2_N = ncol(ex2_Y)
+ex2_p = 1
+ex2_K = ex2_N*ex2_p+1
+
+# MLE
+ex2_A.hat       = solve(t(ex2_X)%*%ex2_X)%*%t(ex2_X)%*%ex2_Y
+ex2_Sigma.hat   = t(ex2_Y-ex2_X%*%ex2_A.hat)%*%(ex2_Y-ex2_X%*%ex2_A.hat)/nrow(ex2_Y)
+
+
+# Parameters for prior distribution 
+ex2_A.prior               = matrix(0,nrow(ex2_A.hat),ncol(ex2_A.hat))
+ex2_A.prior[2:(ex2_N+1),] = kappa.3*diag(ex2_N)
+ex2_V.prior               = diag(c(kappa.2,kappa.1*((1:ex2_p)^(-2))%x%rep(1,ex2_N)))
+ex2_S.prior               = diag(diag(ex2_Sigma.hat))
+ex2_nu.prior              = ex2_N+1
+
+
+# Posterior
+##############
+
+# normal-inverse Wishard posterior parameters
+ex2_V.bar.inv   = t(ex2_X)%*%ex2_X + diag(1/diag(ex2_V.prior))
+ex2_V.bar       = solve(ex2_V.bar.inv)
+ex2_A.bar       = ex2_V.bar%*%(t(ex2_X)%*%ex2_Y + diag(1/diag(ex2_V.prior))%*%ex2_A.prior)
+ex2_nu.bar      = nrow(ex2_Y) + ex2_nu.prior
+ex2_S.bar       = ex2_S.prior + t(ex2_Y)%*%ex2_Y + t(ex2_A.prior)%*%diag(1/diag(ex2_V.prior))%*%ex2_A.prior - t(ex2_A.bar)%*%ex2_V.bar.inv%*%ex2_A.bar
+ex2_S.bar.inv   = solve(ex2_S.bar)
+
+# posterior draws
+ex2_Sigma.posterior   = rWishart(ex2_S, df=ex2_nu.bar, Sigma=ex2_S.bar.inv)
+ex2_Sigma.posterior   = apply(ex2_Sigma.posterior,3,solve)
+ex2_Sigma.posterior   = array(ex2_Sigma.posterior,c(ex2_N,ex2_N,ex2_S))
+ex2_A.posterior       = array(rnorm(prod(c(dim(ex2_A.bar),ex2_S))),c(dim(ex2_A.bar),ex2_S))
+ex2_B.posterior       = array(NA,c(ex2_N,ex2_N,ex2_S))
+ex2_L                 = t(chol(ex2_V.bar))
+for (s in 1:ex2_S){
+  ex2_cholSigma.s     = chol(ex2_Sigma.posterior[,,s])
+  ex2_B.posterior[,,s]= t(ex2_cholSigma.s)
+  ex2_A.posterior[,,s]= ex2_A.bar + ex2_L%*%ex2_A.posterior[,,s]%*%ex2_cholSigma.s
+}
+##############################################################################
+
+
+
+##Extended model Test
+##############################################################################
+
+# Initial setup
+##############
+  lambda3       = 1
+  lambda4       = 1
+  
+  
+  M             = 1+N*ex2_p
+  
+  in.obvs.ex2_Y = matrix(y[1:ex2_p,], ncol = ncol(ex2_y))
+  y_bar         = colMeans(in.obvs.ex2_Y)
+    
+  Y_star        = rbind(diag(y_bar)/lambda3, y_bar/lambda4)
+  X_star        = as.matrix(c(rep(0, ncol(ex2_y)), 1/lambda4))
+  for (i in 1:ex2_p) {
+    X_star      = cbind(Y_star, X_star)
+  }
+
+ex22_X          = rbind(X_star, ex2_X)
+ex22_Y          = rbind(Y_star, ex2_Y)
+
+
+
+# Prior
+##############
+
+# Setup
+ex22_N = ncol(ex22_Y)
+ex22_p = 1
+ex22_K = ex22_N*ex22_p+1
+ex22_S = 1000  
+
+# MLE
+ex22_A.hat       = solve(t(ex22_X)%*%ex22_X)%*%t(ex22_X)%*%ex22_Y
+ex22_Sigma.hat   = t(ex22_Y-ex22_X%*%ex22_A.hat)%*%(ex22_Y-ex22_X%*%ex22_A.hat)/nrow(ex22_Y)
+
+
+# Parameters for prior distribution 
+ex22_A.prior                = matrix(0,nrow(ex22_A.hat),ncol(ex22_A.hat))
+ex22_A.prior[2:(ex22_N+1),] = kappa.3*diag(ex22_N)
+ex22_V.prior                = diag(c(kappa.2,kappa.1*((1:ex22_p)^(-2))%x%rep(1,ex22_N)))
+ex22_S.prior                = diag(diag(ex22_Sigma.hat))
+ex22_nu.prior               = ex22_N+1
+
+
+
+# Porterior
+##############
+
+# normal-inverse Wishard posterior parameters
+ex22_V.bar.inv   = t(ex22_X)%*%ex22_X + diag(1/diag(ex22_V.prior))
+ex22_V.bar       = solve(ex22_V.bar.inv)
+ex22_A.bar       = ex22_V.bar%*%(t(ex22_X)%*%ex22_Y + diag(1/diag(ex22_V.prior))%*%ex22_A.prior)
+ex22_nu.bar      = nrow(ex22_Y) + ex22_nu.prior
+ex22_S.bar       = ex22_S.prior + t(ex22_Y)%*%ex22_Y + t(ex22_A.prior)%*%diag(1/diag(ex22_V.prior))%*%ex22_A.prior - t(ex22_A.bar)%*%ex22_V.bar.inv%*%ex22_A.bar
+ex22_S.bar.inv   = solve(ex22_S.bar)
+
+# posterior draws
+ex22_Sigma.posterior   = rWishart(ex22_S, df=ex22_nu.bar, Sigma=ex22_S.bar.inv)
+ex22_Sigma.posterior   = apply(ex22_Sigma.posterior,3,solve)
+ex22_Sigma.posterior   = array(ex22_Sigma.posterior,c(ex22_N,ex22_N,ex22_S))
+ex22_A.posterior       = array(rnorm(prod(c(dim(ex22_A.bar),ex22_S))),c(dim(ex22_A.bar),ex22_S))
+ex22_B.posterior       = array(NA,c(ex22_N,ex22_N,ex22_S))
+ex22_L                 = t(chol(ex22_V.bar))
+for (s in 1:ex22_S){
+  ex22_cholSigma.s     = chol(ex22_Sigma.posterior[,,s])
+  ex22_B.posterior[,,s]= t(ex22_cholSigma.s)
+  ex22_A.posterior[,,s]= ex22_A.bar + ex22_L%*%ex22_A.posterior[,,s]%*%ex22_cholSigma.s
+}
+##############################################################################
+
+
+# Derivation of A.posterior and B.posterior for extened model
+##############
+
+
+  ex23_in.obvs.Y             = matrix(y[1:p,], ncol = N)
+  ex23_y.bar                 = colMeans(ex23_in.obvs.Y)
+    
+  ex23_Y_star                = rbind(diag(ex23_y.bar)/lambda3, ex23_y.bar/lambda4)
+  ex23_X_star                = as.matrix(c(rep(0, N), 1/lambda4))
+  for (i in 1:p) {
+    ex23_X_star              = cbind(ex23_Y_star, ex23_X_star)
+  }
+  
+  ex23_X                     = rbind(ex23_X_star, X)
+  ex23_Y                     = rbind(ex23_Y_star, Y)
+
+# 1. priors of extension 3
+  ex23_A.hat                 = solve(t(ex23_X)%*%ex23_X)%*%(t(ex23_X)%*%ex23_Y)
+  ex23_Sigma.hat             = diag(ncol(ex23_Y))
+  ex23_N                     = ncol(ex23_Y)
+   
+  ex23_A.prior               = matrix(0,nrow(ex23_A.hat),ncol(ex23_A.hat))
+  ex23_A.prior[2:(ex23_N+1),]= diag(ex23_N)
+  ex23_V.prior               = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,ex23_N)))
+  ex23_S.prior               = diag(diag(ex23_Sigma.hat))
+  ex23_nu.prior              = ex23_N+1
+
+# 2. posteriors of extension 3
+  ex23_V.bar.inv             = (t(X)%*%X) + diag(1/diag(ex23_V.prior))
+  ex23_V.bar                 = solve(ex23_V.bar.inv)
+  
+  ex23_A.bar                 = ex23_V.bar%*%(t(X)%*%Y + diag(1/diag(ex23_V.prior))%*%ex23_A.prior)
+  ex23_nu.bar                = nrow(Y) + ex23_nu.prior
+  
+  ex23_S.bar                 = ex23_S.prior + t(Y)%*%Y + t(ex23_A.prior)%*%diag(1/diag(ex23_V.prior))%*%ex23_A.prior - t(ex23_A.bar)%*%ex23_V.bar.inv%*%ex23_A.bar
+  ex23_S.bar.inv             = solve(ex23_S.bar)
+   
+  ex23_Sigma.posterior.inv   = rWishart(S, df=ex23_nu.bar, Sigma=ex23_S.bar.inv)
+  ex23_Sigma.posterior       = apply(ex23_Sigma.posterior.inv,3,solve)
+  ex23_Sigma.posterior       = array(ex23_Sigma.posterior,c(N,N,S))
+  ex23_A.posterior           = array(rnorm(prod(c(dim(ex23_A.bar),S))),c(dim(ex23_A.bar),S))
+  ex23_L                     = t(chol(ex23_V.bar))
+  ex23_B.posterior           = array(NA, c(N,N,S))
+  
+  for (s in 1:S){
+    ex23_chol.sigma          = chol(ex23_Sigma.posterior[,,s])
+    ex23_A.posterior[,,s]    = ex23_A.bar + ex23_L%*%ex23_A.posterior[,,s]%*%ex23_chol.sigma
+    ex23_B.posterior[,,s]    = t(ex23_chol.sigma)
+  }
+  
+
+
+```
+
+As we see below, the result from the simulation is similar to the true parameter of the baseline model.
+
+A.posterior for basic and extended model:
+```{R}
+round(apply(ex2_A.posterior, 1:2, mean),3)
+round(apply(ex22_A.posterior, 1:2, mean),3)
+
+```
+B.posterior for basic and extended model:
+```{R}
+round(apply(ex2_B.posterior, 1:2, mean),3)
+round(apply(ex22_B.posterior, 1:2, mean),3)
+```
+Sigma.posterior for basic and extended model:
+```{R}
+round(apply(ex2_Sigma.posterior, 1:2, mean),3)
+round(apply(ex22_Sigma.posterior, 1:2, mean),3)
+```
+
+
+## Empirical Investigation for extended model
+
+Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the direction is in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.
+
+```{r results for case 1_contd2_2}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# Impulse response functions
+# Forecast Error Variance Decomposition
+############################################################
+
+
+
+ex23_IRF.posterior     = array(NA,c(N,N,h+1,S))
+ex23_IRF.inf.posterior = array(NA,c(N,N,S))
+ex23_FEVD.posterior    = array(NA,c(N,N,h+1,S))
+ex23_J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+for (s in 1:S){
+  ex23_A.bold          = rbind(t(ex23_A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  ex23_IRF.inf.posterior[,,s] = ex23_J %*% solve(diag(N*p)-ex23_A.bold) %*% t(ex23_J) %*% ex23_B.posterior[,,s]
+  ex23_A.bold.power           = ex23_A.bold
+  for (i in 1:(h+1)){
+    tmp = ex23_B.posterior[,,s]
+    if (i==1){
+      ex23_IRF.posterior[,,i,s]  = tmp
+    } else {
+      ex23_IRF.posterior[,,i,s]  = ex23_J %*% ex23_A.bold.power %*% t(ex23_J) %*% tmp
+      ex23_A.bold.power          = ex23_A.bold.power %*% ex23_A.bold
+    }
+    for (n in 1:N){
+      for (nn in 1:N){
+        ex23_FEVD.posterior[n,nn,i,s]  = sum(ex23_IRF.posterior[n,nn,1:i,s]^2)
+      }
+    }
+    ex23_FEVD.posterior[,,i,s]         = diag(1/apply(ex23_FEVD.posterior[,,i,s],1,sum))%*%ex23_FEVD.posterior[,,i,s]
+  }
+}
+ex23_FEVD.posterior                    = 100*ex23_FEVD.posterior
+
+
+save(ex23_IRF.posterior,ex23_IRF.inf.posterior, ex23_FEVD.posterior, file="ex23_irf-fevd-k1.RData")
+
+
+# III. Plots of responses to domestic monetary policy shock
+############################################################
+load("ex23_irf-fevd-k1.RData")
+ex23_IRFs.k1           = apply(ex23_IRF.posterior[3:8,5,,],1:2,mean)
+ex23_IRFs.inf.k1       = apply(ex23_IRF.inf.posterior[3:8,5,],1,mean)
+rownames(ex23_IRFs.k1) = colnames(Y)[3:8]
+
+ex23_IRFs.k1.hdi       = apply(ex23_IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
+hh                     = 1:11
+```
+
+
+
+###### Figure 12. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+
+```{r irf-au-mps plots for extension 2, echo = FALSE}
+
+# irf-au-mps plots
+
+par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+for (n in 1:6){
+  ylims     = range(ex23_IRFs.k1[n,hh],ex23_IRFs.k1.hdi[,n,hh])
+  plot(hh,ex23_IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(ex23_IRFs.k1)[n])
+  if (n==5 | n==6){
+    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+  } else {
+    axis(1,c(1,2,6,11),c("","","",""))
+  }
+  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+  polygon(c(hh,(h+1):1), c(ex23_IRFs.k1.hdi[1,n,hh],ex23_IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  abline(h=0)
+  lines(hh, ex23_IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  
+}
+
+```
 
 
 #  Conclusion
