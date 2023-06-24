@@ -653,7 +653,7 @@ B_0' &amp;=
 <span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The posterior <span class="math inline">\(B_0\)</span> matrix requires a normalization since it exhibits symmetric distribution round zero. We can additionally confirm this by looking at the IRF plots in Figure 7. Below is the normalization function for this.</p>
+<p>The posterior <span class="math inline">\(B_0\)</span> matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># initial setup</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -707,7 +707,7 @@ B_0' &amp;=
 <span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtain normalized B0</span></span>
 <span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>t0<span class="ot">=</span>  <span class="fu">proc.time</span>()</span>
 <span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>ttt<span class="ot">=</span><span class="dv">1</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>B0.posterior.hat.inv <span class="ot">=</span> <span class="sc">-</span><span class="fu">solve</span>(B0.posterior[,,<span class="dv">1</span>]) <span class="co"># does - reverse the IRF?</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>B0.posterior.hat.inv <span class="ot">=</span> <span class="fu">solve</span>(B0.posterior[,,<span class="dv">1</span>]) <span class="co"># does - reverse the IRF?</span></span>
 <span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
 <span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>Sigma.posterior.inv <span class="ot">=</span> <span class="fu">solve</span>(Sigma.posterior[,,s])</span>
 <span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>B0.posterior.tmp    <span class="ot">=</span> B0.posterior[,,s]</span>
@@ -719,7 +719,7 @@ B_0' &amp;=
 <span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> elapsed 
-3.180167 </code></pre>
+3.444167 </code></pre>
 </div>
 </div>
 </section>
@@ -731,8 +731,8 @@ B_0' &amp;=
 <section id="section-5" class="level1">
 <h1></h1>
 <p>Below is IRF with long-run restiction and normalization.Though the point estimations deviate from zero but most of the confident intervals of variables include zero except real GDP which decrease but it gets to zero statistically as time proceeds.</p>
-<section id="figure-9.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization">Figure 9. IRF to cash rate shock with long-run restiction and normalization</h6>
+<section id="figure-7.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-7.-irf-to-cash-rate-shock-with-long-run-restiction-and-normalization">Figure 7. IRF to cash rate shock with long-run restiction and normalization</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots3_normalized-1.png" class="img-fluid" width="672"></p>
@@ -767,16 +767,16 @@ ex_t \\
 <section id="empirical-investigation-for-model-without-deposit-case-3" class="level2">
 <h2 class="anchored" data-anchor-id="empirical-investigation-for-model-without-deposit-case-3">Empirical Investigation for model without deposit (case 3)</h2>
 <p>As we see the figure of response function of banks credit to cash rate shock, banks credit decreases less upon a positive cash rate shock in the model without banks’ deposit. Another interesting observation is that GDP also decreases less under this model than it did in baseline model in which deposit is included. In other words, GDP, a real economy variable, and credit, a financial economy variable are both responding more sensitively to monetary policy shock when deposit is included in the model.</p>
-<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<section id="figure-8.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-8.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 8. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="figure-11.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-11.-fevd-of-banks-credit-plots">Figure 11. FEVD of banks’ credit plots</h6>
+<section id="figure-9.-fevd-of-banks-credit-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-9.-fevd-of-banks-credit-plots">Figure 9. FEVD of banks’ credit plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/fevd-credit plots2-1.png" class="img-fluid" width="672"></p>
@@ -1197,8 +1197,8 @@ P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
 <section id="empirical-investigation-for-extended-model" class="level2">
 <h2 class="anchored" data-anchor-id="empirical-investigation-for-extended-model">Empirical Investigation for extended model</h2>
 <p>Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the directions are in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.</p>
-<section id="figure-12.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-12.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 12. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots for extension 2-1.png" class="img-fluid" width="672"></p>

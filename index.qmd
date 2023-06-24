@@ -972,7 +972,7 @@ IR.infinity[,,s]     = solve(B0.posterior[,,s]-Bplus.posterior[,2:9,s]-Bplus.pos
 
 ```
 
-The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. We can additionally confirm this by looking at the IRF plots in Figure 7. Below is the normalization function for this.
+The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this.
 
 ```{r results for case 2: long-run restriction_contd2, normalization}
 #| echo: true
@@ -1031,7 +1031,7 @@ normalization.wz2003  = function(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.po
 #Obtain normalized B0
 t0=  proc.time()
 ttt=1
-B0.posterior.hat.inv = -solve(B0.posterior[,,1]) # does - reverse the IRF?
+B0.posterior.hat.inv = solve(B0.posterior[,,1]) # does - reverse the IRF?
 for (s in 1:S){
 Sigma.posterior.inv = solve(Sigma.posterior[,,s])
 B0.posterior.tmp    = B0.posterior[,,s]
@@ -1173,7 +1173,7 @@ hh             = 1:11
 
 Below is IRF with long-run restiction and normalization.Though the point estimations deviate from zero but most of the confident intervals of variables include zero except real GDP which decrease but it gets to zero statistically as time proceeds.
 
-###### Figure 9. IRF to cash rate shock with long-run restiction and normalization {style="text-align: center;"}
+###### Figure 7. IRF to cash rate shock with long-run restiction and normalization {style="text-align: center;"}
 
 ```{r irf-au-mps plots3_normalized, echo = FALSE}
 
@@ -1376,7 +1376,7 @@ As we see the figure of response function of banks credit to cash rate shock, ba
 
 
 
-###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 8. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
 
 ```{r irf-au-mps plots2, echo = FALSE}
 
@@ -1400,7 +1400,7 @@ for (n in 1:5){
 ```
 
 
-###### Figure 11. FEVD of banks' credit plots {style="text-align: center;"}
+###### Figure 9. FEVD of banks' credit plots {style="text-align: center;"}
 
 
 ```{r fevd-credit plots2, echo = FALSE}
@@ -1919,7 +1919,7 @@ hh                     = 1:11
 
 
 
-###### Figure 12. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
 
 ```{r irf-au-mps plots for extension 2, echo = FALSE}
 
