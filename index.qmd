@@ -456,10 +456,10 @@ This raises the issue of the appropriate estimation methodology. Some papers (i.
 The structural VAR model with $4$ lags is given by
 
 $$
-\begin{align}
+\begin{align*}
   B_0y_t &= b_0 + B_1 y_{t-1} + \dots + B_4 y_{t-4} + u_t \\
   u_{t}| Y_{t-1} &\sim {iid} ( 0_N, I_N)
-\end{align}
+\end{align*}
 $$
 Where $B_0$ is a matrix of contemporaneous relationships, $y_t$ is a vector of endogenous variables, $y_{t-1}$, $\dots$, $y_{t-1}$ are vectors of lags, and $u_t$ is a vector of independent structural shocks.
 
@@ -1644,58 +1644,205 @@ $\kappa$ is a random variable representing a scalar parameter which is assumed t
 
 ## Derivation
 
-$$
-\begin{align*}
-Y   &= XA + E \\
-E|X &\sim \mathcal{MN}_{T \times N}(0_{T \times N},\Sigma,I_T) \\
-L(A,\Sigma|Y,X) &\propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
-                &= det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
-\end{align*}
-$$
 
-where $\hat{A} = (X'X)^{-1}X'Y$ and it follows that
 
 $$
 \begin{align*}
-L(A,\Sigma|Y,X) = \mathcal{NIW}_{K\times N}(\hat{A}, \quad (X'X)^{-1},  \quad (Y-X\hat{A})'(Y-X\hat{A}),  \quad T-N-K)
+p(\kappa|Y,X,A) &= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\
+                &\propto p(\kappa) \times p(A|\Sigma,\kappa) \\
+                &= \kappa^{\frac{1}{2}-1} \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa \underline{V})^{-1}] (A - \underline{A}) \right\} \\
+                &= \kappa^{\frac{1}{2} - \frac{KN}{2} - 1} \times \exp \left\{-\frac{1}{2} \left[\frac{1}{\kappa}\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})\right] + \frac{2}{s}\kappa \right\}     
 \end{align*}
 $$
+which it is the kernel of Generalized Inverse Gaussian (GIG) distribution with 
+
+$$\lambda = \frac{1}{2} - \frac{KN}{2} $$ 
+$$\chi = tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) $$
+
+$$\psi = \frac{2}{s}$$
+
+
+Gibbs Sampler:
+
+Initialize $\kappa$ at $\kappa^{(0)}$:
+
+At each iteration s:
+
+  1. Draw $(A,\Sigma)^{(s)} \sim p(A,\Sigma|Y,X,\kappa^{(s-1)})$
+  2. Draw $(\kappa)^{(s)} \sim p(\kappa|Y,X,A, \Sigma)$
+
+Repeat step 1 and 2 for S1 + S2 times and discard S1.
+
+```{r,echo=TRUE}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+Posterior_kappa = function(Y, X, p, N, S1, S2, kappa.1) {
+  # MLE
+  ############################################################
+  ex2_A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
+  ex2_Sigma.hat   = t(Y-X%*%ex2_A.hat)%*%(Y-X%*%ex2_A.hat)/nrow(Y)
+  kappa           = c()
+  S3              = S1 + S2
+  
+  # prior distribution
+  ############################################################
+  # Initialize kappa
+  kappa[1] = 1
+  kappas   = 0.1
+  kappani  = 1/2
+  
+  kappa.1           = kappa.1
+  kappa.2           = 100
+  kappa.3           = 1
+  ex2_A.prior           = matrix(0,nrow(ex2_A.hat),ncol(ex2_A.hat))
+  ex2_A.prior[2:(N+1),] = kappa.3*diag(N)
+  ex2_V.prior           = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+  ex2_S.prior           = diag(diag(ex2_Sigma.hat))
+  ex2_nu.prior          = N+1
+  
+  # normal-inverse Wishard posterior parameters
+  ############################################################
+  ex2_V.bar.inv   = t(X)%*%X + diag(1/diag(ex2_V.prior))
+  ex2_V.bar       = solve(ex2_V.bar.inv)
+  ex2_A.bar       = kappa*(ex2_V.bar%*%(t(X)%*%Y + diag(1/diag(ex2_V.prior))%*%ex2_A.prior))
+  ex2_nu.bar      = nrow(Y) + ex2_nu.prior
+  ex2_S.bar       = ex2_S.prior + t(Y)%*%Y + t(ex2_A.prior)%*%diag(1/diag(ex2_V.prior))%*%ex2_A.prior - t(ex2_A.bar)%*%ex2_V.bar.inv%*%ex2_A.bar
+  ex2_S.bar.inv   = solve(ex2_S.bar)
+  
+  # posterior draws 
+  ############################################################
+  ex2_Sigma.posterior   = rWishart(S3, df=ex2_nu.bar, Sigma=ex2_S.bar.inv)
+  ex2_Sigma.posterior   = apply(ex2_Sigma.posterior,3,solve)
+  ex2_Sigma.posterior   = array(ex2_Sigma.posterior,c(N,N,S3))
+  ex2_A.posterior       = array(rnorm(prod(c(dim(ex2_A.bar),S3))),c(dim(ex2_A.bar),S3))
+  ex2_B.posterior       = array(NA,c(N,N,S3))
+  ex2_L                 = t(chol(ex2_V.bar))
+  ex2_B1.posterior      = array(NA,c(N,(1+N*p),S3))
+  
+  for (s in 1:S3){
+    ex2_cholSigma.s       = chol(ex2_Sigma.posterior[,,s])
+    ex2_B.posterior[,,s]  = t(ex2_cholSigma.s)
+    ex2_A.posterior[,,s]  = ex2_A.bar + ex2_L%*%ex2_A.posterior[,,s]%*%ex2_cholSigma.s
+    ex2_B1.posterior[,,s] = ex2_B.posterior[,,s]%*%t(ex2_A.posterior[,,s])
+    
+    # draw kappa
+    lambda = 1/2 - p*N/2
+    chi = sum(diag(solve(ex2_Sigma.posterior[,,s]) %*% t(ex2_A.posterior[,,s] - ex2_A.prior) %*% solve(ex2_V.prior) %*% (ex2_A.posterior[,,s] - ex2_A.prior)))
+    psi = 2/kappas
+    kappa[s] = GIGrvg::rgig(n=1,lambda,chi,psi)
+  }
+  
+  return(list(ex2_A.posterior     = ex2_A.posterior    [,,(S1+1):(S1+S2)], 
+              ex2_B.posterior     = ex2_B.posterior    [,,(S1+1):(S1+S2)], 
+              ex2_Sigma.posterior = ex2_Sigma.posterior[,,(S1+1):(S1+S2)],
+              ex2_B1.posterior    = ex2_B1.posterior   [,,(S1+1):(S1+S2)],
+              kappa = kappa[(S1+1):(S1+S2)]))
+}
+
+
+```
+
+The distribution of $\kappa$ is as follows:
+```{r}
+S1 = 5000
+S2 = S
+
+posterior_k = Posterior_kappa(Y, X, p, N, S1, S2, kappa.1)
+
+Kappa = posterior_k$kappa
+ hist(Kappa,
+     main=expression(paste("Distribution of ", kappa, " draws")),
+     freq=FALSE,
+     xlab = expression(kappa),
+     breaks = 1000,
+     xlim = c(1.5,5),
+     col = "#8EE4AF",
+     lty = "blank")
+
+```
+
+## Empirical Investigation for extended model
+
+
+```{r results for ex2}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# Impulse response functions
+# Forecast Error Variance Decomposition
+############################################################
+ex2_IRF.posterior     = array(NA,c(N,N,h+1,S))
+ex2_IRF.inf.posterior = array(NA,c(N,N,S))
+ex2_FEVD.posterior    = array(NA,c(N,N,h+1,S))
+ex2_J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+for (s in 1:S){
+  ex2_A.bold                 = rbind(t(posterior_k$ex2_A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  ex2_IRF.inf.posterior[,,s] = ex2_J %*% solve(diag(N*p)-ex2_A.bold) %*% t(ex2_J) %*% posterior_k$ex2_B.posterior[,,s]
+  ex2_A.bold.power           = ex2_A.bold
+  for (i in 1:(h+1)){
+    tmp = posterior_k$ex2_B.posterior[,,s]
+    if (i==1){
+      ex2_IRF.posterior[,,i,s]        = tmp
+    } else {
+      ex2_IRF.posterior[,,i,s]        = ex2_J %*% ex2_A.bold.power %*% t(ex2_J) %*% tmp
+      ex2_A.bold.power                = ex2_A.bold.power %*% ex2_A.bold
+    }
+    for (n in 1:N){
+      for (nn in 1:N){
+        ex2_FEVD.posterior[n,nn,i,s]  = sum(ex2_IRF.posterior[n,nn,1:i,s]^2)
+      }
+    }
+    ex2_FEVD.posterior[,,i,s]         = diag(1/apply(ex2_FEVD.posterior[,,i,s],1,sum))%*%ex2_FEVD.posterior[,,i,s]
+  }
+}
+ex2_FEVD.posterior    = 100*ex2_FEVD.posterior
+
+save(ex2_IRF.posterior,ex2_IRF.inf.posterior, ex2_FEVD.posterior, file="ex2_irf-fevd-k1.RData")
+
+
+# Plots of responses to domestic monetary policy shock
+############################################################
+load("ex2_irf-fevd-k1.RData")
+ex2_IRFs.k1           = apply(ex2_IRF.posterior[3:8,5,,],1:2,mean)
+ex2_IRFs.inf.k1       = apply(ex2_IRF.inf.posterior[3:8,5,],1,mean)
+rownames(ex2_IRFs.k1) = colnames(Y)[3:8]
+
+ex2_IRFs.k1.hdi    = apply(ex2_IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
+hh             = 1:11
+```
 
 
 
-The joint prior distribution for $(A, \Sigma)$ of the same form is as follows:
-
-$$
-\begin{align*}
-p(A,\Sigma) &= p(A|\Sigma) p(\Sigma) \\
-A|\Sigma,\kappa &\sim \mathcal{MN}_{K \times N} (\underline{A}, \Sigma , \kappa^{-1}\underline{V}) \\
-\Sigma &\sim \mathcal{IW}_{N}(\underline{S},\underline{\nu})
-\end{align*}
-$$
 
 
-And the full conditional posterior is followed by:
+###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
 
-$$
-\begin{align*}
-p(A,\Sigma |Y, X,\kappa) &= p(A|Y, X, \Sigma) p(\Sigma|Y,X)p(\kappa) \\
-p(A|Y,X,\Sigma)   &= \mathcal{MN}_{K \times N} (\bar{A}, \Sigma , \bar{V}) \\
-p(\Sigma|Y, X)    &= \mathcal{IW}_{N}(\bar{S},\bar{\nu}) \\
-p(\kappa)         &= \mathcal{G}(\underline{s}, \underline{a})
-\end{align*}
-$$
+```{r irf-au-mps plots_figure 10, echo = FALSE}
 
+# irf-au-mps plots
 
-The posterior parameters are given by:
+par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+for (n in 1:6){
+  ylims     = range(ex2_IRFs.k1[n,hh],ex2_IRFs.k1.hdi[,n,hh])
+  plot(hh,ex2_IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(ex2_IRFs.k1)[n])
+  if (n==5 | n==6){
+    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+  } else {
+    axis(1,c(1,2,6,11),c("","","",""))
+  }
+  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+  polygon(c(hh,(h+1):1), c(ex2_IRFs.k1.hdi[1,n,hh],ex2_IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  abline(h=0)
+  lines(hh, ex2_IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  
+}
 
-$$
-\begin{align*}
-\bar{V}      &= (X'X+ \kappa\underline{V}^{-1})^{-1} \\ 
-   \bar{A}   &= \bar{V}(X'Y+\kappa\underline{V}^{-1} \underline{A}) \\ 
-   \bar{\nu} &= T + \underline{\nu} \\ 
-   \bar{S}   &= \underline{S} + Y'Y + \kappa\underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}
-\end{align*}
-$$
+```
 
 
 
@@ -1715,54 +1862,54 @@ Necessity of adopting the ‘sum of coefficients' and ‘dummy initial observati
 
 #Basic Model Test
 ##############################################################################
-ex2_y = apply(matrix(rnorm(2*S), ncol = 2), 2, cumsum)
-ex2_Y = ex2_y[2:S,]
-ex2_X = cbind(1, ex2_y[1:S-1,])
-ex2_S = S
+ex3_y = apply(matrix(rnorm(2*S), ncol = 2), 2, cumsum)
+ex3_Y = ex3_y[2:S,]
+ex3_X = cbind(1, ex3_y[1:S-1,])
+ex3_S = S
 
 # Prior
 ##############
 
 # Setup
-ex2_N = ncol(ex2_Y)
-ex2_p = 1
-ex2_K = ex2_N*ex2_p+1
+ex3_N = ncol(ex3_Y)
+ex3_p = 1
+ex3_K = ex3_N*ex3_p+1
 
 # MLE
-ex2_A.hat       = solve(t(ex2_X)%*%ex2_X)%*%t(ex2_X)%*%ex2_Y
-ex2_Sigma.hat   = t(ex2_Y-ex2_X%*%ex2_A.hat)%*%(ex2_Y-ex2_X%*%ex2_A.hat)/nrow(ex2_Y)
+ex3_A.hat       = solve(t(ex3_X)%*%ex3_X)%*%t(ex3_X)%*%ex3_Y
+ex3_Sigma.hat   = t(ex3_Y-ex3_X%*%ex3_A.hat)%*%(ex3_Y-ex3_X%*%ex3_A.hat)/nrow(ex3_Y)
 
 
 # Parameters for prior distribution 
-ex2_A.prior               = matrix(0,nrow(ex2_A.hat),ncol(ex2_A.hat))
-ex2_A.prior[2:(ex2_N+1),] = kappa.3*diag(ex2_N)
-ex2_V.prior               = diag(c(kappa.2,kappa.1*((1:ex2_p)^(-2))%x%rep(1,ex2_N)))
-ex2_S.prior               = diag(diag(ex2_Sigma.hat))
-ex2_nu.prior              = ex2_N+1
+ex3_A.prior               = matrix(0,nrow(ex3_A.hat),ncol(ex3_A.hat))
+ex3_A.prior[2:(ex3_N+1),] = kappa.3*diag(ex3_N)
+ex3_V.prior               = diag(c(kappa.2,kappa.1*((1:ex3_p)^(-2))%x%rep(1,ex3_N)))
+ex3_S.prior               = diag(diag(ex3_Sigma.hat))
+ex3_nu.prior              = ex3_N+1
 
 
 # Posterior
 ##############
 
 # normal-inverse Wishard posterior parameters
-ex2_V.bar.inv   = t(ex2_X)%*%ex2_X + diag(1/diag(ex2_V.prior))
-ex2_V.bar       = solve(ex2_V.bar.inv)
-ex2_A.bar       = ex2_V.bar%*%(t(ex2_X)%*%ex2_Y + diag(1/diag(ex2_V.prior))%*%ex2_A.prior)
-ex2_nu.bar      = nrow(ex2_Y) + ex2_nu.prior
-ex2_S.bar       = ex2_S.prior + t(ex2_Y)%*%ex2_Y + t(ex2_A.prior)%*%diag(1/diag(ex2_V.prior))%*%ex2_A.prior - t(ex2_A.bar)%*%ex2_V.bar.inv%*%ex2_A.bar
-ex2_S.bar.inv   = solve(ex2_S.bar)
+ex3_V.bar.inv   = t(ex3_X)%*%ex3_X + diag(1/diag(ex3_V.prior))
+ex3_V.bar       = solve(ex3_V.bar.inv)
+ex3_A.bar       = ex3_V.bar%*%(t(ex3_X)%*%ex3_Y + diag(1/diag(ex3_V.prior))%*%ex3_A.prior)
+ex3_nu.bar      = nrow(ex3_Y) + ex3_nu.prior
+ex3_S.bar       = ex3_S.prior + t(ex3_Y)%*%ex3_Y + t(ex3_A.prior)%*%diag(1/diag(ex3_V.prior))%*%ex3_A.prior - t(ex3_A.bar)%*%ex3_V.bar.inv%*%ex3_A.bar
+ex3_S.bar.inv   = solve(ex3_S.bar)
 
 # posterior draws
-ex2_Sigma.posterior   = rWishart(ex2_S, df=ex2_nu.bar, Sigma=ex2_S.bar.inv)
-ex2_Sigma.posterior   = apply(ex2_Sigma.posterior,3,solve)
-ex2_Sigma.posterior   = array(ex2_Sigma.posterior,c(ex2_N,ex2_N,ex2_S))
-ex2_A.posterior       = array(rnorm(prod(c(dim(ex2_A.bar),ex2_S))),c(dim(ex2_A.bar),ex2_S))
-ex2_B.posterior       = array(NA,c(ex2_N,ex2_N,ex2_S))
-ex2_L                 = t(chol(ex2_V.bar))
-for (s in 1:ex2_S){
-  ex2_cholSigma.s     = chol(ex2_Sigma.posterior[,,s])
-  ex2_B.posterior[,,s]= t(ex2_cholSigma.s)
-  ex2_A.posterior[,,s]= ex2_A.bar + ex2_L%*%ex2_A.posterior[,,s]%*%ex2_cholSigma.s
+ex3_Sigma.posterior   = rWishart(ex3_S, df=ex3_nu.bar, Sigma=ex3_S.bar.inv)
+ex3_Sigma.posterior   = apply(ex3_Sigma.posterior,3,solve)
+ex3_Sigma.posterior   = array(ex3_Sigma.posterior,c(ex3_N,ex3_N,ex3_S))
+ex3_A.posterior       = array(rnorm(prod(c(dim(ex3_A.bar),ex3_S))),c(dim(ex3_A.bar),ex3_S))
+ex3_B.posterior       = array(NA,c(ex3_N,ex3_N,ex3_S))
+ex3_L                 = t(chol(ex3_V.bar))
+for (s in 1:ex3_S){
+  ex3_cholSigma.s     = chol(ex3_Sigma.posterior[,,s])
+  ex3_B.posterior[,,s]= t(ex3_cholSigma.s)
+  ex3_A.posterior[,,s]= ex3_A.bar + ex3_L%*%ex3_A.posterior[,,s]%*%ex3_cholSigma.s
 }
 ##############################################################################
 
@@ -1777,19 +1924,19 @@ for (s in 1:ex2_S){
   lambda4       = 1
   
   
-  M             = 1+N*ex2_p
+  M             = 1+N*ex3_p
   
-  in.obvs.ex2_Y = matrix(y[1:ex2_p,], ncol = ncol(ex2_y))
-  y_bar         = colMeans(in.obvs.ex2_Y)
+  in.obvs.ex3_Y = matrix(y[1:ex3_p,], ncol = ncol(ex3_y))
+  y_bar         = colMeans(in.obvs.ex3_Y)
     
   Y_star        = rbind(diag(y_bar)/lambda3, y_bar/lambda4)
-  X_star        = as.matrix(c(rep(0, ncol(ex2_y)), 1/lambda4))
-  for (i in 1:ex2_p) {
+  X_star        = as.matrix(c(rep(0, ncol(ex3_y)), 1/lambda4))
+  for (i in 1:ex3_p) {
     X_star      = cbind(Y_star, X_star)
   }
 
-ex22_X          = rbind(X_star, ex2_X)
-ex22_Y          = rbind(Y_star, ex2_Y)
+ex32_X          = rbind(X_star, ex3_X)
+ex32_Y          = rbind(Y_star, ex3_Y)
 
 
 
@@ -1797,22 +1944,22 @@ ex22_Y          = rbind(Y_star, ex2_Y)
 ##############
 
 # Setup
-ex22_N = ncol(ex22_Y)
-ex22_p = 1
-ex22_K = ex22_N*ex22_p+1
-ex22_S = 1000  
+ex32_N = ncol(ex32_Y)
+ex32_p = 1
+ex32_K = ex32_N*ex32_p+1
+ex32_S = 1000  
 
 # MLE
-ex22_A.hat       = solve(t(ex22_X)%*%ex22_X)%*%t(ex22_X)%*%ex22_Y
-ex22_Sigma.hat   = t(ex22_Y-ex22_X%*%ex22_A.hat)%*%(ex22_Y-ex22_X%*%ex22_A.hat)/nrow(ex22_Y)
+ex32_A.hat       = solve(t(ex32_X)%*%ex32_X)%*%t(ex32_X)%*%ex32_Y
+ex32_Sigma.hat   = t(ex32_Y-ex32_X%*%ex32_A.hat)%*%(ex32_Y-ex32_X%*%ex32_A.hat)/nrow(ex32_Y)
 
 
 # Parameters for prior distribution 
-ex22_A.prior                = matrix(0,nrow(ex22_A.hat),ncol(ex22_A.hat))
-ex22_A.prior[2:(ex22_N+1),] = kappa.3*diag(ex22_N)
-ex22_V.prior                = diag(c(kappa.2,kappa.1*((1:ex22_p)^(-2))%x%rep(1,ex22_N)))
-ex22_S.prior                = diag(diag(ex22_Sigma.hat))
-ex22_nu.prior               = ex22_N+1
+ex32_A.prior                = matrix(0,nrow(ex32_A.hat),ncol(ex32_A.hat))
+ex32_A.prior[2:(ex32_N+1),] = kappa.3*diag(ex32_N)
+ex32_V.prior                = diag(c(kappa.2,kappa.1*((1:ex32_p)^(-2))%x%rep(1,ex32_N)))
+ex32_S.prior                = diag(diag(ex32_Sigma.hat))
+ex32_nu.prior               = ex32_N+1
 
 
 
@@ -1820,24 +1967,24 @@ ex22_nu.prior               = ex22_N+1
 ##############
 
 # normal-inverse Wishard posterior parameters
-ex22_V.bar.inv   = t(ex22_X)%*%ex22_X + diag(1/diag(ex22_V.prior))
-ex22_V.bar       = solve(ex22_V.bar.inv)
-ex22_A.bar       = ex22_V.bar%*%(t(ex22_X)%*%ex22_Y + diag(1/diag(ex22_V.prior))%*%ex22_A.prior)
-ex22_nu.bar      = nrow(ex22_Y) + ex22_nu.prior
-ex22_S.bar       = ex22_S.prior + t(ex22_Y)%*%ex22_Y + t(ex22_A.prior)%*%diag(1/diag(ex22_V.prior))%*%ex22_A.prior - t(ex22_A.bar)%*%ex22_V.bar.inv%*%ex22_A.bar
-ex22_S.bar.inv   = solve(ex22_S.bar)
+ex32_V.bar.inv   = t(ex32_X)%*%ex32_X + diag(1/diag(ex32_V.prior))
+ex32_V.bar       = solve(ex32_V.bar.inv)
+ex32_A.bar       = ex32_V.bar%*%(t(ex32_X)%*%ex32_Y + diag(1/diag(ex32_V.prior))%*%ex32_A.prior)
+ex32_nu.bar      = nrow(ex32_Y) + ex32_nu.prior
+ex32_S.bar       = ex32_S.prior + t(ex32_Y)%*%ex32_Y + t(ex32_A.prior)%*%diag(1/diag(ex32_V.prior))%*%ex32_A.prior - t(ex32_A.bar)%*%ex32_V.bar.inv%*%ex32_A.bar
+ex32_S.bar.inv   = solve(ex32_S.bar)
 
 # posterior draws
-ex22_Sigma.posterior   = rWishart(ex22_S, df=ex22_nu.bar, Sigma=ex22_S.bar.inv)
-ex22_Sigma.posterior   = apply(ex22_Sigma.posterior,3,solve)
-ex22_Sigma.posterior   = array(ex22_Sigma.posterior,c(ex22_N,ex22_N,ex22_S))
-ex22_A.posterior       = array(rnorm(prod(c(dim(ex22_A.bar),ex22_S))),c(dim(ex22_A.bar),ex22_S))
-ex22_B.posterior       = array(NA,c(ex22_N,ex22_N,ex22_S))
-ex22_L                 = t(chol(ex22_V.bar))
-for (s in 1:ex22_S){
-  ex22_cholSigma.s     = chol(ex22_Sigma.posterior[,,s])
-  ex22_B.posterior[,,s]= t(ex22_cholSigma.s)
-  ex22_A.posterior[,,s]= ex22_A.bar + ex22_L%*%ex22_A.posterior[,,s]%*%ex22_cholSigma.s
+ex32_Sigma.posterior   = rWishart(ex32_S, df=ex32_nu.bar, Sigma=ex32_S.bar.inv)
+ex32_Sigma.posterior   = apply(ex32_Sigma.posterior,3,solve)
+ex32_Sigma.posterior   = array(ex32_Sigma.posterior,c(ex32_N,ex32_N,ex32_S))
+ex32_A.posterior       = array(rnorm(prod(c(dim(ex32_A.bar),ex32_S))),c(dim(ex32_A.bar),ex32_S))
+ex32_B.posterior       = array(NA,c(ex32_N,ex32_N,ex32_S))
+ex32_L                 = t(chol(ex32_V.bar))
+for (s in 1:ex32_S){
+  ex32_cholSigma.s     = chol(ex32_Sigma.posterior[,,s])
+  ex32_B.posterior[,,s]= t(ex32_cholSigma.s)
+  ex32_A.posterior[,,s]= ex32_A.bar + ex32_L%*%ex32_A.posterior[,,s]%*%ex32_cholSigma.s
 }
 ##############################################################################
 
@@ -1846,50 +1993,50 @@ for (s in 1:ex22_S){
 ##############
 
 
-  ex23_in.obvs.Y             = matrix(y[1:p,], ncol = N)
-  ex23_y.bar                 = colMeans(ex23_in.obvs.Y)
+  ex33_in.obvs.Y             = matrix(y[1:p,], ncol = N)
+  ex33_y.bar                 = colMeans(ex33_in.obvs.Y)
     
-  ex23_Y_star                = rbind(diag(ex23_y.bar)/lambda3, ex23_y.bar/lambda4)
-  ex23_X_star                = as.matrix(c(rep(0, N), 1/lambda4))
+  ex33_Y_star                = rbind(diag(ex33_y.bar)/lambda3, ex33_y.bar/lambda4)
+  ex33_X_star                = as.matrix(c(rep(0, N), 1/lambda4))
   for (i in 1:p) {
-    ex23_X_star              = cbind(ex23_Y_star, ex23_X_star)
+    ex33_X_star              = cbind(ex33_Y_star, ex33_X_star)
   }
   
-  ex23_X                     = rbind(ex23_X_star, X)
-  ex23_Y                     = rbind(ex23_Y_star, Y)
+  ex33_X                     = rbind(ex33_X_star, X)
+  ex33_Y                     = rbind(ex33_Y_star, Y)
 
 # 1. priors of extension 3
-  ex23_A.hat                 = solve(t(ex23_X)%*%ex23_X)%*%(t(ex23_X)%*%ex23_Y)
-  ex23_Sigma.hat             = diag(ncol(ex23_Y))
-  ex23_N                     = ncol(ex23_Y)
+  ex33_A.hat                 = solve(t(ex33_X)%*%ex33_X)%*%(t(ex33_X)%*%ex33_Y)
+  ex33_Sigma.hat             = diag(ncol(ex33_Y))
+  ex33_N                     = ncol(ex33_Y)
    
-  ex23_A.prior               = matrix(0,nrow(ex23_A.hat),ncol(ex23_A.hat))
-  ex23_A.prior[2:(ex23_N+1),]= diag(ex23_N)
-  ex23_V.prior               = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,ex23_N)))
-  ex23_S.prior               = diag(diag(ex23_Sigma.hat))
-  ex23_nu.prior              = ex23_N+1
+  ex33_A.prior               = matrix(0,nrow(ex33_A.hat),ncol(ex33_A.hat))
+  ex33_A.prior[2:(ex33_N+1),]= diag(ex33_N)
+  ex33_V.prior               = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,ex33_N)))
+  ex33_S.prior               = diag(diag(ex33_Sigma.hat))
+  ex33_nu.prior              = ex33_N+1
 
 # 2. posteriors of extension 3
-  ex23_V.bar.inv             = (t(X)%*%X) + diag(1/diag(ex23_V.prior))
-  ex23_V.bar                 = solve(ex23_V.bar.inv)
+  ex33_V.bar.inv             = (t(X)%*%X) + diag(1/diag(ex33_V.prior))
+  ex33_V.bar                 = solve(ex33_V.bar.inv)
   
-  ex23_A.bar                 = ex23_V.bar%*%(t(X)%*%Y + diag(1/diag(ex23_V.prior))%*%ex23_A.prior)
-  ex23_nu.bar                = nrow(Y) + ex23_nu.prior
+  ex33_A.bar                 = ex33_V.bar%*%(t(X)%*%Y + diag(1/diag(ex33_V.prior))%*%ex33_A.prior)
+  ex33_nu.bar                = nrow(Y) + ex33_nu.prior
   
-  ex23_S.bar                 = ex23_S.prior + t(Y)%*%Y + t(ex23_A.prior)%*%diag(1/diag(ex23_V.prior))%*%ex23_A.prior - t(ex23_A.bar)%*%ex23_V.bar.inv%*%ex23_A.bar
-  ex23_S.bar.inv             = solve(ex23_S.bar)
+  ex33_S.bar                 = ex33_S.prior + t(Y)%*%Y + t(ex33_A.prior)%*%diag(1/diag(ex33_V.prior))%*%ex33_A.prior - t(ex33_A.bar)%*%ex33_V.bar.inv%*%ex33_A.bar
+  ex33_S.bar.inv             = solve(ex33_S.bar)
    
-  ex23_Sigma.posterior.inv   = rWishart(S, df=ex23_nu.bar, Sigma=ex23_S.bar.inv)
-  ex23_Sigma.posterior       = apply(ex23_Sigma.posterior.inv,3,solve)
-  ex23_Sigma.posterior       = array(ex23_Sigma.posterior,c(N,N,S))
-  ex23_A.posterior           = array(rnorm(prod(c(dim(ex23_A.bar),S))),c(dim(ex23_A.bar),S))
-  ex23_L                     = t(chol(ex23_V.bar))
-  ex23_B.posterior           = array(NA, c(N,N,S))
+  ex33_Sigma.posterior.inv   = rWishart(S, df=ex33_nu.bar, Sigma=ex33_S.bar.inv)
+  ex33_Sigma.posterior       = apply(ex33_Sigma.posterior.inv,3,solve)
+  ex33_Sigma.posterior       = array(ex33_Sigma.posterior,c(N,N,S))
+  ex33_A.posterior           = array(rnorm(prod(c(dim(ex33_A.bar),S))),c(dim(ex33_A.bar),S))
+  ex33_L                     = t(chol(ex33_V.bar))
+  ex33_B.posterior           = array(NA, c(N,N,S))
   
   for (s in 1:S){
-    ex23_chol.sigma          = chol(ex23_Sigma.posterior[,,s])
-    ex23_A.posterior[,,s]    = ex23_A.bar + ex23_L%*%ex23_A.posterior[,,s]%*%ex23_chol.sigma
-    ex23_B.posterior[,,s]    = t(ex23_chol.sigma)
+    ex33_chol.sigma          = chol(ex33_Sigma.posterior[,,s])
+    ex33_A.posterior[,,s]    = ex33_A.bar + ex33_L%*%ex33_A.posterior[,,s]%*%ex33_chol.sigma
+    ex33_B.posterior[,,s]    = t(ex33_chol.sigma)
   }
   
 
@@ -1900,19 +2047,19 @@ As we see below, the result from the simulation is similar to the true parameter
 
 A.posterior for basic and extended model:
 ```{R}
-round(apply(ex2_A.posterior, 1:2, mean),3)
-round(apply(ex22_A.posterior, 1:2, mean),3)
+round(apply(ex3_A.posterior, 1:2, mean),3)
+round(apply(ex32_A.posterior, 1:2, mean),3)
 
 ```
 B.posterior for basic and extended model:
 ```{R}
-round(apply(ex2_B.posterior, 1:2, mean),3)
-round(apply(ex22_B.posterior, 1:2, mean),3)
+round(apply(ex3_B.posterior, 1:2, mean),3)
+round(apply(ex32_B.posterior, 1:2, mean),3)
 ```
 Sigma.posterior for basic and extended model:
 ```{R}
-round(apply(ex2_Sigma.posterior, 1:2, mean),3)
-round(apply(ex22_Sigma.posterior, 1:2, mean),3)
+round(apply(ex3_Sigma.posterior, 1:2, mean),3)
+round(apply(ex32_Sigma.posterior, 1:2, mean),3)
 ```
 
 
@@ -1932,44 +2079,44 @@ Now I present the Impulse Response Functions (IRFs) for the extended model below
 
 
 
-ex23_IRF.posterior     = array(NA,c(N,N,h+1,S))
-ex23_IRF.inf.posterior = array(NA,c(N,N,S))
-ex23_FEVD.posterior    = array(NA,c(N,N,h+1,S))
-ex23_J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+ex33_IRF.posterior     = array(NA,c(N,N,h+1,S))
+ex33_IRF.inf.posterior = array(NA,c(N,N,S))
+ex33_FEVD.posterior    = array(NA,c(N,N,h+1,S))
+ex33_J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
 for (s in 1:S){
-  ex23_A.bold          = rbind(t(ex23_A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
-  ex23_IRF.inf.posterior[,,s] = ex23_J %*% solve(diag(N*p)-ex23_A.bold) %*% t(ex23_J) %*% ex23_B.posterior[,,s]
-  ex23_A.bold.power           = ex23_A.bold
+  ex33_A.bold          = rbind(t(ex33_A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  ex33_IRF.inf.posterior[,,s] = ex33_J %*% solve(diag(N*p)-ex33_A.bold) %*% t(ex33_J) %*% ex33_B.posterior[,,s]
+  ex33_A.bold.power           = ex33_A.bold
   for (i in 1:(h+1)){
-    tmp = ex23_B.posterior[,,s]
+    tmp = ex33_B.posterior[,,s]
     if (i==1){
-      ex23_IRF.posterior[,,i,s]  = tmp
+      ex33_IRF.posterior[,,i,s]  = tmp
     } else {
-      ex23_IRF.posterior[,,i,s]  = ex23_J %*% ex23_A.bold.power %*% t(ex23_J) %*% tmp
-      ex23_A.bold.power          = ex23_A.bold.power %*% ex23_A.bold
+      ex33_IRF.posterior[,,i,s]  = ex33_J %*% ex33_A.bold.power %*% t(ex33_J) %*% tmp
+      ex33_A.bold.power          = ex33_A.bold.power %*% ex33_A.bold
     }
     for (n in 1:N){
       for (nn in 1:N){
-        ex23_FEVD.posterior[n,nn,i,s]  = sum(ex23_IRF.posterior[n,nn,1:i,s]^2)
+        ex33_FEVD.posterior[n,nn,i,s]  = sum(ex33_IRF.posterior[n,nn,1:i,s]^2)
       }
     }
-    ex23_FEVD.posterior[,,i,s]         = diag(1/apply(ex23_FEVD.posterior[,,i,s],1,sum))%*%ex23_FEVD.posterior[,,i,s]
+    ex33_FEVD.posterior[,,i,s]         = diag(1/apply(ex33_FEVD.posterior[,,i,s],1,sum))%*%ex33_FEVD.posterior[,,i,s]
   }
 }
-ex23_FEVD.posterior                    = 100*ex23_FEVD.posterior
+ex33_FEVD.posterior                    = 100*ex33_FEVD.posterior
 
 
-save(ex23_IRF.posterior,ex23_IRF.inf.posterior, ex23_FEVD.posterior, file="ex23_irf-fevd-k1.RData")
+save(ex33_IRF.posterior,ex33_IRF.inf.posterior, ex33_FEVD.posterior, file="ex33_irf-fevd-k1.RData")
 
 
 # III. Plots of responses to domestic monetary policy shock
 ############################################################
-load("ex23_irf-fevd-k1.RData")
-ex23_IRFs.k1           = apply(ex23_IRF.posterior[3:8,5,,],1:2,mean)
-ex23_IRFs.inf.k1       = apply(ex23_IRF.inf.posterior[3:8,5,],1,mean)
-rownames(ex23_IRFs.k1) = colnames(Y)[3:8]
+load("ex33_irf-fevd-k1.RData")
+ex33_IRFs.k1           = apply(ex33_IRF.posterior[3:8,5,,],1:2,mean)
+ex33_IRFs.inf.k1       = apply(ex33_IRF.inf.posterior[3:8,5,],1,mean)
+rownames(ex33_IRFs.k1) = colnames(Y)[3:8]
 
-ex23_IRFs.k1.hdi       = apply(ex23_IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
+ex33_IRFs.k1.hdi       = apply(ex33_IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
 hh                     = 1:11
 ```
 
@@ -1983,17 +2130,17 @@ hh                     = 1:11
 
 par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
 for (n in 1:6){
-  ylims     = range(ex23_IRFs.k1[n,hh],ex23_IRFs.k1.hdi[,n,hh])
-  plot(hh,ex23_IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(ex23_IRFs.k1)[n])
+  ylims     = range(ex33_IRFs.k1[n,hh],ex33_IRFs.k1.hdi[,n,hh])
+  plot(hh,ex33_IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(ex33_IRFs.k1)[n])
   if (n==5 | n==6){
     axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
   } else {
     axis(1,c(1,2,6,11),c("","","",""))
   }
   axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
-  polygon(c(hh,(h+1):1), c(ex23_IRFs.k1.hdi[1,n,hh],ex23_IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  polygon(c(hh,(h+1):1), c(ex33_IRFs.k1.hdi[1,n,hh],ex33_IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
   abline(h=0)
-  lines(hh, ex23_IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  lines(hh, ex33_IRFs.k1[n,hh],lwd=2,col=mcxs1)
   
 }
 

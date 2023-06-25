@@ -190,10 +190,11 @@ div.csl-indent {
   <li><a href="#extension-2.-estimation-of-hyperparameters" id="toc-extension-2.-estimation-of-hyperparameters" class="nav-link" data-scroll-target="#extension-2.-estimation-of-hyperparameters">Extension 2. Estimation of hyperparameters</a>
   <ul class="collapse">
   <li><a href="#derivation-1" id="toc-derivation-1" class="nav-link" data-scroll-target="#derivation-1">Derivation</a></li>
+  <li><a href="#empirical-investigation-for-extended-model" id="toc-empirical-investigation-for-extended-model" class="nav-link" data-scroll-target="#empirical-investigation-for-extended-model">Empirical Investigation for extended model</a></li>
   </ul></li>
   <li><a href="#extension-3.-implementation-of-the-dummy-initial-observation" id="toc-extension-3.-implementation-of-the-dummy-initial-observation" class="nav-link" data-scroll-target="#extension-3.-implementation-of-the-dummy-initial-observation">Extension 3. Implementation of the dummy initial observation</a>
   <ul class="collapse">
-  <li><a href="#empirical-investigation-for-extended-model" id="toc-empirical-investigation-for-extended-model" class="nav-link" data-scroll-target="#empirical-investigation-for-extended-model">Empirical Investigation for extended model</a></li>
+  <li><a href="#empirical-investigation-for-extended-model-1" id="toc-empirical-investigation-for-extended-model-1" class="nav-link" data-scroll-target="#empirical-investigation-for-extended-model-1">Empirical Investigation for extended model</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -362,10 +363,10 @@ USD exchange rate         -4.585   0.010    4</code></pre>
 <h2 class="anchored" data-anchor-id="the-model">The model</h2>
 <p>The structural VAR model with <span class="math inline">\(4\)</span> lags is given by</p>
 <p><span class="math display">\[
-\begin{align}
+\begin{align*}
   B_0y_t &amp;= b_0 + B_1 y_{t-1} + \dots + B_4 y_{t-4} + u_t \\
   u_{t}| Y_{t-1} &amp;\sim {iid} ( 0_N, I_N)
-\end{align}
+\end{align*}
 \]</span> Where <span class="math inline">\(B_0\)</span> is a matrix of contemporaneous relationships, <span class="math inline">\(y_t\)</span> is a vector of endogenous variables, <span class="math inline">\(y_{t-1}\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(y_{t-1}\)</span> are vectors of lags, and <span class="math inline">\(u_t\)</span> is a vector of independent structural shocks.</p>
 <p><span class="math inline">\(y_t\)</span> contains eight variables: commodity prices (<span class="math inline">\(com_t\)</span>), the U.S. real GDP (<span class="math inline">\(usgdp_t\)</span>), domestic real GDP (<span class="math inline">\(gdp_t\)</span>), inflation rate(<span class="math inline">\(\pi_t\)</span>), cash rate (<span class="math inline">\(i_t\)</span>), banks’ deposit(<span class="math inline">\(d_t\)</span>), banks’ credit(<span class="math inline">\(c_t\)</span>), and USD exchange rate (<span class="math inline">\(ex_t\)</span>).</p>
 <p>Premultiplying <span class="math inline">\(B_0^{-1}\)</span> to the structural VAR model gives us the reduced form representation as follows:</p>
@@ -722,7 +723,7 @@ B_0' &amp;=
 <span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>elapsed 
- 3.2985 </code></pre>
+ 3.1085 </code></pre>
 </div>
 </div>
 </section>
@@ -974,44 +975,39 @@ P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
 <h2 class="anchored" data-anchor-id="derivation-1">Derivation</h2>
 <p><span class="math display">\[
 \begin{align*}
-Y   &amp;= XA + E \\
-E|X &amp;\sim \mathcal{MN}_{T \times N}(0_{T \times N},\Sigma,I_T) \\
-L(A,\Sigma|Y,X) &amp;\propto det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(Y-XA)'(Y-XA) \right] \right\} \\
-                &amp;= det(\Sigma)^{-\frac{T}{2}} exp \left\{-\frac{1}{2} tr \left[ \Sigma^{-1}(A-\hat{A})'X'X(A-\hat{A}) \right] \right\} exp \left\{-\frac{1}{2} tr \left[\Sigma^{-1}(Y-X \hat{A})'(Y-X \hat{A}) \right] \right\} \\
+p(\kappa|Y,X,A) &amp;= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\
+                &amp;\propto p(\kappa) \times p(A|\Sigma,\kappa) \\
+                &amp;= \kappa^{\frac{1}{2}-1} \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa \underline{V})^{-1}] (A - \underline{A}) \right\} \\
+                &amp;= \kappa^{\frac{1}{2} - \frac{KN}{2} - 1} \times \exp \left\{-\frac{1}{2} \left[\frac{1}{\kappa}\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})\right] + \frac{2}{s}\kappa \right\}     
 \end{align*}
-\]</span></p>
-<p>where <span class="math inline">\(\hat{A} = (X'X)^{-1}X'Y\)</span> and it follows that</p>
-<p><span class="math display">\[
-\begin{align*}
-L(A,\Sigma|Y,X) = \mathcal{NIW}_{K\times N}(\hat{A}, \quad (X'X)^{-1},  \quad (Y-X\hat{A})'(Y-X\hat{A}),  \quad T-N-K)
-\end{align*}
-\]</span></p>
-<p>The joint prior distribution for <span class="math inline">\((A, \Sigma)\)</span> of the same form is as follows:</p>
-<p><span class="math display">\[
-\begin{align*}
-p(A,\Sigma) &amp;= p(A|\Sigma) p(\Sigma) \\
-A|\Sigma,\kappa &amp;\sim \mathcal{MN}_{K \times N} (\underline{A}, \Sigma , \kappa^{-1}\underline{V}) \\
-\Sigma &amp;\sim \mathcal{IW}_{N}(\underline{S},\underline{\nu})
-\end{align*}
-\]</span></p>
-<p>And the full conditional posterior is followed by:</p>
-<p><span class="math display">\[
-\begin{align*}
-p(A,\Sigma |Y, X,\kappa) &amp;= p(A|Y, X, \Sigma) p(\Sigma|Y,X)p(\kappa) \\
-p(A|Y,X,\Sigma)   &amp;= \mathcal{MN}_{K \times N} (\bar{A}, \Sigma , \bar{V}) \\
-p(\Sigma|Y, X)    &amp;= \mathcal{IW}_{N}(\bar{S},\bar{\nu}) \\
-p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
-\end{align*}
-\]</span></p>
-<p>The posterior parameters are given by:</p>
-<p><span class="math display">\[
-\begin{align*}
-\bar{V}      &amp;= (X'X+ \kappa\underline{V}^{-1})^{-1} \\
-   \bar{A}   &amp;= \bar{V}(X'Y+\kappa\underline{V}^{-1} \underline{A}) \\
-   \bar{\nu} &amp;= T + \underline{\nu} \\
-   \bar{S}   &amp;= \underline{S} + Y'Y + \kappa\underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}
-\end{align*}
-\]</span></p>
+\]</span> which it is the kernel of Generalized Inverse Gaussian (GIG) distribution with</p>
+<p><span class="math display">\[\lambda = \frac{1}{2} - \frac{KN}{2} \]</span> <span class="math display">\[\chi = tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) \]</span></p>
+<p><span class="math display">\[\psi = \frac{2}{s}\]</span></p>
+<p>Gibbs Sampler:</p>
+<p>Initialize <span class="math inline">\(\kappa\)</span> at <span class="math inline">\(\kappa^{(0)}\)</span>:</p>
+<p>At each iteration s:</p>
+<ol type="1">
+<li>Draw <span class="math inline">\((A,\Sigma)^{(s)} \sim p(A,\Sigma|Y,X,\kappa^{(s-1)})\)</span></li>
+<li>Draw <span class="math inline">\((\kappa)^{(s)} \sim p(\kappa|Y,X,A, \Sigma)\)</span></li>
+</ol>
+<p>Repeat step 1 and 2 for S1 + S2 times and discard S1.</p>
+<p>The distribution of <span class="math inline">\(\kappa\)</span> is as follows:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="empirical-investigation-for-extended-model" class="level2">
+<h2 class="anchored" data-anchor-id="empirical-investigation-for-extended-model">Empirical Investigation for extended model</h2>
+<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/irf-au-mps plots_figure 10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
 </section>
 </section>
 <section id="extension-3.-implementation-of-the-dummy-initial-observation" class="level1">
@@ -1021,54 +1017,54 @@ p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Basic Model Test</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="do">##############################################################################</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>ex2_y <span class="ot">=</span> <span class="fu">apply</span>(<span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">2</span><span class="sc">*</span>S), <span class="at">ncol =</span> <span class="dv">2</span>), <span class="dv">2</span>, cumsum)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>ex2_Y <span class="ot">=</span> ex2_y[<span class="dv">2</span><span class="sc">:</span>S,]</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>ex2_X <span class="ot">=</span> <span class="fu">cbind</span>(<span class="dv">1</span>, ex2_y[<span class="dv">1</span><span class="sc">:</span>S<span class="dv">-1</span>,])</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>ex2_S <span class="ot">=</span> S</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>ex3_y <span class="ot">=</span> <span class="fu">apply</span>(<span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">2</span><span class="sc">*</span>S), <span class="at">ncol =</span> <span class="dv">2</span>), <span class="dv">2</span>, cumsum)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>ex3_Y <span class="ot">=</span> ex3_y[<span class="dv">2</span><span class="sc">:</span>S,]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>ex3_X <span class="ot">=</span> <span class="fu">cbind</span>(<span class="dv">1</span>, ex3_y[<span class="dv">1</span><span class="sc">:</span>S<span class="dv">-1</span>,])</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>ex3_S <span class="ot">=</span> S</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Prior</span></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="do">##############</span></span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>ex2_N <span class="ot">=</span> <span class="fu">ncol</span>(ex2_Y)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>ex2_p <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>ex2_K <span class="ot">=</span> ex2_N<span class="sc">*</span>ex2_p<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>ex3_N <span class="ot">=</span> <span class="fu">ncol</span>(ex3_Y)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>ex3_p <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>ex3_K <span class="ot">=</span> ex3_N<span class="sc">*</span>ex3_p<span class="sc">+</span><span class="dv">1</span></span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co"># MLE</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>ex2_A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex2_X)<span class="sc">%*%</span>ex2_X)<span class="sc">%*%</span><span class="fu">t</span>(ex2_X)<span class="sc">%*%</span>ex2_Y</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>ex2_Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(ex2_Y<span class="sc">-</span>ex2_X<span class="sc">%*%</span>ex2_A.hat)<span class="sc">%*%</span>(ex2_Y<span class="sc">-</span>ex2_X<span class="sc">%*%</span>ex2_A.hat)<span class="sc">/</span><span class="fu">nrow</span>(ex2_Y)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>ex3_A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex3_X)<span class="sc">%*%</span>ex3_X)<span class="sc">%*%</span><span class="fu">t</span>(ex3_X)<span class="sc">%*%</span>ex3_Y</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>ex3_Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(ex3_Y<span class="sc">-</span>ex3_X<span class="sc">%*%</span>ex3_A.hat)<span class="sc">%*%</span>(ex3_Y<span class="sc">-</span>ex3_X<span class="sc">%*%</span>ex3_A.hat)<span class="sc">/</span><span class="fu">nrow</span>(ex3_Y)</span>
 <span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for prior distribution </span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>ex2_A.prior               <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex2_A.hat),<span class="fu">ncol</span>(ex2_A.hat))</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>ex2_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex2_N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(ex2_N)</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>ex2_V.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>ex2_p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex2_N)))</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>ex2_S.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex2_Sigma.hat))</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>ex2_nu.prior              <span class="ot">=</span> ex2_N<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>ex3_A.prior               <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex3_A.hat),<span class="fu">ncol</span>(ex3_A.hat))</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>ex3_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex3_N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(ex3_N)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>ex3_V.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>ex3_p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex3_N)))</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>ex3_S.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex3_Sigma.hat))</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>ex3_nu.prior              <span class="ot">=</span> ex3_N<span class="sc">+</span><span class="dv">1</span></span>
 <span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Posterior</span></span>
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="do">##############</span></span>
 <span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co"># normal-inverse Wishard posterior parameters</span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>ex2_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(ex2_X)<span class="sc">%*%</span>ex2_X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>ex2_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex2_V.bar.inv)</span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>ex2_A.bar       <span class="ot">=</span> ex2_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(ex2_X)<span class="sc">%*%</span>ex2_Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior)</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>ex2_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(ex2_Y) <span class="sc">+</span> ex2_nu.prior</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>ex2_S.bar       <span class="ot">=</span> ex2_S.prior <span class="sc">+</span> <span class="fu">t</span>(ex2_Y)<span class="sc">%*%</span>ex2_Y <span class="sc">+</span> <span class="fu">t</span>(ex2_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex2_A.bar)<span class="sc">%*%</span>ex2_V.bar.inv<span class="sc">%*%</span>ex2_A.bar</span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>ex2_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex2_S.bar)</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>ex3_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(ex3_X)<span class="sc">%*%</span>ex3_X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex3_V.prior))</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>ex3_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex3_V.bar.inv)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>ex3_A.bar       <span class="ot">=</span> ex3_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(ex3_X)<span class="sc">%*%</span>ex3_Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex3_V.prior))<span class="sc">%*%</span>ex3_A.prior)</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>ex3_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(ex3_Y) <span class="sc">+</span> ex3_nu.prior</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>ex3_S.bar       <span class="ot">=</span> ex3_S.prior <span class="sc">+</span> <span class="fu">t</span>(ex3_Y)<span class="sc">%*%</span>ex3_Y <span class="sc">+</span> <span class="fu">t</span>(ex3_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex3_V.prior))<span class="sc">%*%</span>ex3_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex3_A.bar)<span class="sc">%*%</span>ex3_V.bar.inv<span class="sc">%*%</span>ex3_A.bar</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>ex3_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex3_S.bar)</span>
 <span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior draws</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(ex2_S, <span class="at">df=</span>ex2_nu.bar, <span class="at">Sigma=</span>ex2_S.bar.inv)</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex2_Sigma.posterior,<span class="dv">3</span>,solve)</span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex2_Sigma.posterior,<span class="fu">c</span>(ex2_N,ex2_N,ex2_S))</span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>ex2_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),ex2_S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),ex2_S))</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>ex2_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(ex2_N,ex2_N,ex2_S))</span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>ex2_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex2_V.bar))</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex2_S){</span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>  ex2_cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(ex2_Sigma.posterior[,,s])</span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>  ex2_B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(ex2_cholSigma.s)</span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>  ex2_A.posterior[,,s]<span class="ot">=</span> ex2_A.bar <span class="sc">+</span> ex2_L<span class="sc">%*%</span>ex2_A.posterior[,,s]<span class="sc">%*%</span>ex2_cholSigma.s</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>ex3_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(ex3_S, <span class="at">df=</span>ex3_nu.bar, <span class="at">Sigma=</span>ex3_S.bar.inv)</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>ex3_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex3_Sigma.posterior,<span class="dv">3</span>,solve)</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>ex3_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex3_Sigma.posterior,<span class="fu">c</span>(ex3_N,ex3_N,ex3_S))</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>ex3_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex3_A.bar),ex3_S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex3_A.bar),ex3_S))</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>ex3_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(ex3_N,ex3_N,ex3_S))</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>ex3_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex3_V.bar))</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex3_S){</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>  ex3_cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(ex3_Sigma.posterior[,,s])</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>  ex3_B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(ex3_cholSigma.s)</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>  ex3_A.posterior[,,s]<span class="ot">=</span> ex3_A.bar <span class="sc">+</span> ex3_L<span class="sc">%*%</span>ex3_A.posterior[,,s]<span class="sc">%*%</span>ex3_cholSigma.s</span>
 <span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="do">##############################################################################</span></span>
 <span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a></span>
@@ -1083,19 +1079,19 @@ p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
 <span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>  lambda4       <span class="ot">=</span> <span class="dv">1</span></span>
 <span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>  M             <span class="ot">=</span> <span class="dv">1</span><span class="sc">+</span>N<span class="sc">*</span>ex2_p</span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>  M             <span class="ot">=</span> <span class="dv">1</span><span class="sc">+</span>N<span class="sc">*</span>ex3_p</span>
 <span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>  in.obvs.ex2_Y <span class="ot">=</span> <span class="fu">matrix</span>(y[<span class="dv">1</span><span class="sc">:</span>ex2_p,], <span class="at">ncol =</span> <span class="fu">ncol</span>(ex2_y))</span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>  y_bar         <span class="ot">=</span> <span class="fu">colMeans</span>(in.obvs.ex2_Y)</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>  in.obvs.ex3_Y <span class="ot">=</span> <span class="fu">matrix</span>(y[<span class="dv">1</span><span class="sc">:</span>ex3_p,], <span class="at">ncol =</span> <span class="fu">ncol</span>(ex3_y))</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>  y_bar         <span class="ot">=</span> <span class="fu">colMeans</span>(in.obvs.ex3_Y)</span>
 <span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>  Y_star        <span class="ot">=</span> <span class="fu">rbind</span>(<span class="fu">diag</span>(y_bar)<span class="sc">/</span>lambda3, y_bar<span class="sc">/</span>lambda4)</span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>  X_star        <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">ncol</span>(ex2_y)), <span class="dv">1</span><span class="sc">/</span>lambda4))</span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex2_p) {</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>  X_star        <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">ncol</span>(ex3_y)), <span class="dv">1</span><span class="sc">/</span>lambda4))</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex3_p) {</span>
 <span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>    X_star      <span class="ot">=</span> <span class="fu">cbind</span>(Y_star, X_star)</span>
 <span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>ex22_X          <span class="ot">=</span> <span class="fu">rbind</span>(X_star, ex2_X)</span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>ex22_Y          <span class="ot">=</span> <span class="fu">rbind</span>(Y_star, ex2_Y)</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>ex32_X          <span class="ot">=</span> <span class="fu">rbind</span>(X_star, ex3_X)</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>ex32_Y          <span class="ot">=</span> <span class="fu">rbind</span>(Y_star, ex3_Y)</span>
 <span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a></span>
@@ -1103,22 +1099,22 @@ p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
 <span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="do">##############</span></span>
 <span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup</span></span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>ex22_N <span class="ot">=</span> <span class="fu">ncol</span>(ex22_Y)</span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>ex22_p <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>ex22_K <span class="ot">=</span> ex22_N<span class="sc">*</span>ex22_p<span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>ex22_S <span class="ot">=</span> <span class="dv">1000</span>  </span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>ex32_N <span class="ot">=</span> <span class="fu">ncol</span>(ex32_Y)</span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>ex32_p <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>ex32_K <span class="ot">=</span> ex32_N<span class="sc">*</span>ex32_p<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>ex32_S <span class="ot">=</span> <span class="dv">1000</span>  </span>
 <span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="co"># MLE</span></span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>ex22_A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex22_X)<span class="sc">%*%</span>ex22_X)<span class="sc">%*%</span><span class="fu">t</span>(ex22_X)<span class="sc">%*%</span>ex22_Y</span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>ex22_Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(ex22_Y<span class="sc">-</span>ex22_X<span class="sc">%*%</span>ex22_A.hat)<span class="sc">%*%</span>(ex22_Y<span class="sc">-</span>ex22_X<span class="sc">%*%</span>ex22_A.hat)<span class="sc">/</span><span class="fu">nrow</span>(ex22_Y)</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>ex32_A.hat       <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex32_X)<span class="sc">%*%</span>ex32_X)<span class="sc">%*%</span><span class="fu">t</span>(ex32_X)<span class="sc">%*%</span>ex32_Y</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>ex32_Sigma.hat   <span class="ot">=</span> <span class="fu">t</span>(ex32_Y<span class="sc">-</span>ex32_X<span class="sc">%*%</span>ex32_A.hat)<span class="sc">%*%</span>(ex32_Y<span class="sc">-</span>ex32_X<span class="sc">%*%</span>ex32_A.hat)<span class="sc">/</span><span class="fu">nrow</span>(ex32_Y)</span>
 <span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for prior distribution </span></span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>ex22_A.prior                <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex22_A.hat),<span class="fu">ncol</span>(ex22_A.hat))</span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>ex22_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex22_N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(ex22_N)</span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>ex22_V.prior                <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>ex22_p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex22_N)))</span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>ex22_S.prior                <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex22_Sigma.hat))</span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>ex22_nu.prior               <span class="ot">=</span> ex22_N<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>ex32_A.prior                <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex32_A.hat),<span class="fu">ncol</span>(ex32_A.hat))</span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>ex32_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex32_N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(ex32_N)</span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>ex32_V.prior                <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>ex32_p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex32_N)))</span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>ex32_S.prior                <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex32_Sigma.hat))</span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>ex32_nu.prior               <span class="ot">=</span> ex32_N<span class="sc">+</span><span class="dv">1</span></span>
 <span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a></span>
@@ -1126,24 +1122,24 @@ p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
 <span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="do">##############</span></span>
 <span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="co"># normal-inverse Wishard posterior parameters</span></span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>ex22_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(ex22_X)<span class="sc">%*%</span>ex22_X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex22_V.prior))</span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>ex22_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex22_V.bar.inv)</span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>ex22_A.bar       <span class="ot">=</span> ex22_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(ex22_X)<span class="sc">%*%</span>ex22_Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex22_V.prior))<span class="sc">%*%</span>ex22_A.prior)</span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>ex22_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(ex22_Y) <span class="sc">+</span> ex22_nu.prior</span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>ex22_S.bar       <span class="ot">=</span> ex22_S.prior <span class="sc">+</span> <span class="fu">t</span>(ex22_Y)<span class="sc">%*%</span>ex22_Y <span class="sc">+</span> <span class="fu">t</span>(ex22_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex22_V.prior))<span class="sc">%*%</span>ex22_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex22_A.bar)<span class="sc">%*%</span>ex22_V.bar.inv<span class="sc">%*%</span>ex22_A.bar</span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>ex22_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex22_S.bar)</span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>ex32_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(ex32_X)<span class="sc">%*%</span>ex32_X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex32_V.prior))</span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>ex32_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex32_V.bar.inv)</span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>ex32_A.bar       <span class="ot">=</span> ex32_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(ex32_X)<span class="sc">%*%</span>ex32_Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex32_V.prior))<span class="sc">%*%</span>ex32_A.prior)</span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>ex32_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(ex32_Y) <span class="sc">+</span> ex32_nu.prior</span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>ex32_S.bar       <span class="ot">=</span> ex32_S.prior <span class="sc">+</span> <span class="fu">t</span>(ex32_Y)<span class="sc">%*%</span>ex32_Y <span class="sc">+</span> <span class="fu">t</span>(ex32_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex32_V.prior))<span class="sc">%*%</span>ex32_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex32_A.bar)<span class="sc">%*%</span>ex32_V.bar.inv<span class="sc">%*%</span>ex32_A.bar</span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>ex32_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex32_S.bar)</span>
 <span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior draws</span></span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a>ex22_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(ex22_S, <span class="at">df=</span>ex22_nu.bar, <span class="at">Sigma=</span>ex22_S.bar.inv)</span>
-<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a>ex22_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex22_Sigma.posterior,<span class="dv">3</span>,solve)</span>
-<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>ex22_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex22_Sigma.posterior,<span class="fu">c</span>(ex22_N,ex22_N,ex22_S))</span>
-<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a>ex22_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex22_A.bar),ex22_S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex22_A.bar),ex22_S))</span>
-<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>ex22_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(ex22_N,ex22_N,ex22_S))</span>
-<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a>ex22_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex22_V.bar))</span>
-<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex22_S){</span>
-<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a>  ex22_cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(ex22_Sigma.posterior[,,s])</span>
-<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a>  ex22_B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(ex22_cholSigma.s)</span>
-<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a>  ex22_A.posterior[,,s]<span class="ot">=</span> ex22_A.bar <span class="sc">+</span> ex22_L<span class="sc">%*%</span>ex22_A.posterior[,,s]<span class="sc">%*%</span>ex22_cholSigma.s</span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a>ex32_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(ex32_S, <span class="at">df=</span>ex32_nu.bar, <span class="at">Sigma=</span>ex32_S.bar.inv)</span>
+<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a>ex32_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex32_Sigma.posterior,<span class="dv">3</span>,solve)</span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>ex32_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex32_Sigma.posterior,<span class="fu">c</span>(ex32_N,ex32_N,ex32_S))</span>
+<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a>ex32_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex32_A.bar),ex32_S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex32_A.bar),ex32_S))</span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>ex32_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(ex32_N,ex32_N,ex32_S))</span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a>ex32_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex32_V.bar))</span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>ex32_S){</span>
+<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a>  ex32_cholSigma.s     <span class="ot">=</span> <span class="fu">chol</span>(ex32_Sigma.posterior[,,s])</span>
+<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a>  ex32_B.posterior[,,s]<span class="ot">=</span> <span class="fu">t</span>(ex32_cholSigma.s)</span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a>  ex32_A.posterior[,,s]<span class="ot">=</span> ex32_A.bar <span class="sc">+</span> ex32_L<span class="sc">%*%</span>ex32_A.posterior[,,s]<span class="sc">%*%</span>ex32_cholSigma.s</span>
 <span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a><span class="do">##############################################################################</span></span>
 <span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a></span>
@@ -1152,99 +1148,99 @@ p(\kappa)         &amp;= \mathcal{G}(\underline{s}, \underline{a})
 <span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="do">##############</span></span>
 <span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a>  ex23_in.obvs.Y             <span class="ot">=</span> <span class="fu">matrix</span>(y[<span class="dv">1</span><span class="sc">:</span>p,], <span class="at">ncol =</span> N)</span>
-<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a>  ex23_y.bar                 <span class="ot">=</span> <span class="fu">colMeans</span>(ex23_in.obvs.Y)</span>
+<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a>  ex33_in.obvs.Y             <span class="ot">=</span> <span class="fu">matrix</span>(y[<span class="dv">1</span><span class="sc">:</span>p,], <span class="at">ncol =</span> N)</span>
+<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a>  ex33_y.bar                 <span class="ot">=</span> <span class="fu">colMeans</span>(ex33_in.obvs.Y)</span>
 <span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a>  ex23_Y_star                <span class="ot">=</span> <span class="fu">rbind</span>(<span class="fu">diag</span>(ex23_y.bar)<span class="sc">/</span>lambda3, ex23_y.bar<span class="sc">/</span>lambda4)</span>
-<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a>  ex23_X_star                <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, N), <span class="dv">1</span><span class="sc">/</span>lambda4))</span>
+<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a>  ex33_Y_star                <span class="ot">=</span> <span class="fu">rbind</span>(<span class="fu">diag</span>(ex33_y.bar)<span class="sc">/</span>lambda3, ex33_y.bar<span class="sc">/</span>lambda4)</span>
+<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a>  ex33_X_star                <span class="ot">=</span> <span class="fu">as.matrix</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, N), <span class="dv">1</span><span class="sc">/</span>lambda4))</span>
 <span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>p) {</span>
-<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a>    ex23_X_star              <span class="ot">=</span> <span class="fu">cbind</span>(ex23_Y_star, ex23_X_star)</span>
+<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a>    ex33_X_star              <span class="ot">=</span> <span class="fu">cbind</span>(ex33_Y_star, ex33_X_star)</span>
 <span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a>  ex23_X                     <span class="ot">=</span> <span class="fu">rbind</span>(ex23_X_star, X)</span>
-<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a>  ex23_Y                     <span class="ot">=</span> <span class="fu">rbind</span>(ex23_Y_star, Y)</span>
+<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a>  ex33_X                     <span class="ot">=</span> <span class="fu">rbind</span>(ex33_X_star, X)</span>
+<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a>  ex33_Y                     <span class="ot">=</span> <span class="fu">rbind</span>(ex33_Y_star, Y)</span>
 <span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. priors of extension 3</span></span>
-<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>  ex23_A.hat                 <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex23_X)<span class="sc">%*%</span>ex23_X)<span class="sc">%*%</span>(<span class="fu">t</span>(ex23_X)<span class="sc">%*%</span>ex23_Y)</span>
-<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a>  ex23_Sigma.hat             <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">ncol</span>(ex23_Y))</span>
-<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a>  ex23_N                     <span class="ot">=</span> <span class="fu">ncol</span>(ex23_Y)</span>
+<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>  ex33_A.hat                 <span class="ot">=</span> <span class="fu">solve</span>(<span class="fu">t</span>(ex33_X)<span class="sc">%*%</span>ex33_X)<span class="sc">%*%</span>(<span class="fu">t</span>(ex33_X)<span class="sc">%*%</span>ex33_Y)</span>
+<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a>  ex33_Sigma.hat             <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">ncol</span>(ex33_Y))</span>
+<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a>  ex33_N                     <span class="ot">=</span> <span class="fu">ncol</span>(ex33_Y)</span>
 <span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a>   </span>
-<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a>  ex23_A.prior               <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex23_A.hat),<span class="fu">ncol</span>(ex23_A.hat))</span>
-<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a>  ex23_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex23_N<span class="sc">+</span><span class="dv">1</span>),]<span class="ot">=</span> <span class="fu">diag</span>(ex23_N)</span>
-<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a>  ex23_V.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex23_N)))</span>
-<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a>  ex23_S.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex23_Sigma.hat))</span>
-<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a>  ex23_nu.prior              <span class="ot">=</span> ex23_N<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a>  ex33_A.prior               <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex33_A.hat),<span class="fu">ncol</span>(ex33_A.hat))</span>
+<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a>  ex33_A.prior[<span class="dv">2</span><span class="sc">:</span>(ex33_N<span class="sc">+</span><span class="dv">1</span>),]<span class="ot">=</span> <span class="fu">diag</span>(ex33_N)</span>
+<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a>  ex33_V.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,ex33_N)))</span>
+<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a>  ex33_S.prior               <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex33_Sigma.hat))</span>
+<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a>  ex33_nu.prior              <span class="ot">=</span> ex33_N<span class="sc">+</span><span class="dv">1</span></span>
 <span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. posteriors of extension 3</span></span>
-<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a>  ex23_V.bar.inv             <span class="ot">=</span> (<span class="fu">t</span>(X)<span class="sc">%*%</span>X) <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex23_V.prior))</span>
-<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a>  ex23_V.bar                 <span class="ot">=</span> <span class="fu">solve</span>(ex23_V.bar.inv)</span>
+<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a>  ex33_V.bar.inv             <span class="ot">=</span> (<span class="fu">t</span>(X)<span class="sc">%*%</span>X) <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex33_V.prior))</span>
+<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a>  ex33_V.bar                 <span class="ot">=</span> <span class="fu">solve</span>(ex33_V.bar.inv)</span>
 <span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>  ex23_A.bar                 <span class="ot">=</span> ex23_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex23_V.prior))<span class="sc">%*%</span>ex23_A.prior)</span>
-<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a>  ex23_nu.bar                <span class="ot">=</span> <span class="fu">nrow</span>(Y) <span class="sc">+</span> ex23_nu.prior</span>
+<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>  ex33_A.bar                 <span class="ot">=</span> ex33_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex33_V.prior))<span class="sc">%*%</span>ex33_A.prior)</span>
+<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a>  ex33_nu.bar                <span class="ot">=</span> <span class="fu">nrow</span>(Y) <span class="sc">+</span> ex33_nu.prior</span>
 <span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a>  ex23_S.bar                 <span class="ot">=</span> ex23_S.prior <span class="sc">+</span> <span class="fu">t</span>(Y)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">t</span>(ex23_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex23_V.prior))<span class="sc">%*%</span>ex23_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex23_A.bar)<span class="sc">%*%</span>ex23_V.bar.inv<span class="sc">%*%</span>ex23_A.bar</span>
-<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>  ex23_S.bar.inv             <span class="ot">=</span> <span class="fu">solve</span>(ex23_S.bar)</span>
+<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a>  ex33_S.bar                 <span class="ot">=</span> ex33_S.prior <span class="sc">+</span> <span class="fu">t</span>(Y)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">t</span>(ex33_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex33_V.prior))<span class="sc">%*%</span>ex33_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex33_A.bar)<span class="sc">%*%</span>ex33_V.bar.inv<span class="sc">%*%</span>ex33_A.bar</span>
+<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>  ex33_S.bar.inv             <span class="ot">=</span> <span class="fu">solve</span>(ex33_S.bar)</span>
 <span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a>   </span>
-<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a>  ex23_Sigma.posterior.inv   <span class="ot">=</span> <span class="fu">rWishart</span>(S, <span class="at">df=</span>ex23_nu.bar, <span class="at">Sigma=</span>ex23_S.bar.inv)</span>
-<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a>  ex23_Sigma.posterior       <span class="ot">=</span> <span class="fu">apply</span>(ex23_Sigma.posterior.inv,<span class="dv">3</span>,solve)</span>
-<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a>  ex23_Sigma.posterior       <span class="ot">=</span> <span class="fu">array</span>(ex23_Sigma.posterior,<span class="fu">c</span>(N,N,S))</span>
-<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a>  ex23_A.posterior           <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex23_A.bar),S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex23_A.bar),S))</span>
-<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>  ex23_L                     <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex23_V.bar))</span>
-<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a>  ex23_B.posterior           <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>, <span class="fu">c</span>(N,N,S))</span>
+<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a>  ex33_Sigma.posterior.inv   <span class="ot">=</span> <span class="fu">rWishart</span>(S, <span class="at">df=</span>ex33_nu.bar, <span class="at">Sigma=</span>ex33_S.bar.inv)</span>
+<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a>  ex33_Sigma.posterior       <span class="ot">=</span> <span class="fu">apply</span>(ex33_Sigma.posterior.inv,<span class="dv">3</span>,solve)</span>
+<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a>  ex33_Sigma.posterior       <span class="ot">=</span> <span class="fu">array</span>(ex33_Sigma.posterior,<span class="fu">c</span>(N,N,S))</span>
+<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a>  ex33_A.posterior           <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex33_A.bar),S))),<span class="fu">c</span>(<span class="fu">dim</span>(ex33_A.bar),S))</span>
+<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>  ex33_L                     <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex33_V.bar))</span>
+<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a>  ex33_B.posterior           <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>, <span class="fu">c</span>(N,N,S))</span>
 <span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S){</span>
-<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a>    ex23_chol.sigma          <span class="ot">=</span> <span class="fu">chol</span>(ex23_Sigma.posterior[,,s])</span>
-<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a>    ex23_A.posterior[,,s]    <span class="ot">=</span> ex23_A.bar <span class="sc">+</span> ex23_L<span class="sc">%*%</span>ex23_A.posterior[,,s]<span class="sc">%*%</span>ex23_chol.sigma</span>
-<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a>    ex23_B.posterior[,,s]    <span class="ot">=</span> <span class="fu">t</span>(ex23_chol.sigma)</span>
+<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a>    ex33_chol.sigma          <span class="ot">=</span> <span class="fu">chol</span>(ex33_Sigma.posterior[,,s])</span>
+<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a>    ex33_A.posterior[,,s]    <span class="ot">=</span> ex33_A.bar <span class="sc">+</span> ex33_L<span class="sc">%*%</span>ex33_A.posterior[,,s]<span class="sc">%*%</span>ex33_chol.sigma</span>
+<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a>    ex33_B.posterior[,,s]    <span class="ot">=</span> <span class="fu">t</span>(ex33_chol.sigma)</span>
 <span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As we see below, the result from the simulation is similar to the true parameter of the baseline model.</p>
 <p>A.posterior for basic and extended model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>       [,1]  [,2]
-[1,]  0.094 0.032
-[2,]  0.994 0.000
-[3,] -0.002 1.000</code></pre>
+<pre><code>      [,1]  [,2]
+[1,] 0.019 0.016
+[2,] 0.999 0.000
+[3,] 0.000 1.000</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       [,1]   [,2]
-[1,]  0.130  0.061
-[2,]  0.993 -0.002
-[3,] -0.003  0.999</code></pre>
+<pre><code>      [,1] [,2]
+[1,] 0.035 0.03
+[2,] 0.999 0.00
+[3,] 0.000 1.00</code></pre>
 </div>
 </div>
 <p>B.posterior for basic and extended model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>       [,1]  [,2]
-[1,]  1.000 0.000
-[2,] -0.005 1.005</code></pre>
+<pre><code>      [,1]  [,2]
+[1,]  1.00 0.000
+[2,] -0.01 0.984</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       [,1]  [,2]
-[1,]  1.009 0.000
-[2,] -0.016 1.013</code></pre>
+<pre><code>      [,1]  [,2]
+[1,]  1.01 0.000
+[2,] -0.02 0.992</code></pre>
 </div>
 </div>
 <p>Sigma.posterior for basic and extended model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>       [,1]   [,2]
-[1,]  0.999 -0.005
-[2,] -0.005  1.011</code></pre>
+<pre><code>      [,1]   [,2]
+[1,]  1.00 -0.010
+[2,] -0.01  0.968</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]   [,2]
-[1,]  1.017 -0.016
-[2,] -0.016  1.027</code></pre>
+[1,]  1.019 -0.020
+[2,] -0.020  0.984</code></pre>
 </div>
 </div>
-<section id="empirical-investigation-for-extended-model" class="level2">
-<h2 class="anchored" data-anchor-id="empirical-investigation-for-extended-model">Empirical Investigation for extended model</h2>
+<section id="empirical-investigation-for-extended-model-1" class="level2">
+<h2 class="anchored" data-anchor-id="empirical-investigation-for-extended-model-1">Empirical Investigation for extended model</h2>
 <p>Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the directions are in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.</p>
-<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots" class="level6" style="text-align: center;">
-<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
+<section id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots-1" class="level6" style="text-align: center;">
+<h6 style="text-align: center;" class="anchored" data-anchor-id="figure-10.-irf-to-cash-rate-shock-for-kappa_1-1-plots-1">Figure 10. IRF to cash rate shock for <span class="math inline">\(\kappa_1\)</span> = 1 plots</h6>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/irf-au-mps plots for extension 2-1.png" class="img-fluid" width="672"></p>
