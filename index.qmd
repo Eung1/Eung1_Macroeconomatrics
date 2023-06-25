@@ -905,8 +905,8 @@ Q                                = array(NA,c(N,N,S))
 
 ```{r results for case 2: long-run restriction_contd2}
 #| echo: true
-#| message: false
-
+#| code-fold: true
+#| code-summary: "Show code"
 
 # Initial setup
 for (s in 1:S){
@@ -976,7 +976,8 @@ The posterior $B_0$ matrix requires a normalization since it exhibits symmetric 
 
 ```{r results for case 2: long-run restriction_contd2, normalization}
 #| echo: true
-#| message: false
+#| code-fold: true
+#| code-summary: "Show code"
 
 
 # initial setup
@@ -1253,10 +1254,9 @@ $$
 
 
 ```{r results for case 3}
-#| echo: false
-#| message: false
-#| warning: false
-#| results: hide
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show code"
 
 # This code is from ECOM90007 L12 codes provided by Tomasz Woźniak.
 
@@ -1376,7 +1376,7 @@ As we see the figure of response function of banks credit to cash rate shock, ba
 
 
 
-###### Figure 8. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 8. IRF to cash rate shock with 7 variables {style="text-align: center;"}
 
 ```{r irf-au-mps plots2, echo = FALSE}
 
@@ -1427,19 +1427,16 @@ axis(4, (0.5*(V7.fevd.au.credit[1:7,6]+V7.fevd.au.credit[2:8,6]))[c(5,6)], c("mp
 # Extension 1. Stochastic volatility heteroskedasticity
 
 ## Model equations
-$$
-Y = X\alpha + E
-$$
-$$
-E|X \sim MN(0_{T\times N},\Sigma,diag(h))
-$$
+
 
 $$
-h = (h_1,...,h_T)'
+\begin{align*}
+Y        &= XA + E \\
+E|X      &\sim N_T(0_T,diag(\sigma^2)) \\
+\sigma^2 &= (exp\{h_1\}, ... , exp\{h_t\})
+\end{align*}
 $$
-$$
-\sigma^2 = (exp\{h_1\}, ... , exp\{h_t\})
-$$
+
 $h_t$ - follows a Stochastic Volatility process
 
 The likelihood function is then
@@ -1448,20 +1445,16 @@ L(\alpha,\Sigma|Y,X,h) = det(diag(h)^{-N/2}det(\Sigma)^{-T/2}\times exp\{  -1/2 
 $$
 The full conditional posterior distribution for $\alpha,\Sigma$ is given by
 $$
-P(\alpha,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
+P(A,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
 $$
 where
 $$
-\bar{V}=(X'diag(h)^{-1}X+\underline{V}^{-1})^{-1}
-$$
-$$
-\bar{\alpha}=\bar{V}(X'diag(h)^{-1}Y+\underline{V}^{-1}\underline{\alpha})
-$$
-$$
-\bar{S}=\underline{V}+Y'diag(h)^{-1}Y+\underline{\alpha'}\underline{V}^{-1}\underline{\alpha}-\bar{\alpha'}\bar{V}^{-1}\bar{\alpha}
-$$
-$$
-\bar{\nu}= T + \underline{\nu}
+\begin{align*}
+\bar{V}      &=(X'diag(h)^{-1}X+\underline{V}^{-1})^{-1} \\
+\bar{\alpha} &=\bar{V}(X'diag(h)^{-1}Y+\underline{V}^{-1}\underline{\alpha}) \\
+\bar{S}      &=\underline{V}+Y'diag(h)^{-1}Y+\underline{\alpha'}\underline{V}^{-1}\underline{\alpha}-\bar{\alpha'}\bar{V}^{-1}\bar{\alpha} \\
+\bar{\nu}    &= T + \underline{\nu} \\
+\end{align*}
 $$
 
 
@@ -1470,92 +1463,123 @@ $$
 At each iteration s:
 
    Step 1. Sample $h^{S}$ from the distribution $P(h|Y,X,A, \Sigma)$
-   Step 2. Sample $\alpha^{S},\Sigma^{s}$ from the $P(A,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})$
+   
+   Step 2. Sample $\alpha^{s},\Sigma^{s}$ from the $P(A,\Sigma|Y,X,h) = \mathcal{MN} (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})$
    
 Return $\{\alpha^{S},\Sigma^{S},h^{S}]\}_{s=1}^S$
 
 Technics for sampling h is listed in the previous section.
 
 Then it follows that 
-$\bar{V} = (X'diag(h)^{-1}X + \underline{V}^{-1})^{-1}$
-$\bar{A} = \bar{V}(X'diag(h)^{-1}Y + \underline{V}^{-1}\underline{A})^{-1}$
-$\bar{S} = \underline{S} + Y'diag(h)^{-1}Y + \underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A}$
-$\bar{\nu}=T + \underline{\nu}$.
 
+$$
+\begin{align*}
+\bar{V}   &= (X'diag(h)^{-1}X + \underline{V}^{-1})^{-1} \\
+\bar{A}   &= \bar{V}(X'diag(h)^{-1}Y + \underline{V}^{-1}\underline{A})^{-1} \\
+\bar{S}   &= \underline{S} + Y'diag(h)^{-1}Y + \underline{A}'\underline{V}^{-1}\underline{A} - \bar{A}'\bar{V}^{-1}\bar{A} \\
+\bar{\nu} &=T + \underline{\nu} \\
+\end{align*}
+$$
 
 ## Algorithm
 
 Following is the algorithm for the part above to sample draws from full conditional posterior distribution. For each iteration, it draws h from a corresponding distribution and then using h, and then draws A and sigma from a multivariate normal distribution.
 
 ```{r setup, include=TRUE, cache = FALSE}
-#| eval: false
 #| echo: true
+#| code-fold: true
+#| code-summary: "Show code"
 
-SVcommon.Gibbs.iteration = function(S,aux, priors){
+SVcommon.Gibbs.iteration = function(S,Y,X, priors){
   
-
-  #
-  # aux is a list containing:
-  #   Y - a TxN matrix
-  #   X - a TxK matrix
-  #   H - a Tx1 matrix
-  #   h0 - a scalar
-  #   sigma.v2 - a scalar
-  #   s - a Tx1 matrix
-  #   A - a KxN matrix
-  #   Sigma - an NxN matrix
-  #   sigma2 - a Tx1 matrix
-  #
   # priors is a list containing:
   #   h0.v - a positive scalar
   #   h0.m - a scalar
   #   sigmav.s - a positive scalar
   #   sigmav.nu - a positive scalar
   #   HH - a TxT matrix
-
   
-  T             = dim(aux$Y)[1]
-  N             = dim(aux$Y)[2]
-  K             = dim(X)[2]
+  T             = dim(Y)[1]
+  N             = dim(Y)[2]
+  K             = dim(X)[2] 
+  
+aux     = list(
+  Y           = Y,
+  X           = X,
+  H           = matrix(1,T,1),
+  h0          = 0,
+  sigma.v2    = 1,
+  s           = matrix(1,T,1),
+  A           = matrix(0, K, N),
+  Sigma       = matrix(0, K, N),
+  sigma2      = matrix(1,T,1)
+)
+  
+priors        = list(
+  h0.v    = 1,
+  sigmav.s= 1,
+  sigmav.nu= 1,
+  h0.v    = 1,
+  h0.m    = 0 ,
+  HH      = HH
+)
+  
+posteriors   = list(
+    H           = matrix(NA,T,S),
+    sigma2      = matrix(NA,T,S),
+    s           = matrix(NA,T,S),
+    h0          = rep(NA,S),
+    sigma.v2    = rep(NA,S),
+    A           = array(NA, c(K,N,S)),
+    Sigma       = array(NA, c(N,N,S))
+)
   
 
-    
+# Sampling A and Sigma
+  kappa.1     = 1
+  kappa.2     = 100
+  kappa.3     = 1
+  A.hat       = solve(t(X)%*%X)%*%t(X)%*%Y
+  Sigma.hat   = t(Y-X%*%A.hat)%*%(Y-X%*%A.hat)/nrow(Y)
+
+# Prior distribution specification
+
+  A.prior              = matrix(0,nrow(A.hat),ncol(A.hat))
+  A.prior[2:(N + 1), ] = diag(N)
+  S.prior              = diag(diag(Sigma.hat))
+  V.prior              = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
+  nu.prior             = N+1
+  
   alpha.st      = c(1.92677,1.34744,0.73504,0.02266,0-0.85173,-1.97278,-3.46788,-5.55246,-8.68384,-14.65000)
   sigma.st      = c(0.11265,0.17788,0.26768,0.40611,0.62699,0.98583,1.57469,2.54498,4.16591,7.33342)
   pi.st         = c(0.00609,0.04775,0.13057,0.20674,0.22715,0.18842,0.12047,0.05591,0.01575,0.00115)
   
 
-  Lambda        = solve(chol(aux$Sigma))
-  Z             = rowSums( ( aux$Y - aux$X %*% aux$A ) %*% Lambda ) / sqrt(N)
-  Y.tilde       = as.vector(log((Z + 0.0000001)^2))
-  Ytilde.alpha  = as.matrix(Y.tilde - alpha.st[as.vector(aux$s)])
-  
-    # Sampling A and Sigma
-  kappa.1     = 1
-  kappa.2     = 100
-  kappa.3     = 1
-
-  V.prior     = diag(c(kappa.2,kappa.1*((1:p)^(-2))%x%rep(1,N)))
-
-  nu.prior    = N+1
   # normal-inverse Wishard posterior parameters
   ############################################################
   V.bar.inv   = t(aux$X)%*%diag(1/as.vector(aux$sigma2))%*%aux$X + diag(1/diag(V.prior))
   V.bar       = solve(V.bar.inv)
-  A.bar       = V.bar%*%(t(aux$X)%*%aux$Y + diag(1/diag(V.prior))%*%aux$A)
+  A.bar       = V.bar%*%(t(aux$X)%*%diag(1/as.vector(aux$sigma2))%*%aux$Y + diag(1/diag(V.prior))%*%A.prior)
   nu.bar      = nrow(aux$Y) + nu.prior
-  S.bar       = aux$Sigma + t(aux$Y)%*%aux$Y + t(A.prior)%*%diag(1/diag(V.prior))%*%aux$A - t(A.bar)%*%V.bar.inv%*%A.bar
+  S.bar       = S.prior + t(aux$Y)%*%diag(1/as.vector(aux$sigma2))%*%aux$Y +   t(A.prior)%*%diag(1/diag(V.prior))%*%A.prior - t(A.bar)%*%V.bar.inv%*%A.bar
   S.bar.inv   = solve(S.bar)
   
   # posterior draws 
   ############################################################
 
+  for (s in 1:S){
   Sigma.posterior.IW     = rWishart(1, df=nu.bar, Sigma=S.bar.inv)
   Sigma.posterior.draw   = apply(Sigma.posterior.IW, 3 ,solve)
   aux$Sigma              = array(Sigma.posterior.draw,c(N,N,1))
   A.norm                 = array(rnorm(prod(c(K,N,1))),c(K,N,1))
   L                      = t(chol(V.bar))
   aux$A                  = A.bar + L%*%A.norm[,,1]%*%chol(aux$Sigma[,,1])
+
+  Lambda        = solve(chol(aux$Sigma[,,1]))
+  Z             = rowSums( ( aux$Y - aux$X %*% aux$A ) %*% Lambda ) / sqrt(N)
+  Y.tilde       = as.vector(log((Z + 0.0000001)^2))
+  Ytilde.alpha  = as.matrix(Y.tilde - alpha.st[as.vector(aux$s)])
+  
   # sampling initial condition
   ############################################################
   V.h0.bar      = 1/((1 / priors$h0.v) + (1 / aux$sigma.v2))
@@ -1598,34 +1622,134 @@ SVcommon.Gibbs.iteration = function(S,aux, priors){
   aux$sigma2    = as.matrix(exp(draw))
   
 
-
-  
-  posteriors      = list(
-    H           = matrix(NA,T,S),
-    sigma2      = matrix(NA,T,S),
-    s           = matrix(NA,T,S),
-    h0          = rep(NA,S),
-    sigma.v2    = rep(NA,S),
-    A           = array(NA, c(K,N,S)),
-    Sigma       = array(NA, c(N,N,S))
-  )
-
-  for (s in 1:S){
-      posteriors$H[,s]             = aux$H
-      posteriors$sigma2[,s]        = aux$sigma2
-      posteriors$s[,s]             = aux$s
-      posteriors$h0[s]             = aux$h0
-      posteriors$sigma.v2[s]       = aux$sigma.v2
-      posteriors$A[,,s]            = aux$A
-      posteriors$Sigma[,,s]        = aux$Sigma
-      posteriors$A[,,s]            = aux$A
-      posteriors$Sigma[,,s]        = aux$Sigma
+  posteriors$H[,s]             = aux$H
+  posteriors$sigma2[,s]        = aux$sigma2
+  posteriors$s[,s]             = aux$s
+  posteriors$h0[s]             = aux$h0
+  posteriors$sigma.v2[s]       = aux$sigma.v2
+  posteriors$A[,,s]            = aux$A
+  posteriors$Sigma[,,s]        = aux$Sigma
+  posteriors$A[,,s]            = aux$A
+  posteriors$Sigma[,,s]        = aux$Sigma
   }
-  
 
   return(posteriors)
 }
+```
 
+
+## Empirical Investigation for extended model
+
+Following figure is the IRF plot of the extended model with heteroskedasticity with a positive cash rate shock.
+
+```{r}
+
+T            = dim(Y)[1]
+H            = diag(T)
+HH           = 2*diag(T)
+
+priors       = list(
+  h0.v       = 1,
+  sigmav.s   = 1,
+  sigmav.nu  = 1,
+  h0.v       = 1,
+  h0.m       = 0 ,
+  HH         = HH
+)
+
+
+sv1 = SVcommon.Gibbs.iteration(S, Y, X, priors)
+
+  ex1_A.posterior  = sv1$A
+  ex1_B.posterior  = array(NA,c(N,N,S))
+  ex1_B1.posterior = array(NA,c(N,(1+N*p),S))
+  for (s in 1:S){
+    ex1_cholSigma.s       = chol(sv1$Sigma[,,s])
+    ex1_B.posterior[,,s]  = t(ex1_cholSigma.s)
+    ex1_B1.posterior[,,s] = ex1_B.posterior[,,s]%*%t(ex1_A.posterior[,,s])
+  }
+
+  
+  
+```
+
+
+
+
+```{r results for ex1}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+# Impulse response functions
+# Forecast Error Variance Decomposition
+############################################################
+ex1_IRF.posterior     = array(NA,c(N,N,h+1,S))
+ex1_IRF.inf.posterior = array(NA,c(N,N,S))
+ex1_FEVD.posterior    = array(NA,c(N,N,h+1,S))
+ex1_J                 = cbind(diag(N),matrix(0,N,N*(p-1)))
+for (s in 1:S){
+  ex1_A.bold                 = rbind(t(ex1_A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
+  ex1_IRF.inf.posterior[,,s] = ex1_J %*% solve(diag(N*p)-ex1_A.bold) %*% t(ex1_J) %*% ex1_B.posterior[,,s]
+  ex1_A.bold.power           = ex1_A.bold
+  for (i in 1:(h+1)){
+    tmp = ex1_B.posterior[,,s]
+    if (i==1){
+      ex1_IRF.posterior[,,i,s]        = tmp
+    } else {
+      ex1_IRF.posterior[,,i,s]        = ex1_J %*% ex1_A.bold.power %*% t(ex1_J) %*% tmp
+      ex1_A.bold.power                = ex1_A.bold.power %*% ex1_A.bold
+    }
+    for (n in 1:N){
+      for (nn in 1:N){
+        ex1_FEVD.posterior[n,nn,i,s]  = sum(ex1_IRF.posterior[n,nn,1:i,s]^2)
+      }
+    }
+    ex1_FEVD.posterior[,,i,s]         = diag(1/apply(ex1_FEVD.posterior[,,i,s],1,sum))%*%ex1_FEVD.posterior[,,i,s]
+  }
+}
+ex1_FEVD.posterior    = 100*ex1_FEVD.posterior
+
+save(ex1_IRF.posterior,ex1_IRF.inf.posterior, ex1_FEVD.posterior, file="ex1_irf-fevd-k1.RData")
+
+
+# Plots of responses to domestic monetary policy shock
+############################################################
+load("ex1_irf-fevd-k1.RData")
+ex1_IRFs.k1           = apply(ex1_IRF.posterior[3:8,5,,],1:2,mean)
+ex1_IRFs.inf.k1       = apply(ex1_IRF.inf.posterior[3:8,5,],1,mean)
+rownames(ex1_IRFs.k1) = colnames(Y)[3:8]
+
+ex1_IRFs.k1.hdi    = apply(ex1_IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
+hh             = 1:11
+```
+
+
+
+
+
+###### Figure 10. IRF to cash rate shock for extended model {style="text-align: center;"}
+
+```{r irf-au-mps plots_ex1, echo = FALSE}
+
+# irf-au-mps plots
+
+par(mfrow=c(3,2), mar=c(4,4.5,2,2),cex.axis=1.5, cex.lab=1.5)
+for (n in 1:6){
+  ylims     = range(ex1_IRFs.k1[n,hh],ex1_IRFs.k1.hdi[,n,hh])
+  plot(hh,ex1_IRFs.k1[n,hh], type="l", ylim=ylims, axes=FALSE, xlab="", ylab=rownames(ex1_IRFs.k1)[n])
+  if (n==5 | n==6){
+    axis(1,c(1,2,6,11),c("","1 quarter","5 quarter","10 quarter"))
+  } else {
+    axis(1,c(1,2,6,11),c("","","",""))
+  }
+  axis(2,c(ylims[1],0,ylims[2]),round(c(ylims[1],0,ylims[2]),3))
+  polygon(c(hh,(h+1):1), c(ex1_IRFs.k1.hdi[1,n,hh],ex1_IRFs.k1.hdi[2,n,(h+1):1]), col=mcxs1.shade1,border=mcxs1.shade1)
+  abline(h=0)
+  lines(hh, ex1_IRFs.k1[n,hh],lwd=2,col=mcxs1)
+  
+}
 
 ```
 
@@ -1656,10 +1780,13 @@ p(\kappa|Y,X,A) &= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kappa) 
 $$
 which it is the kernel of Generalized Inverse Gaussian (GIG) distribution with 
 
-$$\lambda = \frac{1}{2} - \frac{KN}{2} $$ 
-$$\chi = tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) $$
-
-$$\psi = \frac{2}{s}$$
+$$
+\begin{align*}
+\lambda &= \frac{1}{2} - \frac{KN}{2} \\
+\chi    &= tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) \\
+\psi    &= \frac{2}{s} \\
+\end{align*}
+$$
 
 
 Gibbs Sampler:
@@ -1674,10 +1801,9 @@ At each iteration s:
 Repeat step 1 and 2 for S1 + S2 times and discard S1.
 
 ```{r,echo=TRUE}
-#| echo: false
-#| message: false
-#| warning: false
-#| results: hide
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show code"
 
 Posterior_kappa = function(Y, X, p, N, S1, S2, kappa.1) {
   # MLE
@@ -1766,6 +1892,7 @@ Kappa = posterior_k$kappa
 
 ## Empirical Investigation for extended model
 
+Following figure is the IRF plot of the extended model with estimated hyperparameters with a positive cash rate shock.
 
 ```{r results for ex2}
 #| echo: false
@@ -1820,7 +1947,7 @@ hh             = 1:11
 
 
 
-###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 11. IRF to cash rate shock for extended model {style="text-align: center;"}
 
 ```{r irf-au-mps plots_figure 10, echo = FALSE}
 
@@ -1848,16 +1975,15 @@ for (n in 1:6){
 
 # Extension 3. Implementation of the dummy initial observation
 
-As a third extension, I add the ‘sum of coefficients’ and ‘dummy initial observation’ priors proposed in Doan et al. (1984) and Sims (1993), respectively to my baseline model. Both priors can be implemented by augmenting the system with dummy observations. In more detail, according to the authors, the ‘sum of coefficients’ prior tells that when the average of lagged values of a variable is at some level,it is likely to be a good forecast of future observations, and can be implemented by augmenting the system with the dummy observations.
+As a third extension, I add the ‘sum of coefficients’ and ‘dummy initial observation’ priors proposed in @carriero2015bayesian and @sims1993nine, respectively to my baseline model. Both priors can be implemented by augmenting the system with dummy observations. In more detail, according to the authors, the ‘sum of coefficients’ prior tells that when the average of lagged values of a variable is at some level,it is likely to be a good forecast of future observations, and can be implemented by augmenting the system with the dummy observations.
 
-Necessity of adopting the ‘sum of coefficients' and ‘dummy initial observation’ is well argued by Carriero and Clark (2015) and Sims (1993). Carriero and Clark (2015) argues that if one decides to estimate the model in levels, which is the case for my model, then these priors implement the belief that there is unit-root in the system, which is a typical feature of macroeconomic datasets. Also, Sims (1993) provides examples that ‘without such elements in the prior, fitted multivariate time series models tend to imply that an unreasonably large share of the sample period variation in the data is accounted for by deterministic components’.
+Necessity of adopting the ‘sum of coefficients' and ‘dummy initial observation’ is well argued by @carriero2015bayesian and @sims1993nine. @carriero2015bayesian argues that if one decides to estimate the model in levels, which is the case for my model, then these priors implement the belief that there is unit-root in the system, which is a typical feature of macroeconomic datasets. Also, @sims1993nine provides examples that ‘without such elements in the prior, fitted multivariate time series models tend to imply that an unreasonably large share of the sample period variation in the data is accounted for by deterministic components’.
 
 
-```{r second extension}
+```{r third extension}
 #| echo: true
-#| message: false
-#| warning: false
-#| results: hide
+#| code-fold: true
+#| code-summary: "Show code"
 
 
 #Basic Model Test
@@ -2067,7 +2193,7 @@ round(apply(ex32_Sigma.posterior, 1:2, mean),3)
 
 Now I present the Impulse Response Functions (IRFs) for the extended model below. As we see, the point estimates deviate from zero, and the directions are in accordance with the baseline model. However, except the cash rate, variables do not meaningfully diverge from zero in statistical sense.
 
-```{r results for case 1_contd2_2}
+```{r results for third extension}
 #| echo: false
 #| message: false
 #| warning: false
@@ -2122,9 +2248,9 @@ hh                     = 1:11
 
 
 
-###### Figure 10. IRF to cash rate shock for $\kappa_1$ = 1 plots {style="text-align: center;"}
+###### Figure 12. IRF to cash rate shock for extended model {style="text-align: center;"}
 
-```{r irf-au-mps plots for extension 2, echo = FALSE}
+```{r irf-au-mps plots for extension 3, echo = FALSE}
 
 # irf-au-mps plots
 
