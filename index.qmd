@@ -615,7 +615,7 @@ mcxs2.shade1= rgb(mcxs2.rgb[1],mcxs2.rgb[2],mcxs2.rgb[3], alpha=120, maxColorVal
 ############################################################
 N       = 8
 p       = 4
-S       = 5000
+S       = 1000
 h       = 10
 
 # create Y and X
@@ -891,13 +891,18 @@ $$
 ############################################################
 B0.posterior.tilde               = array(NA,c(N,N,S))
 B0.posterior.transposed.tilde    = array(NA,c(N,N,S))
+B0.posterior.transposed          = array(NA,c(N,N,S))
 B0.posterior                     = array(NA,c(N,N,S))
 B0.posterior.norm                = array(NA,c(N,N,S))
+B0.posterior.transposed.norm     = array(NA,c(N,N,S))
 Bplus.posterior                  = array(NA,c(N,N*p+1,S))
 Bplus.posterior.tilde            = array(NA,c(N,N*p+1,S))
+Bplus.posterior.transposed       = array(NA,c(N,N*p+1,S))
 IR.infinity                      = array(NA,c(N,N,S))
 IR.infinity.transposed.tilde     = array(NA,c(N,N,S))
+IR.infinity.transposed           = array(NA,c(N,N,S))
 Q                                = array(NA,c(N,N,S))
+Q.transposed                     = array(NA,c(N,N,S))
 
 
 ```
@@ -964,15 +969,22 @@ p8.s            = orthogonal.complement.matrix.TW(cbind(p1.s,p2.s,p3.s,p4.s,p5.s
 
 Q[,,s]            = cbind(p1.s,p2.s,p3.s,p4.s,p5.s,p6.s,p7.s,p8.s)
 
+
 B0.posterior[,,s]    = Q[,,s]%*%B0.posterior.tilde[,,s]
 Bplus.posterior[,,s] = Q[,,s]%*%Bplus.posterior.tilde[,,s]  ######!!@@@
 IR.infinity[,,s]     = solve(B0.posterior[,,s]-Bplus.posterior[,2:9,s]-Bplus.posterior[,10:17,s]-Bplus.posterior[,18:25,s]-Bplus.posterior[,26:33,s])
+
+  ###revised###
+Q.transposed[,,s]               = t(Q[,,s])
+B0.posterior.transposed[,,s]    = Q.transposed[,,s]%*%B0.posterior.transposed.tilde[,,s]
+Bplus.posterior.transposed[,,s] = Q.transposed[,,s]%*%cbind(Bplus.posterior.tilde[,1,s],t(Bplus.posterior.tilde[,2:9,s]),t(Bplus.posterior.tilde[,10:17,s]),t(Bplus.posterior.tilde[,18:25,s]),t(Bplus.posterior.tilde[,26:33,s])) 
+IR.infinity.transposed[,,s]     = solve(B0.posterior.transposed[,,s]-Bplus.posterior.transposed[,2:9,s]-Bplus.posterior.transposed[,10:17,s]-Bplus.posterior.transposed[,18:25,s]-Bplus.posterior.transposed[,26:33,s])
 
 }
 
 ```
 
-The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this.
+The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this. The matrix shown below is the mean of impulse responses of infinity horizon that I impose a restriction. The restriction imposed is that the monetary policy has no effect on GDP in the rong-run, such that, the element of (3,5) should be close to zero in the matrix.
 
 ```{r results for case 2: long-run restriction_contd2, normalization}
 #| echo: true
@@ -1043,73 +1055,68 @@ ttt=ttt+s/s
 t1          = proc.time()
 (t1-t0)[3]/60 # Time of computations in minutes
 
+
+# compute IR.infinity.norm and its mean
+Bplus.posterior.norm           = array(NA,c(N,N*p+1,S))
+IR.infinity.norm               = array(NA,c(N,N,S))
+for (s in 1:S) {
+Bplus.posterior.norm[,,s] = B0.posterior.norm[,,s]%*%t(A.posterior[,,s])
+IR.infinity.norm[,,s]     = solve(B0.posterior.norm[,,s]- Bplus.posterior.norm[,2:9,s]- Bplus.posterior.norm[,10:17,s]- Bplus.posterior.norm[,18:25,s]- Bplus.posterior.norm[,26:33,s] )
+
+}
+
+mean_IR.infinity.norm = apply(IR.infinity.norm, c(1, 2), mean)
+mean_IR.infinity.norm
+
 ```
+
+
+```{r results for case 2: long-run restriction_contd2, normalization2}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show code"
+
+# this is a test snippet
+
+#Obtain normalized B0
+t0=  proc.time()
+ttt=1
+B0.posterior.hat.inv = solve(B0.posterior.transposed[,,1]) # does - reverse the IRF?
+for (s in 1:S){
+Sigma.posterior.inv = solve(t(Sigma.posterior[,,s]))
+B0.posterior.tmp    = B0.posterior.transposed[,,s]
+
+B0.posterior.transposed.norm[,,s] = normalization.wz2003(B0.posterior.tmp,B0.posterior.hat.inv, Sigma.posterior.inv, diag.signs)
+ttt=ttt+s/s
+}
+t1          = proc.time()
+(t1-t0)[3]/60 # Time of computations in minutes
+
+
+
+
+# compute IR.infinity.norm and its mean
+IR.infinity.transposed.norm               = array(NA,c(N,N,S))
+
+for (s in 1:S) {
+IR.infinity.transposed.norm[,,s]     = solve(B0.posterior.transposed.norm[,,s]- B0.posterior.transposed.norm[,,s]%*%A.posterior[2:9,,s]- B0.posterior.transposed.norm[,,s]%*%A.posterior[10:17,,s]- B0.posterior.transposed.norm[,,s]%*%A.posterior[18:25,,s]- B0.posterior.transposed.norm[,,s]%*%A.posterior[26:33,,s])
+}
+
+mean_IR.infinity.transposed.norm = apply(IR.infinity.transposed.norm, c(1, 2), mean)
+mean_IR.infinity.transposed.norm
+
+```
+
+
+
+
+
 
 
 ## Empirical Investigation for model with long-run restriction (case 2)
 
 Unlike the baseline model, the relationship between Australian real GDP and cash rate in the long-run is restricted such that there cash rate has no effect on Australian real GDP. Though this alternative restriction, I expect that the result would not be quite different from the result of the baseline model. This is because if I look at the IRF of Australian real GDP to cash rate, the effect is not different from zero statistically.
-
-```{r results for case 2: long-run restriction_IRF, FEVD}
-#| echo: false
-#| message: false
-#| warning: false
-#| results: hide
-
-
-# Impulse response functions
-# Forecast Error Variance Decomposition
-############################################################
-
-t0          = proc.time()
-
-LRR.IRF.posterior     = array(NA,c(N,N,h+1,S))
-LRR.IRF.inf.posterior = array(NA,c(N,N,S))
-LRR.FEVD.posterior    = array(NA,c(N,N,h+1,S))
-J                     = cbind(diag(N),matrix(0,N,N*(p-1)))
-for (s in 1:S){
-  LRR.A.bold          = rbind(t(A.posterior[2:(1+N*p),,s]),cbind(diag(N*(p-1)),matrix(0,N*(p-1),N)))
-  LRR.IRF.inf.posterior[,,s]          = J %*% solve(diag(N*p)-LRR.A.bold) %*% t(J) %*% solve(B0.posterior[,,s])
-  LRR.A.bold.power    = LRR.A.bold
-  for (i in 1:(h+1)){
-    LRR.tmp = solve(B0.posterior[,,s])
-    if (i==1){
-      LRR.IRF.posterior[,,i,s]        = LRR.tmp
-    } else {
-      LRR.IRF.posterior[,,i,s]        = J %*% LRR.A.bold.power %*% t(J) %*% LRR.tmp
-      LRR.A.bold.power                = LRR.A.bold.power %*% LRR.A.bold
-    }
-    for (n in 1:N){
-      for (nn in 1:N){
-        LRR.FEVD.posterior[n,nn,i,s]  = sum(LRR.IRF.posterior[n,nn,1:i,s]^2)
-      }
-    }
-    LRR.FEVD.posterior[,,i,s]         = diag(1/apply(LRR.FEVD.posterior[,,i,s],1,sum))%*%LRR.FEVD.posterior[,,i,s]
-  }
-}
-LRR.FEVD.posterior    = 100*LRR.FEVD.posterior
-
-t1          = proc.time()
-(t1-t0)[3]/60 # Time of computations in minutes
-
-save(LRR.IRF.posterior,LRR.IRF.inf.posterior, LRR.FEVD.posterior, file="irf-fevd-k1.RData3")
-
-
-# Plots of responses to domestic monetary policy shock
-############################################################
-load("irf-fevd-k1.RData3")
-LRR.IRFs.k1           = apply(LRR.IRF.posterior[3:8,5,,],1:2,mean)
-LRR.IRFs.inf.k1       = apply(LRR.IRF.inf.posterior[3:8,5,],1,mean)
-rownames(LRR.IRFs.k1) = colnames(Y)[3:8]
-
-LRR.IRFs.k1.hdi    = apply(LRR.IRF.posterior[3:8,5,,],1:2,hdi, credMass=0.68)
-hh             = 1:11
-
-
-
-```
-
-
 
 
 ```{r results for case 2: long-run restriction_IRF, FEVD_normalized}
