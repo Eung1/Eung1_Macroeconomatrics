@@ -668,7 +668,7 @@ B_0' &amp;=
 <span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>The posterior <span class="math inline">\(B_0\)</span> matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this. The matrix shown below is the mean of impulse responses of infinity horizon that I impose a restriction. The restriction imposed is that the monetary policy has no effect on GDP in the rong-run, such that, the element of (3,5) should be close to zero in the matrix.</p>
+<p>The posterior <span class="math inline">\(B_0\)</span> matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this. The matrix shown below is the mean of impulse responses of infinity horizon that I impose a restriction. The restriction imposed is that the monetary policy has no effect on GDP in the long-run, such that, element (3,5) of the infinite impulse response matrix should be close to zero in the matrix.</p>
 <div class="cell">
 <details>
 <summary>Show code</summary>
@@ -736,8 +736,8 @@ B_0' &amp;=
 <span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  elapsed 
-0.6828333 </code></pre>
+<pre><code>elapsed 
+ 0.7055 </code></pre>
 </div>
 <details>
 <summary>Show code</summary>
@@ -951,8 +951,8 @@ ex_t \\
 <span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>   elapsed 
-0.03566667 </code></pre>
+<pre><code>elapsed 
+  0.041 </code></pre>
 </div>
 <details>
 <summary>Show code</summary>
@@ -1209,17 +1209,16 @@ P(A,\Sigma|Y,X,h) = MN (\bar{\alpha},\bar{V},\bar{S},\bar{\nu})
 <h2 class="anchored" data-anchor-id="derivation-1">Derivation</h2>
 <p><span class="math display">\[
 \begin{align*}
-p(\kappa|Y,X,A) &amp;= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\
-                &amp;\propto p(\kappa) \times p(A|\Sigma,\kappa) \\
-                &amp;= \kappa^{\frac{1}{2}-1} \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa \underline{V})^{-1}] (A - \underline{A}) \right\} \\
-                &amp;= \kappa^{\frac{1}{2} - \frac{KN}{2} - 1} \times \exp \left\{-\frac{1}{2} \left[\frac{1}{\kappa}\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})\right] + \frac{2}{s}\kappa \right\}     
+p(\kappa|Y,X,A) &amp;\propto  p(\kappa | \underline{s}, \underline{a})  \times p(A|\Sigma,\kappa) \\
+                &amp;= \kappa^{\underline{a} - 1} \times \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa^{-1} \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa^{-1} \underline{V})^{-1}] (A - \underline{A}) \right\} \\
+                &amp;= \kappa^{-\frac{-2\underline{a}-KN}{2} - 1} \times \exp \left\{-\frac{1}{2}\kappa \left[\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A}) + \frac{1}{\underline{s}}\right] \right\}     
 \end{align*}
-\]</span> which it is the kernel of Generalized Inverse Gaussian (GIG) distribution with</p>
+\]</span> and it gives</p>
 <p><span class="math display">\[
 \begin{align*}
-\lambda &amp;= \frac{1}{2} - \frac{KN}{2} \\
-\chi    &amp;= tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) \\
-\psi    &amp;= \frac{2}{s} \\
+\lambda &amp;= \underline{a} + \frac{KN}{2} \\
+\chi    &amp;= tr [\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})] \\
+\psi    &amp;= \frac{2}{\underline{s}} \\
 \end{align*}
 \]</span></p>
 <p>Gibbs Sampler:</p>
@@ -1229,7 +1228,7 @@ p(\kappa|Y,X,A) &amp;= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kap
 <li>Draw <span class="math inline">\((A,\Sigma)^{(s)} \sim p(A,\Sigma|Y,X,\kappa^{(s-1)})\)</span></li>
 <li>Draw <span class="math inline">\((\kappa)^{(s)} \sim p(\kappa|Y,X,A, \Sigma)\)</span></li>
 </ol>
-<p>Repeat step 1 and 2 for S1 + S2 times and discard S1.</p>
+<p>Repeat step 1 and 2 for S1 + S2 times and discard S1. I set <span class="math inline">\(\underline{s}=0.1\)</span> and <span class="math inline">\(\underline{a}=0.5\)</span>.</p>
 <div class="cell">
 <details>
 <summary>Show code</summary>
@@ -1245,56 +1244,57 @@ p(\kappa|Y,X,A) &amp;= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kap
 <span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initialize kappa</span></span>
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  kappa[<span class="dv">1</span>] <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  kappas   <span class="ot">=</span> <span class="fl">0.1</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  kappani  <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.1</span>           <span class="ot">=</span> kappa<span class="fl">.1</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.2</span>           <span class="ot">=</span> <span class="dv">100</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.3</span>           <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  ex2_A.prior           <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex2_A.hat),<span class="fu">ncol</span>(ex2_A.hat))</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  ex2_A.prior[<span class="dv">2</span><span class="sc">:</span>(N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(N)</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  ex2_V.prior           <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,N)))</span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  ex2_S.prior           <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex2_Sigma.hat))</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  ex2_nu.prior          <span class="ot">=</span> N<span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># normal-inverse Wishard posterior parameters</span></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  ex2_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(X)<span class="sc">%*%</span>X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  ex2_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex2_V.bar.inv)</span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  ex2_A.bar       <span class="ot">=</span> kappa<span class="sc">*</span>(ex2_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior))</span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  ex2_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(Y) <span class="sc">+</span> ex2_nu.prior</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>  ex2_S.bar       <span class="ot">=</span> ex2_S.prior <span class="sc">+</span> <span class="fu">t</span>(Y)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">t</span>(ex2_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex2_A.bar)<span class="sc">%*%</span>ex2_V.bar.inv<span class="sc">%*%</span>ex2_A.bar</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>  ex2_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex2_S.bar)</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># posterior draws </span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(S3, <span class="at">df=</span>ex2_nu.bar, <span class="at">Sigma=</span>ex2_S.bar.inv)</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex2_Sigma.posterior,<span class="dv">3</span>,solve)</span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex2_Sigma.posterior,<span class="fu">c</span>(N,N,S3))</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>  ex2_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),S3))),<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),S3))</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>  ex2_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S3))</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>  ex2_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex2_V.bar))</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>  ex2_B1.posterior      <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,(<span class="dv">1</span><span class="sc">+</span>N<span class="sc">*</span>p),S3))</span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S3){</span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>    ex2_cholSigma.s       <span class="ot">=</span> <span class="fu">chol</span>(ex2_Sigma.posterior[,,s])</span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>    ex2_B.posterior[,,s]  <span class="ot">=</span> <span class="fu">t</span>(ex2_cholSigma.s)</span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>    ex2_A.posterior[,,s]  <span class="ot">=</span> ex2_A.bar <span class="sc">+</span> ex2_L<span class="sc">%*%</span>ex2_A.posterior[,,s]<span class="sc">%*%</span>ex2_cholSigma.s</span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    ex2_B1.posterior[,,s] <span class="ot">=</span> ex2_B.posterior[,,s]<span class="sc">%*%</span><span class="fu">t</span>(ex2_A.posterior[,,s])</span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># draw kappa</span></span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>    lambda <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span> <span class="sc">-</span> p<span class="sc">*</span>N<span class="sc">/</span><span class="dv">2</span></span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>    chi <span class="ot">=</span> <span class="fu">sum</span>(<span class="fu">diag</span>(<span class="fu">solve</span>(ex2_Sigma.posterior[,,s]) <span class="sc">%*%</span> <span class="fu">t</span>(ex2_A.posterior[,,s] <span class="sc">-</span> ex2_A.prior) <span class="sc">%*%</span> <span class="fu">solve</span>(ex2_V.prior) <span class="sc">%*%</span> (ex2_A.posterior[,,s] <span class="sc">-</span> ex2_A.prior)))</span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>    psi <span class="ot">=</span> <span class="dv">2</span><span class="sc">/</span>kappas</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>    kappa[s] <span class="ot">=</span> GIGrvg<span class="sc">::</span><span class="fu">rgig</span>(<span class="at">n=</span><span class="dv">1</span>,lambda,chi,psi)</span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">ex2_A.posterior     =</span> ex2_A.posterior    [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)], </span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_B.posterior     =</span> ex2_B.posterior    [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)], </span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_Sigma.posterior =</span> ex2_Sigma.posterior[,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)],</span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_B1.posterior    =</span> ex2_B1.posterior   [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)],</span>
-<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>              <span class="at">kappa =</span> kappa[(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)]))</span>
-<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  kappa.s   <span class="ot">=</span> <span class="fl">0.1</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  kappa.a  <span class="ot">=</span> <span class="fl">0.5</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  kappani  <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.1</span>           <span class="ot">=</span> kappa<span class="fl">.1</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.2</span>           <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  kappa<span class="fl">.3</span>           <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  ex2_A.prior           <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(ex2_A.hat),<span class="fu">ncol</span>(ex2_A.hat))</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  ex2_A.prior[<span class="dv">2</span><span class="sc">:</span>(N<span class="sc">+</span><span class="dv">1</span>),] <span class="ot">=</span> kappa<span class="fl">.3</span><span class="sc">*</span><span class="fu">diag</span>(N)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  ex2_V.prior           <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">c</span>(kappa<span class="fl">.2</span>,kappa<span class="fl">.1</span><span class="sc">*</span>((<span class="dv">1</span><span class="sc">:</span>p)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">2</span>))<span class="sc">%x%</span><span class="fu">rep</span>(<span class="dv">1</span>,N)))</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  ex2_S.prior           <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">diag</span>(ex2_Sigma.hat))</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  ex2_nu.prior          <span class="ot">=</span> N<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># normal-inverse Wishard posterior parameters</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  ex2_V.bar.inv   <span class="ot">=</span> <span class="fu">t</span>(X)<span class="sc">%*%</span>X <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  ex2_V.bar       <span class="ot">=</span> <span class="fu">solve</span>(ex2_V.bar.inv)</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  ex2_A.bar       <span class="ot">=</span> kappa<span class="sc">*</span>(ex2_V.bar<span class="sc">%*%</span>(<span class="fu">t</span>(X)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior))</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>  ex2_nu.bar      <span class="ot">=</span> <span class="fu">nrow</span>(Y) <span class="sc">+</span> ex2_nu.prior</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>  ex2_S.bar       <span class="ot">=</span> ex2_S.prior <span class="sc">+</span> <span class="fu">t</span>(Y)<span class="sc">%*%</span>Y <span class="sc">+</span> <span class="fu">t</span>(ex2_A.prior)<span class="sc">%*%</span><span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">diag</span>(ex2_V.prior))<span class="sc">%*%</span>ex2_A.prior <span class="sc">-</span> <span class="fu">t</span>(ex2_A.bar)<span class="sc">%*%</span>ex2_V.bar.inv<span class="sc">%*%</span>ex2_A.bar</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>  ex2_S.bar.inv   <span class="ot">=</span> <span class="fu">solve</span>(ex2_S.bar)</span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># posterior draws </span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>  <span class="do">############################################################</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">rWishart</span>(S3, <span class="at">df=</span>ex2_nu.bar, <span class="at">Sigma=</span>ex2_S.bar.inv)</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">apply</span>(ex2_Sigma.posterior,<span class="dv">3</span>,solve)</span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>  ex2_Sigma.posterior   <span class="ot">=</span> <span class="fu">array</span>(ex2_Sigma.posterior,<span class="fu">c</span>(N,N,S3))</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>  ex2_A.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="fu">rnorm</span>(<span class="fu">prod</span>(<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),S3))),<span class="fu">c</span>(<span class="fu">dim</span>(ex2_A.bar),S3))</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>  ex2_B.posterior       <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,N,S3))</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>  ex2_L                 <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">chol</span>(ex2_V.bar))</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>  ex2_B1.posterior      <span class="ot">=</span> <span class="fu">array</span>(<span class="cn">NA</span>,<span class="fu">c</span>(N,(<span class="dv">1</span><span class="sc">+</span>N<span class="sc">*</span>p),S3))</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S3){</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>    ex2_cholSigma.s       <span class="ot">=</span> <span class="fu">chol</span>(ex2_Sigma.posterior[,,s])</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>    ex2_B.posterior[,,s]  <span class="ot">=</span> <span class="fu">t</span>(ex2_cholSigma.s)</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    ex2_A.posterior[,,s]  <span class="ot">=</span> ex2_A.bar <span class="sc">+</span> ex2_L<span class="sc">%*%</span>ex2_A.posterior[,,s]<span class="sc">%*%</span>ex2_cholSigma.s</span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    ex2_B1.posterior[,,s] <span class="ot">=</span> ex2_B.posterior[,,s]<span class="sc">%*%</span><span class="fu">t</span>(ex2_A.posterior[,,s])</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>    <span class="co"># draw kappa</span></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>    lambda <span class="ot">=</span> kappa.a <span class="sc">+</span> (p<span class="sc">*</span>N<span class="sc">+</span><span class="dv">1</span>)<span class="sc">*</span>N<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>    chi <span class="ot">=</span> <span class="fu">sum</span>(<span class="fu">diag</span>(<span class="fu">solve</span>(ex2_Sigma.posterior[,,s]) <span class="sc">%*%</span> <span class="fu">t</span>(ex2_A.posterior[,,s] <span class="sc">-</span> ex2_A.prior) <span class="sc">%*%</span> <span class="fu">solve</span>(ex2_V.prior) <span class="sc">%*%</span> (ex2_A.posterior[,,s] <span class="sc">-</span> ex2_A.prior)))</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>    psi <span class="ot">=</span> <span class="dv">2</span><span class="sc">/</span>kappa.s</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>    kappa[s] <span class="ot">=</span> GIGrvg<span class="sc">::</span><span class="fu">rgig</span>(<span class="at">n=</span><span class="dv">1</span>,lambda,chi,psi)</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">ex2_A.posterior     =</span> ex2_A.posterior    [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)], </span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_B.posterior     =</span> ex2_B.posterior    [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)], </span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_Sigma.posterior =</span> ex2_Sigma.posterior[,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)],</span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>              <span class="at">ex2_B1.posterior    =</span> ex2_B1.posterior   [,,(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)],</span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>              <span class="at">kappa =</span> kappa[(S1<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(S1<span class="sc">+</span>S2)]))</span>
+<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>The distribution of <span class="math inline">\(\kappa\)</span> is as follows:</p>
@@ -1509,41 +1509,41 @@ p(\kappa|Y,X,A) &amp;= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kap
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]  [,2]
-[1,] -0.056 0.070
+[1,] -0.048 0.076
 [2,]  0.999 0.001
-[3,] -0.007 0.995</code></pre>
+[3,] -0.006 0.996</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]  [,2]
-[1,]  0.057 0.148
+[1,]  0.074 0.156
 [2,]  1.001 0.003
-[3,] -0.008 0.994</code></pre>
+[3,] -0.009 0.994</code></pre>
 </div>
 </div>
 <p>B.posterior for basic and extended model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>      [,1]  [,2]
-[1,] 1.000 0.000
-[2,] 0.022 1.017</code></pre>
+<pre><code>      [,1] [,2]
+[1,] 0.997 0.00
+[2,] 0.019 1.02</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]  [,2]
-[1,]  1.049 0.000
-[2,] -0.032 1.055</code></pre>
+[1,]  1.045 0.000
+[2,] -0.036 1.057</code></pre>
 </div>
 </div>
 <p>Sigma.posterior for basic and extended model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>      [,1]  [,2]
-[1,] 1.000 0.022
-[2,] 0.022 1.037</code></pre>
+[1,] 0.994 0.019
+[2,] 0.019 1.043</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]   [,2]
-[1,]  1.100 -0.033
-[2,] -0.033  1.115</code></pre>
+[1,]  1.093 -0.038
+[2,] -0.038  1.121</code></pre>
 </div>
 </div>
 <section id="empirical-investigation-for-extended-model-2" class="level2">

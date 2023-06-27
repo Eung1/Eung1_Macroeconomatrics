@@ -984,7 +984,7 @@ IR.infinity.transposed[,,s]     = solve(B0.posterior.transposed[,,s]-Bplus.poste
 
 ```
 
-The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this. The matrix shown below is the mean of impulse responses of infinity horizon that I impose a restriction. The restriction imposed is that the monetary policy has no effect on GDP in the rong-run, such that, the element of (3,5) should be close to zero in the matrix.
+The posterior $B_0$ matrix requires a normalization since it exhibits symmetric distribution round zero. Below is the normalization function for this. The matrix shown below is the mean of impulse responses of infinity horizon that I impose a restriction. The restriction imposed is that the monetary policy has no effect on GDP in the long-run, such that, element (3,5) of the infinite impulse response matrix should be close to zero in the matrix.
 
 ```{r results for case 2: long-run restriction_contd2, normalization}
 #| echo: true
@@ -1779,19 +1779,18 @@ $\kappa$ is a random variable representing a scalar parameter which is assumed t
 
 $$
 \begin{align*}
-p(\kappa|Y,X,A) &= L(Y|X,A,\Sigma) \times p(\kappa_A) \times p(A|\Sigma,\kappa) \times p(\Sigma) \\
-                &\propto p(\kappa) \times p(A|\Sigma,\kappa) \\
-                &= \kappa^{\frac{1}{2}-1} \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa \underline{V})^{-1}] (A - \underline{A}) \right\} \\
-                &= \kappa^{\frac{1}{2} - \frac{KN}{2} - 1} \times \exp \left\{-\frac{1}{2} \left[\frac{1}{\kappa}\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})\right] + \frac{2}{s}\kappa \right\}     
+p(\kappa|Y,X,A) &\propto  p(\kappa | \underline{s}, \underline{a})  \times p(A|\Sigma,\kappa) \\
+                &= \kappa^{\underline{a} - 1} \times \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa^{-1} \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa^{-1} \underline{V})^{-1}] (A - \underline{A}) \right\} \\
+                &= \kappa^{-\frac{-2\underline{a}-KN}{2} - 1} \times \exp \left\{-\frac{1}{2}\kappa \left[\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A}) + \frac{1}{\underline{s}}\right] \right\}     
 \end{align*}
 $$
-which it is the kernel of Generalized Inverse Gaussian (GIG) distribution with 
+and it gives
 
 $$
 \begin{align*}
-\lambda &= \frac{1}{2} - \frac{KN}{2} \\
-\chi    &= tr (\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})) \\
-\psi    &= \frac{2}{s} \\
+\lambda &= \underline{a} + \frac{KN}{2} \\
+\chi    &= tr [\Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A})] \\
+\psi    &= \frac{2}{\underline{s}} \\
 \end{align*}
 $$
 
@@ -1805,7 +1804,7 @@ At each iteration s:
   1. Draw $(A,\Sigma)^{(s)} \sim p(A,\Sigma|Y,X,\kappa^{(s-1)})$
   2. Draw $(\kappa)^{(s)} \sim p(\kappa|Y,X,A, \Sigma)$
 
-Repeat step 1 and 2 for S1 + S2 times and discard S1.
+Repeat step 1 and 2 for S1 + S2 times and discard S1. I set $\underline{s}=0.1$ and $\underline{a}=0.5$.
 
 ```{r,echo=TRUE}
 #| echo: true
@@ -1824,9 +1823,10 @@ Posterior_kappa = function(Y, X, p, N, S1, S2, kappa.1) {
   ############################################################
   # Initialize kappa
   kappa[1] = 1
-  kappas   = 0.1
+  kappa.s   = 0.1
+  kappa.a  = 0.5
   kappani  = 1/2
-  
+
   kappa.1           = kappa.1
   kappa.2           = 100
   kappa.3           = 1
@@ -1862,9 +1862,9 @@ Posterior_kappa = function(Y, X, p, N, S1, S2, kappa.1) {
     ex2_B1.posterior[,,s] = ex2_B.posterior[,,s]%*%t(ex2_A.posterior[,,s])
     
     # draw kappa
-    lambda = 1/2 - p*N/2
+    lambda = kappa.a + (p*N+1)*N/2
     chi = sum(diag(solve(ex2_Sigma.posterior[,,s]) %*% t(ex2_A.posterior[,,s] - ex2_A.prior) %*% solve(ex2_V.prior) %*% (ex2_A.posterior[,,s] - ex2_A.prior)))
-    psi = 2/kappas
+    psi = 2/kappa.s
     kappa[s] = GIGrvg::rgig(n=1,lambda,chi,psi)
   }
   
@@ -1891,7 +1891,7 @@ Kappa = posterior_k$kappa
      freq=FALSE,
      xlab = expression(kappa),
      breaks = 1000,
-     xlim = c(1.5,5),
+     xlim = c(10,19),
      col = "#8EE4AF",
      lty = "blank")
 
