@@ -737,7 +737,7 @@ B_0' &amp;=
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>elapsed 
- 0.7055 </code></pre>
+ 0.6565 </code></pre>
 </div>
 <details>
 <summary>Show code</summary>
@@ -951,8 +951,8 @@ ex_t \\
 <span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a>(t1<span class="sc">-</span>t0)[<span class="dv">3</span>]<span class="sc">/</span><span class="dv">60</span> <span class="co"># Time of computations in minutes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>elapsed 
-  0.041 </code></pre>
+<pre><code>   elapsed 
+0.04216667 </code></pre>
 </div>
 <details>
 <summary>Show code</summary>
@@ -1213,7 +1213,7 @@ p(\kappa|Y,X,A) &amp;\propto  p(\kappa | \underline{s}, \underline{a})  \times p
                 &amp;= \kappa^{\underline{a} - 1} \times \exp\left\{ -\frac{\kappa}{\underline{s}}\right\} \times \det(\kappa^{-1} \underline{V})^{-\frac{N}{2}} \times \exp \left\{-\frac{1}{2} \text{tr}[\Sigma ^{-1} (A - \underline{A})' (\kappa^{-1} \underline{V})^{-1}] (A - \underline{A}) \right\} \\
                 &amp;= \kappa^{-\frac{-2\underline{a}-KN}{2} - 1} \times \exp \left\{-\frac{1}{2}\kappa \left[\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A}) + \frac{1}{\underline{s}}\right] \right\}     
 \end{align*}
-\]</span> and it gives</p>
+\]</span> and it gives the parameters for Generalized Inverse Gaussian (<span class="math inline">\(\mathcal{GIG}\)</span>) distribution:</p>
 <p><span class="math display">\[
 \begin{align*}
 \lambda &amp;= \underline{a} + \frac{KN}{2} \\

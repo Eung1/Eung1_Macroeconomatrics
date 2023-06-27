@@ -1784,7 +1784,7 @@ p(\kappa|Y,X,A) &\propto  p(\kappa | \underline{s}, \underline{a})  \times p(A|\
                 &= \kappa^{-\frac{-2\underline{a}-KN}{2} - 1} \times \exp \left\{-\frac{1}{2}\kappa \left[\text{tr} \Sigma^{-1}(A - \underline{A})'(\underline{V}^{-1})(A - \underline{A}) + \frac{1}{\underline{s}}\right] \right\}     
 \end{align*}
 $$
-and it gives
+and it gives the parameters for Generalized Inverse Gaussian ($\mathcal{GIG}$) distribution:
 
 $$
 \begin{align*}
